@@ -44,7 +44,7 @@ export default async function LivePage() {
       hasSpotify={!!spotifyAccount}
       streamInfo={streamInfo}
       initialEvents={recentEvents.events}
-      subGoal={subGoalRow ? subGoalRow : null}
+      subGoal={subGoalRow ? { ...subGoalRow, endsAt: subGoalRow.endsAt?.toISOString() ?? null } : null}
       subTotal={subTotalRows[0]?.total ?? 0}
       followGoal={followGoalRow ? { goal: followGoalRow.goal } : null}
       followTotal={followTotalRows[0]?.total ?? 0}
