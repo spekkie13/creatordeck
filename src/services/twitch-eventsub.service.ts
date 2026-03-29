@@ -34,8 +34,8 @@ class TwitchEventSubService {
     return { broadcaster_user_id: broadcasterId }
   }
 
-  private async fetchExistingByBroadcaster(token: string, broadcasterId: string): Promise<Record<string, { id: string; status: string }>> {
-    const res = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions?status=enabled", {
+  private async fetchAllByBroadcaster(token: string, broadcasterId: string): Promise<Record<string, { id: string; status: string }>> {
+    const res = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Client-Id": process.env.TWITCH_CLIENT_ID!,
@@ -51,6 +51,16 @@ class TwitchEventSubService {
       }
     }
     return map
+  }
+
+  private async deleteSubscription(token: string, id: string): Promise<void> {
+    await fetch(`https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Client-Id": process.env.TWITCH_CLIENT_ID!,
+      },
+    })
   }
 
   private async registerSubType(
@@ -86,16 +96,29 @@ class TwitchEventSubService {
     } else if (res.status === 409 && existing[type]) {
       return { id: existing[type].id, type, status: existing[type].status }
     }
+
+    console.error(`[EventSub] Failed to register ${type}: HTTP ${res.status}`, JSON.stringify(data))
     return null
   }
 
   async registerSubscriptions(broadcasterId: string): Promise<{ id: string; type: string; status: string }[]> {
     const appToken = await this.getAppAccessToken()
-    const existing = await this.fetchExistingByBroadcaster(appToken, broadcasterId)
-    const results: { id: string; type: string; status: string }[] = []
+    const all = await this.fetchAllByBroadcaster(appToken, broadcasterId)
 
+    // Separate enabled from broken; delete broken ones so they can be re-registered cleanly
+    const enabled: Record<string, { id: string; status: string }> = {}
+    for (const [type, sub] of Object.entries(all)) {
+      if (sub.status === "enabled") {
+        enabled[type] = sub
+      } else {
+        console.log(`[EventSub] Deleting stale subscription ${type} (status: ${sub.status})`)
+        await this.deleteSubscription(appToken, sub.id)
+      }
+    }
+
+    const results: { id: string; type: string; status: string }[] = []
     for (const { type, version } of APP_SUB_TYPES) {
-      const result = await this.registerSubType(type, version, broadcasterId, appToken, existing)
+      const result = await this.registerSubType(type, version, broadcasterId, appToken, enabled)
       if (result) results.push(result)
     }
 
