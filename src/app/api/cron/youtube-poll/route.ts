@@ -20,7 +20,16 @@ export async function GET(req: Request) {
 
   const accounts = await linkedAccountsRepository.findAllByProvider("youtube")
   console.log(`[yt-poll] found ${accounts.length} account(s)`)
-  await Promise.allSettled(accounts.map(pollAccount))
+
+  const results = await Promise.allSettled(accounts.map(pollAccount))
+  const errors = results
+    .map((r, i) => r.status === "rejected" ? { account: accounts[i].providerAccountId, error: String(r.reason) } : null)
+    .filter(Boolean)
+
+  if (errors.length > 0) {
+    console.error(`[yt-poll] ${errors.length} account(s) failed:`, errors)
+    return NextResponse.json({ ok: false, accounts: accounts.length, errors }, { status: 500 })
+  }
 
   return NextResponse.json({ ok: true, accounts: accounts.length })
 }
@@ -49,11 +58,9 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken = account.accessToken!
 
-  // Fetch active broadcasts, refreshing token on 401
-  let broadcastsRes = await ytGet(
-    "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&mine=true",
-    accessToken,
-  )
+  // Fetch active or testing broadcasts, refreshing token on 401
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&mine=true"
+  let broadcastsRes = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
     console.log(`[yt-poll] ${account.providerAccountId}: token expired, refreshing`)
@@ -64,15 +71,13 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
     }
     await linkedAccountsRepository.updateAccessToken("youtube", account.providerAccountId, newToken)
     accessToken = newToken
-    broadcastsRes = await ytGet(
-      "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&mine=true",
-      accessToken,
-    )
+    broadcastsRes = await ytGet(broadcastsUrl, accessToken)
   }
 
   if (!broadcastsRes.ok) {
-    console.log(`[yt-poll] ${account.providerAccountId}: broadcasts fetch failed with status ${broadcastsRes.status}`)
-    return
+    const body = await broadcastsRes.text().catch(() => "(unreadable)")
+    console.error(`[yt-poll] ${account.providerAccountId}: broadcasts fetch failed with status ${broadcastsRes.status}: ${body}`)
+    throw new Error(`broadcasts fetch ${broadcastsRes.status}: ${body}`)
   }
 
   const broadcastsData = await broadcastsRes.json()
