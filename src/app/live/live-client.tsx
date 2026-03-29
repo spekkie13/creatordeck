@@ -184,7 +184,7 @@ function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
           <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1.5">Up next</p>
           <div className="flex gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {queue.map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-14">
+              <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-20">
                 {item.albumArt ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={item.albumArt} alt="" className="w-10 h-10 rounded shrink-0 object-cover" />
