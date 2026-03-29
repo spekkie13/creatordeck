@@ -37,23 +37,23 @@ class TwitchEventSubService {
     return { broadcaster_user_id: broadcasterId }
   }
 
-  private async fetchAllByBroadcaster(token: string, broadcasterId: string): Promise<Record<string, { id: string; status: string }>> {
+  private async fetchAllByBroadcaster(token: string, broadcasterId: string): Promise<Array<{ id: string; type: string; status: string }>> {
     const res = await fetch("https://api.twitch.tv/helix/eventsub/subscriptions", {
       headers: {
         "Authorization": `Bearer ${token}`,
         "Client-Id": process.env.TWITCH_CLIENT_ID!,
       },
     })
-    if (!res.ok) return {}
+    if (!res.ok) return []
     const data = await res.json()
-    const map: Record<string, { id: string; status: string }> = {}
+    const all: Array<{ id: string; type: string; status: string }> = []
     for (const sub of data.data ?? []) {
       const condition = sub.condition as Record<string, string>
       if (Object.values(condition).includes(broadcasterId)) {
-        map[sub.type as string] = { id: sub.id as string, status: sub.status as string }
+        all.push({ id: sub.id as string, type: sub.type as string, status: sub.status as string })
       }
     }
-    return map
+    return all
   }
 
   private async deleteSubscription(token: string, id: string): Promise<void> {
@@ -108,13 +108,14 @@ class TwitchEventSubService {
     const appToken = await this.getAppAccessToken()
     const all = await this.fetchAllByBroadcaster(appToken, broadcasterId)
 
-    // Separate enabled from broken; delete broken ones so they can be re-registered cleanly
+    // Separate enabled from broken; delete ALL broken ones (including duplicates) so they
+    // can be re-registered cleanly. Using an array avoids the duplicate-key problem.
     const enabled: Record<string, { id: string; status: string }> = {}
-    for (const [type, sub] of Object.entries(all)) {
+    for (const sub of all) {
       if (sub.status === "enabled") {
-        enabled[type] = sub
+        enabled[sub.type] = { id: sub.id, status: sub.status }
       } else {
-        console.log(`[EventSub] Deleting stale subscription ${type} (status: ${sub.status})`)
+        console.log(`[EventSub] Deleting stale subscription ${sub.type} (status: ${sub.status})`)
         await this.deleteSubscription(appToken, sub.id)
       }
     }
