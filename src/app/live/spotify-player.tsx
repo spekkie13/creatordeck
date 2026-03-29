@@ -107,7 +107,7 @@ export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
 
             {/* Queue */}
             {queue.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 overflow-hidden">
+                <div className="w-[480px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 overflow-hidden">
                     <div className="flex gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {queue.map((item, i) => (
                             <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-20">
