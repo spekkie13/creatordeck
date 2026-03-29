@@ -10,7 +10,6 @@ const APP_SUB_TYPES = [
   { type: "channel.follow", version: "2" },
   { type: "channel.cheer", version: "1" },
   { type: "channel.raid", version: "1" },
-  { type: "channel.chat.message", version: "1" },
 ]
 
 class TwitchEventSubService {

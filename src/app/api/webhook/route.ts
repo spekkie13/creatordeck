@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
-import { subEventsRepository, followEventsRepository, cheerEventsRepository, raidEventsRepository, chatMessagesRepository } from "@/repositories"
+import { subEventsRepository, followEventsRepository, cheerEventsRepository, raidEventsRepository } from "@/repositories"
 import { streamSessionService } from "@/services"
 import { env } from "@/lib/env"
 
@@ -79,18 +79,7 @@ export async function POST(req: NextRequest) {
           await raidEventsRepository.insert({ broadcasterId, eventId: messageId, fromBroadcasterId: event.from_broadcaster_user_id, fromBroadcasterLogin: event.from_broadcaster_user_login, fromBroadcasterDisplayName: event.from_broadcaster_user_name, viewerCount: event.viewers, occurredAt })
           break
 
-        case "channel.chat.message":
-          await chatMessagesRepository.insert({
-            platform: "twitch",
-            channelId: broadcasterId,
-            eventId: event.message_id as string,
-            userId: event.chatter_user_id as string ?? null,
-            userLogin: event.chatter_user_login as string ?? null,
-            userDisplayName: event.chatter_user_name as string ?? null,
-            message: (event.message as { text: string }).text,
-            occurredAt,
-          })
-          break
+
       }
     } catch (err) {
       console.error("Webhook handler error:", err)
