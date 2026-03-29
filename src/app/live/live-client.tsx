@@ -151,9 +151,9 @@ function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
   const pct = nowPlaying.duration > 0 ? (progressMs / nowPlaying.duration) * 100 : 0
 
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex items-stretch gap-3">
       {/* Now playing */}
-      <div className="w-[340px] shrink-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 space-y-2">
+      <div className="w-[340px] shrink-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 flex flex-col justify-between">
         <div className="flex items-center gap-2.5">
           {nowPlaying.albumArt ? (
             // eslint-disable-next-line @next/next/no-img-element
