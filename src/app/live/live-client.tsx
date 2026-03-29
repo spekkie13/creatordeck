@@ -1,12 +1,12 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { AppHeader } from "@/components/app-header"
 import { TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
 import { useStreamEvents } from "@/hooks/use-stream-events"
 import { ReplayButton } from "@/components/replay-button"
 import type { LiveEvent } from "@/types/events"
-import type { StreamInfo } from "./page"
+import {StreamInfo} from "@/types/stream";
+import {AppHeader} from "@/app/dashboard/app-header";
 
 type NowPlaying = {
   isPlaying: boolean
@@ -16,6 +16,12 @@ type NowPlaying = {
   progress: number
   duration: number
 } | null
+
+type QueueTrack = {
+  track: string
+  artist: string
+  albumArt: string | null
+}
 
 type SubGoal = { goal: number; initialCount: number; endsAt: string | null }
 type SimpleGoal = { goal: number }
@@ -75,6 +81,7 @@ function Uptime({ startedAt }: { startedAt: string }) {
 
 function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
   const [nowPlaying, setNowPlaying] = useState<NowPlaying>(null)
+  const [queue, setQueue] = useState<QueueTrack[]>([])
   const [progressMs, setProgressMs] = useState(0)
   const progressRef = useRef(progressMs)
   progressRef.current = progressMs
@@ -83,10 +90,15 @@ function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
     if (!hasSpotify) return
     const poll = async () => {
       try {
-        const res = await fetch("/api/spotify/now-playing")
-        const data: NowPlaying = await res.json()
+        const [npRes, qRes] = await Promise.all([
+          fetch("/api/spotify/now-playing"),
+          fetch("/api/spotify/queue"),
+        ])
+        const data: NowPlaying = await npRes.json()
         setNowPlaying(data)
         if (data) setProgressMs(data.progress)
+        const qData: QueueTrack[] = await qRes.json()
+        setQueue(qData)
       } catch { /* silent */ }
     }
     poll()
@@ -139,30 +151,53 @@ function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
   const pct = nowPlaying.duration > 0 ? (progressMs / nowPlaying.duration) * 100 : 0
 
   return (
-    <div className="w-[340px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 space-y-2">
-      <div className="flex items-center gap-2.5">
-        {nowPlaying.albumArt ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={nowPlaying.albumArt} alt="" className="w-8 h-8 rounded shrink-0 object-cover" />
-        ) : (
-          <div className="w-8 h-8 rounded bg-zinc-200 dark:bg-zinc-800 shrink-0 flex items-center justify-center text-sm">🎵</div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">{nowPlaying.track}</p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{nowPlaying.artist}</p>
+    <div className="flex items-start gap-3">
+      {/* Now playing */}
+      <div className="w-[340px] shrink-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 space-y-2">
+        <div className="flex items-center gap-2.5">
+          {nowPlaying.albumArt ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={nowPlaying.albumArt} alt="" className="w-8 h-8 rounded shrink-0 object-cover" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-zinc-200 dark:bg-zinc-800 shrink-0 flex items-center justify-center text-sm">🎵</div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">{nowPlaying.track}</p>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{nowPlaying.artist}</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button onClick={() => control("previous")} title="Previous" className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm leading-none transition-colors">⏮</button>
+            <button onClick={() => control(nowPlaying.isPlaying ? "pause" : "play")} title={nowPlaying.isPlaying ? "Pause" : "Play"} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-lg leading-none transition-colors">
+              {nowPlaying.isPlaying ? "⏸" : "▶"}
+            </button>
+            <button onClick={() => control("skip")} title="Next" className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm leading-none transition-colors">⏭</button>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <button onClick={() => control("previous")} title="Previous" className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm leading-none transition-colors">⏮</button>
-          <button onClick={() => control(nowPlaying.isPlaying ? "pause" : "play")} title={nowPlaying.isPlaying ? "Pause" : "Play"} className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-lg leading-none transition-colors">
-            {nowPlaying.isPlaying ? "⏸" : "▶"}
-          </button>
-          <button onClick={() => control("skip")} title="Next" className="text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-sm leading-none transition-colors">⏭</button>
+        <div className="h-1 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+          <div className="h-full rounded-full bg-[#1DB954] transition-none" style={{ width: `${pct}%` }} />
         </div>
       </div>
-      {/* Progress bar */}
-      <div className="h-1 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
-        <div className="h-full rounded-full bg-[#1DB954] transition-none" style={{ width: `${pct}%` }} />
-      </div>
+
+      {/* Queue */}
+      {queue.length > 0 && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 space-y-1.5 min-w-0">
+          <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider">Up next</p>
+          {queue.map((item, i) => (
+            <div key={i} className="flex items-center gap-2">
+              {item.albumArt ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.albumArt} alt="" className="w-6 h-6 rounded shrink-0 object-cover" />
+              ) : (
+                <div className="w-6 h-6 rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
+              )}
+              <div className="min-w-0">
+                <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate leading-tight">{item.track}</p>
+                <p className="text-[10px] text-zinc-400 dark:text-zinc-600 truncate leading-tight">{item.artist}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
