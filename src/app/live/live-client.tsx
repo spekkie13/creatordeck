@@ -187,9 +187,9 @@ function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
               <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-24">
                 {item.albumArt ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={item.albumArt} alt="" className="w-18 h-18 rounded shrink-0 object-cover" />
+                  <img src={item.albumArt} alt="" className="w-[4.5rem] h-[4.5rem] rounded shrink-0 object-cover" />
                 ) : (
-                  <div className="w-18 h-18 rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
+                  <div className="w-[4.5rem] h-[4.5rem] rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
                 )}
                 <p className="text-[10px] text-zinc-700 dark:text-zinc-300 truncate w-full text-center leading-tight">{item.track}</p>
               </div>
