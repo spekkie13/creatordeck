@@ -1,6 +1,5 @@
 ﻿import {LiveEvent} from "@/types/events";
-import {SubGoal} from "@/types/entities";
-import {SimpleGoal} from "@/types/goal";
+import {SimpleGoal, SubGoal} from "@/types/goal";
 import {StreamInfo} from "@/types/stream";
 
 export type GoalBarProps = {

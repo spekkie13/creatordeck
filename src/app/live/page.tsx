@@ -42,6 +42,7 @@ export default async function LivePage() {
   return (
     <LiveClient
       displayName={session.displayName}
+      twitchLogin={twitchAccount?.login ?? session.displayName ?? ""}
       hasYouTube={!!ytAccount}
       hasSpotify={!!spotifyAccount}
       streamInfo={streamInfo}
