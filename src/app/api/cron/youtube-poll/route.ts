@@ -59,7 +59,7 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken = account.accessToken!
 
   // Fetch active or testing broadcasts, refreshing token on 401
-  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&mine=true"
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
   let broadcastsRes = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
