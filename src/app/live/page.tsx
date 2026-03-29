@@ -1,7 +1,7 @@
 import {getServerSession, Session} from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { linkedAccountsRepository, goalsRepository } from "@/repositories"
+import { linkedAccountsRepository, goalsRepository, streamSessionRepository } from "@/repositories"
 import { liveEventFeedService } from "@/services"
 import { db } from "@/lib/db"
 import { subGoals, subEvents, ytMemberEvents, followEvents } from "@/lib/schema"
@@ -35,6 +35,16 @@ export default async function LivePage() {
     broadcasterId ? db.select({ total: count() }).from(subEvents).where(eq(subEvents.broadcasterId, broadcasterId)) : [{ total: 0 }],
   ])
 
+  // Reconcile stream session: if Twitch says we're live but no open session exists, create one.
+  // This handles cases where the EventSub webhook missed the stream.online event.
+  if (streamInfo.isLive && broadcasterId) {
+    const openSession = await streamSessionRepository.findOpen(broadcasterId)
+    if (!openSession) {
+      const startedAt = streamInfo.startedAt ? new Date(streamInfo.startedAt) : new Date()
+      await streamSessionRepository.create(broadcasterId, startedAt)
+    }
+  }
+
   const subGoalRow = goalRows[0] ?? null
   const followGoalRow: GoalRow | null = extraGoals.find(g => g.type === "twitch_follow") ?? null
   const ytMemberGoalRow: GoalRow | null = extraGoals.find(g => g.type === "youtube_member") ?? null
@@ -45,7 +55,7 @@ export default async function LivePage() {
       twitchLogin={twitchAccount?.login ?? session.displayName ?? ""}
       hasYouTube={!!ytAccount}
       hasSpotify={!!spotifyAccount}
-      streamInfo={streamInfo}
+      initialStreamInfo={streamInfo}
       initialEvents={recentEvents.events}
       subGoal={subGoalRow ? { ...subGoalRow, endsAt: subGoalRow.endsAt?.toISOString() ?? null } : null}
       subTotal={subTotalRows[0]?.total ?? 0}

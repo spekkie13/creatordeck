@@ -7,7 +7,7 @@ export type GoalBarProps = {
     twitchLogin: string
     hasYouTube: boolean
     hasSpotify: boolean
-    streamInfo: StreamInfo
+    initialStreamInfo: StreamInfo
     initialEvents: LiveEvent[]
     subGoal: SubGoal | null
     subTotal: number

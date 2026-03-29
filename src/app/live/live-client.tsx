@@ -10,14 +10,22 @@ import {LiveBadge} from "@/app/live/live-badge";
 import {GoalBarProps} from "@/props/goal-bar.props";
 import {formatUptime} from "@/lib/format";
 import {TwitchChatMessage, useTwitchChat} from "@/hooks/use-twitch-chat";
+import {useYouTubeChat} from "@/hooks/use-youtube-chat";
+import {useStreamInfo} from "@/hooks/use-stream-info";
 import {TwitchLogo, YouTubeLogo} from "@/components/platform-logos";
 
 export function LiveClient({
-  displayName, twitchLogin, hasYouTube, hasSpotify, streamInfo, initialEvents,
+  displayName, twitchLogin, hasYouTube, hasSpotify, initialStreamInfo, initialEvents,
   subGoal, subTotal, followGoal, followTotal, ytMemberGoal, ytMemberTotal,
 }: GoalBarProps) {
   const events: LiveEvent[] = useStreamEvents(initialEvents)
-  const chatMessages: TwitchChatMessage[] = useTwitchChat(twitchLogin)
+  const streamInfo = useStreamInfo(initialStreamInfo)
+
+  const twitchMessages: TwitchChatMessage[] = useTwitchChat(twitchLogin)
+  const youtubeMessages: TwitchChatMessage[] = useYouTubeChat(hasYouTube)
+  const chatMessages = [...twitchMessages, ...youtubeMessages]
+    .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
+
   return (
     <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col">
       <AppHeader displayName={displayName} />
