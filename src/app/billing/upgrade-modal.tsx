@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect } from "react"
 import Link from "next/link"
 import { TIER_LABELS, TIER_MONTHLY_PRICES, type SubscriptionTier } from "@/lib/gates"

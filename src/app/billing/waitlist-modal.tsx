@@ -1,3 +1,5 @@
+"use client"
+
 import React, {RefObject, useEffect, useRef, useState} from "react"
 import { TIER_LABELS } from "@/lib/gates"
 import type { SubscriptionTier } from "@/lib/gates"
