@@ -9,12 +9,15 @@ import {GoalBar} from "@/app/live/goal-bar";
 import {LiveBadge} from "@/app/live/live-badge";
 import {GoalBarProps} from "@/props/goal-bar.props";
 import {formatUptime} from "@/lib/format";
+import {TwitchChatMessage, useTwitchChat} from "@/hooks/use-twitch-chat";
+import {TwitchLogo, YouTubeLogo} from "@/components/platform-logos";
 
 export function LiveClient({
-  displayName, hasYouTube, hasSpotify, streamInfo, initialEvents,
+  displayName, twitchLogin, hasYouTube, hasSpotify, streamInfo, initialEvents,
   subGoal, subTotal, followGoal, followTotal, ytMemberGoal, ytMemberTotal,
 }: GoalBarProps) {
   const events: LiveEvent[] = useStreamEvents(initialEvents)
+  const chatMessages: TwitchChatMessage[] = useTwitchChat(twitchLogin)
   return (
     <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col">
       <AppHeader displayName={displayName} />
@@ -58,16 +61,23 @@ export function LiveClient({
           </div>
 
           {/* Chat body */}
-          <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center overflow-hidden">
-            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg">
-              💬
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Unified chat coming soon</p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-600">
-                Twitch {hasYouTube ? "and YouTube " : ""}chat will appear here in real time
+          <div className="flex-1 overflow-y-auto flex flex-col-reverse px-4 py-2 gap-1">
+            {chatMessages.length === 0 ? (
+              <p className="text-sm text-zinc-400 dark:text-zinc-600 italic text-center py-8">
+                No messages yet — chat will appear here in real time
               </p>
-            </div>
+            ) : (
+              [...chatMessages].reverse().map(msg => (
+                <div key={msg.id} className="flex items-baseline gap-2 py-0.5">
+                  {msg.platform === "youtube"
+                    ? <YouTubeLogo className="w-3.5 h-3.5 shrink-0 text-[#FF0000] self-center" />
+                    : <TwitchLogo className="w-3.5 h-3.5 shrink-0 text-[#9146FF] self-center" />
+                  }
+                  <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 shrink-0">{msg.userDisplayName}</span>
+                  <span className="text-sm text-zinc-600 dark:text-zinc-400 break-words min-w-0">{msg.message}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
