@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  background-color: #ffffff;
+  color: #09090b;
+}
+
+html.dark {
+  background-color: #0a0a0a;
+  color: #ffffff;
+}

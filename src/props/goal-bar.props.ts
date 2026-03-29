@@ -1,0 +1,19 @@
+﻿import {LiveEvent} from "@/types/events";
+import {SubGoal} from "@/types/entities";
+import {SimpleGoal} from "@/types/goal";
+import {StreamInfo} from "@/types/stream";
+
+export type GoalBarProps = {
+    displayName: string
+    twitchLogin: string
+    hasYouTube: boolean
+    hasSpotify: boolean
+    streamInfo: StreamInfo
+    initialEvents: LiveEvent[]
+    subGoal: SubGoal | null
+    subTotal: number
+    followGoal: SimpleGoal | null
+    followTotal: number
+    ytMemberGoal: SimpleGoal | null
+    ytMemberTotal: number
+}
