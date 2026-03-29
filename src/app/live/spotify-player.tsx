@@ -74,7 +74,7 @@ export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
     const pct = nowPlaying.duration > 0 ? (progressMs / nowPlaying.duration) * 100 : 0
 
     return (
-        <div className="flex items-stretch gap-3 h-full">
+        <div className="flex items-stretch gap-3">
             {/* Now playing */}
             <div className="w-[340px] shrink-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 flex flex-col justify-between">
                 <div className="flex items-center gap-2.5">
@@ -103,19 +103,18 @@ export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
 
             {/* Queue */}
             {queue.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 flex flex-col overflow-hidden">
-                    <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1.5 shrink-0">Up next</p>
-                    <div className="flex gap-2 flex-1 min-h-0">
-                        {queue.slice(0, 5).map((item, i) => (
-                            <div key={i} className="flex flex-col flex-1 min-w-0 gap-1">
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 overflow-hidden">
+                    <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1.5">Up next</p>
+                    <div className="flex gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        {queue.map((item, i) => (
+                            <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-24">
                                 {item.albumArt ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={item.albumArt} alt="" className="w-full aspect-square rounded object-cover" />
+                                    <img src={item.albumArt} alt="" className="w-[4.5rem] h-[4.5rem] rounded shrink-0 object-cover" />
                                 ) : (
-                                    <div className="w-full aspect-square rounded bg-zinc-100 dark:bg-zinc-800" />
+                                    <div className="w-[4.5rem] h-[4.5rem] rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
                                 )}
                                 <p className="text-[10px] text-zinc-700 dark:text-zinc-300 truncate w-full text-center leading-tight">{item.track}</p>
-                                <p className="text-[9px] text-zinc-400 dark:text-zinc-600 truncate w-full text-center leading-tight">{item.artist}</p>
                             </div>
                         ))}
                     </div>
