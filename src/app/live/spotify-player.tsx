@@ -109,21 +109,21 @@ export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
 
             {/* Queue */}
             {queue.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 overflow-hidden">
-                    <p className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1.5">Up next</p>
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 min-w-0 flex-1 overflow-hidden flex flex-col justify-between">
                     <div className="flex gap-3 overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {queue.map((item, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-14">
+                            <div key={i} className="flex flex-col items-center gap-1 shrink-0 w-10">
                                 {item.albumArt ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={item.albumArt} alt="" className="w-10 h-10 rounded shrink-0 object-cover" />
+                                    <img src={item.albumArt} alt="" className="w-6 h-6 rounded shrink-0 object-cover" />
                                 ) : (
-                                    <div className="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
+                                    <div className="w-6 h-6 rounded bg-zinc-100 dark:bg-zinc-800 shrink-0" />
                                 )}
                                 <p className="text-[10px] text-zinc-700 dark:text-zinc-300 truncate w-full text-center leading-tight">{item.track}</p>
                             </div>
                         ))}
                     </div>
+                    <div className="h-1 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden mt-2" />
                 </div>
             )}
         </div>
