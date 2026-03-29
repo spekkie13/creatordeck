@@ -20,7 +20,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.twitchClientSecret,
       authorization: {
         params: {
-          scope: "openid user:read:email channel:read:subscriptions moderator:read:followers user:read:chat chat:read",
+          scope: "openid user:read:email channel:read:subscriptions moderator:read:followers user:read:chat chat:read bits:read",
         },
       },
     }),

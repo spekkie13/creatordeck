@@ -1,12 +1,15 @@
 let appAccessToken: string | null = null
 let tokenExpiry = 0
 
+// These require a user access token with the appropriate scope
+const USER_TOKEN_TYPES = new Set(["channel.cheer", "channel.chat.message"])
+
 const APP_SUB_TYPES = [
   { type: "channel.subscribe", version: "1" },
   { type: "channel.subscription.message", version: "1" },
   { type: "channel.subscription.gift", version: "1" },
-  { type: "channel.stream.online", version: "1" },
-  { type: "channel.stream.offline", version: "1" },
+  { type: "stream.online", version: "1" },
+  { type: "stream.offline", version: "1" },
   { type: "channel.follow", version: "2" },
   { type: "channel.cheer", version: "1" },
   { type: "channel.raid", version: "1" },
@@ -101,7 +104,7 @@ class TwitchEventSubService {
     return null
   }
 
-  async registerSubscriptions(broadcasterId: string): Promise<{ id: string; type: string; status: string }[]> {
+  async registerSubscriptions(broadcasterId: string, userToken?: string): Promise<{ id: string; type: string; status: string }[]> {
     const appToken = await this.getAppAccessToken()
     const all = await this.fetchAllByBroadcaster(appToken, broadcasterId)
 
@@ -118,7 +121,8 @@ class TwitchEventSubService {
 
     const results: { id: string; type: string; status: string }[] = []
     for (const { type, version } of APP_SUB_TYPES) {
-      const result = await this.registerSubType(type, version, broadcasterId, appToken, enabled)
+      const token = USER_TOKEN_TYPES.has(type) && userToken ? userToken : appToken
+      const result = await this.registerSubType(type, version, broadcasterId, token, enabled)
       if (result) results.push(result)
     }
 

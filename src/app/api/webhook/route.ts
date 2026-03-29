@@ -59,11 +59,11 @@ export async function POST(req: NextRequest) {
           await subEventsRepository.insert({ broadcasterId, eventId: messageId, gifterId: event.is_anonymous ? null : event.user_id, gifterLogin: event.is_anonymous ? null : event.user_login, gifterDisplayName: event.is_anonymous ? null : event.user_name, tier: event.tier, kind: "community_gift", giftCount: event.total ?? 1, occurredAt })
           break
 
-        case "channel.stream.online":
+        case "stream.online":
           await streamSessionService.handleOnline(broadcasterId, occurredAt)
           break
 
-        case "channel.stream.offline":
+        case "stream.offline":
           await streamSessionService.handleOffline(broadcasterId, occurredAt)
           break
 
