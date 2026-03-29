@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth"
+import {getServerSession, Session} from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { linkedAccountsRepository, goalsRepository } from "@/repositories"
@@ -9,18 +9,21 @@ import { eq, count } from "drizzle-orm"
 import { LiveClient } from "./live-client"
 import {StreamInfo} from "@/types/stream";
 import {streamInfoService} from "@/services/stream-info.service";
+import {LinkedAccount} from "@/types/entities";
+import {PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
+import {GoalRow} from "@/repositories/goals.repository";
 
 export default async function LivePage() {
-  const session = await getServerSession(authOptions)
+  const session: Session | null = await getServerSession(authOptions)
   if (!session) redirect("/")
 
   const broadcasterId = session.twitchId ?? ""
   const youtubeChannelId = session.youtubeChannelId ?? null
 
-  const linkedAccounts = await linkedAccountsRepository.findByUserId(session.userId)
-  const twitchAccount = linkedAccounts.find(a => a.provider === "twitch")
-  const ytAccount = linkedAccounts.find(a => a.provider === "youtube")
-  const spotifyAccount = linkedAccounts.find(a => a.provider === "spotify")
+  const linkedAccounts: LinkedAccount[] = await linkedAccountsRepository.findByUserId(session.userId)
+  const twitchAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_TWITCH)
+  const ytAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
+  const spotifyAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_SPOTIFY)
 
   const [streamInfo, recentEvents, goalRows, extraGoals, followTotalRows, ytMemberTotalRows, subTotalRows] = await Promise.all([
     twitchAccount?.accessToken ? streamInfoService.fetchStreamInfo(broadcasterId, twitchAccount.accessToken) : Promise.resolve<StreamInfo>({ isLive: false, title: null, category: null, viewerCount: null, startedAt: null }),
@@ -33,13 +36,12 @@ export default async function LivePage() {
   ])
 
   const subGoalRow = goalRows[0] ?? null
-  const followGoalRow = extraGoals.find(g => g.type === "twitch_follow") ?? null
-  const ytMemberGoalRow = extraGoals.find(g => g.type === "youtube_member") ?? null
+  const followGoalRow: GoalRow | null = extraGoals.find(g => g.type === "twitch_follow") ?? null
+  const ytMemberGoalRow: GoalRow | null = extraGoals.find(g => g.type === "youtube_member") ?? null
 
   return (
     <LiveClient
       displayName={session.displayName}
-      twitchLogin={twitchAccount?.login ?? session.displayName ?? ""}
       hasYouTube={!!ytAccount}
       hasSpotify={!!spotifyAccount}
       streamInfo={streamInfo}
