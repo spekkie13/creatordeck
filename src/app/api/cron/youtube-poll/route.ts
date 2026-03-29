@@ -4,6 +4,7 @@ import {
   ytSuperChatEventsRepository,
   ytMemberEventsRepository,
   ytStreamSessionsRepository,
+  chatMessagesRepository,
 } from "@/repositories"
 import { env } from "@/lib/env"
 import type { LinkedAccount } from "@/types/entities"
@@ -136,6 +137,19 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
         userDisplayName: (authorDetails?.displayName as string) ?? null,
         memberMonths,
         levelName: (milestoneDetails?.memberLevelName as string) ?? null,
+        occurredAt: new Date(snippet!.publishedAt as string),
+      })
+    } else if (type === "textMessageEvent") {
+      const text = snippet?.displayMessage as string | undefined
+      if (!text) continue
+      await chatMessagesRepository.insert({
+        platform: "youtube",
+        channelId: account.providerAccountId,
+        eventId: msg.id as string,
+        userId: (authorDetails?.channelId as string) ?? null,
+        userLogin: null,
+        userDisplayName: (authorDetails?.displayName as string) ?? null,
+        message: text,
         occurredAt: new Date(snippet!.publishedAt as string),
       })
     }
