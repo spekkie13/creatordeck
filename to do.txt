@@ -1,0 +1,6 @@
+﻿- Make queue cards have a play button (or double-clicking on them starts the song)
+- 3 column layout for /live page
+- small playlist browser for Spotify section?
+- tier-gated platform connect
+- research into overall unfair advantage
+- update static info on specs of the platform
