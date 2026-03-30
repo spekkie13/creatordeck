@@ -40,7 +40,7 @@ export default async function LandingPage() {
       <nav className="sticky top-0 z-30 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-900">
         <div className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
           <CreatorDeckLogo size="sm" />
-           <SignInButton variant="ghost" />
+           {/*<SignInButton variant="ghost" />*/}
         </div>
       </nav>
 
