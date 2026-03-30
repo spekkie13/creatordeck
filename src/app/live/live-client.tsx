@@ -63,7 +63,7 @@ export function LiveClient({
               Unified Chat
             </h2>
             <div className="flex items-center gap-1.5 ml-1">
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-400 font-medium">Twitch</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 font-medium">Twitch</span>
               {hasYouTube && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 font-medium">YouTube</span>}
             </div>
           </div>

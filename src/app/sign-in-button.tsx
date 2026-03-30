@@ -20,7 +20,7 @@ export function SignInButton({ variant = "primary" }: SignInButtonProps) {
     <div className="flex flex-col sm:flex-row items-center gap-3">
       <button
         onClick={() => signIn(PLATFORM_TWITCH, { callbackUrl: "/dashboard" })}
-        className="inline-flex items-center gap-2.5 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm w-full sm:w-auto justify-center"
+        className="inline-flex items-center gap-2.5 bg-purple-500 hover:bg-purple-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors text-sm w-full sm:w-auto justify-center"
       >
         <TwitchLogo className="w-4 h-4" />
         Continue with Twitch

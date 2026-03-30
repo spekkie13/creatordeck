@@ -47,7 +47,7 @@ export function TwitchManage({ webhookUrl, subscriptionsRegistered: initiallyReg
           <button
             onClick={register}
             disabled={registering}
-            className="bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            className="bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
           >
             {registering ? "Registering..." : "Register subscriptions"}
           </button>
