@@ -1,5 +1,6 @@
 "use client"
 
+import { ChatMessage } from "@/types/chat";
 import type { LiveEvent } from "@/types/events"
 import type { StreamInfo } from "@/types/stream"
 import { PLATFORM_YOUTUBE } from "@/types/platform"
@@ -9,7 +10,7 @@ import { TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
 
 import { useStreamEvents } from "@/hooks/use-stream-events"
 import { useStreamInfo } from "@/hooks/use-stream-info"
-import { ChatMessage, useTwitchChat } from "@/hooks/use-twitch-chat"
+import { useTwitchChat } from "@/hooks/use-twitch-chat";
 import { useYouTubeChat } from "@/hooks/use-youtube-chat"
 
 import { ReplayButton } from "@/components/replay-button"

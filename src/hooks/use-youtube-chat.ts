@@ -1,9 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
 import { PLATFORM_YOUTUBE } from "@/types/platform"
-import type { ChatMessage } from "./use-twitch-chat"
+import { ChatMessage } from "@/types/chat";
 
 const MAX_MESSAGES = 200
 

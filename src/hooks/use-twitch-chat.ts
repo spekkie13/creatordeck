@@ -1,14 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
-export type ChatMessage = {
-  id: string
-  platform: "twitch" | "youtube"
-  userDisplayName: string
-  message: string
-  occurredAt: string
-}
+import { ChatMessage } from "@/types/chat";
 
 const MAX_MESSAGES = 200
 
@@ -34,7 +27,7 @@ export function useTwitchChat(channelLogin: string): ChatMessage[] {
 
     const connect = async () => {
       try {
-        const res = await fetch("/api/twitch/chat-auth")
+        const res: Response = await fetch("/api/twitch/chat-auth")
         if (!res.ok) return
         const { token, login } = await res.json() as { token: string; login: string }
 
@@ -78,8 +71,7 @@ export function useTwitchChat(channelLogin: string): ChatMessage[] {
               continue
             }
 
-            // Without tags: :nick!user@host.tmi.twitch.tv PRIVMSG #channel :message
-            const plainMatch = line.match(/^:([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)$/)
+            const plainMatch: RegExpMatchArray | null = line.match(/^:([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)$/)
             if (plainMatch) {
               incoming.push({
                 id: crypto.randomUUID(),
