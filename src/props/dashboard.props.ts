@@ -1,5 +1,6 @@
-﻿import { Session } from "next-auth";
-import { LiveEvent } from "@/types/events";
+﻿import type { Session } from "next-auth"
+
+import type { LiveEvent } from "@/types/events"
 
 export type DashboardProps = {
     session: Session

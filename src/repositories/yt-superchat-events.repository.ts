@@ -1,7 +1,9 @@
 import { and, desc, eq, gt, gte, lte } from "drizzle-orm"
+
+import type { YtSuperChatEvent, InsertYtSuperChatEvent } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { ytSuperChatEvents } from "@/lib/schema"
-import type { YtSuperChatEvent, InsertYtSuperChatEvent } from "@/types/entities"
 
 class YtSuperChatEventsRepository {
   async insert(data: InsertYtSuperChatEvent): Promise<void> {

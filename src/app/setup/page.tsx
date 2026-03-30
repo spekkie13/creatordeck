@@ -1,9 +1,13 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
+
+import type { User } from "@/types/entities"
+
+import { authOptions } from "@/lib/auth"
+
 import { userRepository } from "@/repositories"
+
 import { SetupWizard } from "./setup-wizard"
-import {User} from "@/types/entities";
 
 export default async function SetupPage() {
   const session: Session | null = await getServerSession(authOptions)

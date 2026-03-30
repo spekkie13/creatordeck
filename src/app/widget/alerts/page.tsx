@@ -1,9 +1,14 @@
 "use client"
+
 import { useState, useEffect, useRef, useCallback, MutableRefObject } from "react"
-import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
+
 import type { LiveEvent } from "@/types/events"
-import { alertSubtitle } from "@/services/alerts.service";
-import {ALERT_CONFIG, AlertsType} from "@/services/alerts.types";
+
+import { alertSubtitle } from "@/services/alerts.service"
+import { ALERT_CONFIG } from "@/services/alerts.types"
+import type { AlertsType } from "@/services/alerts.types"
 
 export default function AlertsWidget() {
   const params: ReadonlyURLSearchParams = useSearchParams()

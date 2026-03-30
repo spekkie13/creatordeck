@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 
-export type TwitchChatMessage = {
+export type ChatMessage = {
   id: string
   platform: "twitch" | "youtube"
   userDisplayName: string
@@ -15,14 +15,14 @@ const MAX_MESSAGES = 200
 function parseTags(tagStr: string): Record<string, string> {
   const tags: Record<string, string> = {}
   for (const part of tagStr.split(";")) {
-    const eq = part.indexOf("=")
+    const eq: number = part.indexOf("=")
     if (eq !== -1) tags[part.slice(0, eq)] = part.slice(eq + 1)
   }
   return tags
 }
 
-export function useTwitchChat(channelLogin: string): TwitchChatMessage[] {
-  const [messages, setMessages] = useState<TwitchChatMessage[]>([])
+export function useTwitchChat(channelLogin: string): ChatMessage[] {
+  const [messages, setMessages] = useState<ChatMessage[]>([])
 
   useEffect(() => {
     if (!channelLogin) return
@@ -30,7 +30,7 @@ export function useTwitchChat(channelLogin: string): TwitchChatMessage[] {
     let ws: WebSocket | null = null
     let pingInterval: ReturnType<typeof setInterval> | null = null
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null
-    let unmounted = false
+    let unmounted: boolean = false
 
     const connect = async () => {
       try {
@@ -52,8 +52,8 @@ export function useTwitchChat(channelLogin: string): TwitchChatMessage[] {
         }
 
         ws.onmessage = (event: MessageEvent<string>) => {
-          const lines = event.data.split("\r\n").filter(Boolean)
-          const incoming: TwitchChatMessage[] = []
+          const lines: string[] = event.data.split("\r\n").filter(Boolean)
+          const incoming: ChatMessage[] = []
 
           for (const line of lines) {
             console.log("[TwitchChat]", line)

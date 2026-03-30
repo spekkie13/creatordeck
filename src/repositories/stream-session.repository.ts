@@ -1,7 +1,9 @@
 import { and, eq, isNull } from "drizzle-orm"
+
+import type { StreamSession } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { streamSessions } from "@/lib/schema"
-import type { StreamSession } from "@/types/entities"
 
 class StreamSessionRepository {
   async findOpen(broadcasterId: string): Promise<StreamSession | null> {

@@ -1,9 +1,11 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
+
+import { TIER_LABELS } from "@/lib/gates"
+import { authOptions } from "@/lib/auth"
+
 import { AppHeader } from "@/app/dashboard/app-header"
 import { ApiKeyToggle } from "./api-key-toggle"
-import { TIER_LABELS } from "@/lib/gates"
 
 export default async function AccountPage() {
   const session: Session | null = await getServerSession(authOptions)

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+
+import { env } from "@/lib/env"
 import { authOptions } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
-import { env } from "@/lib/env"
+
 import { userRepository } from "@/repositories"
 
 export async function POST(req: NextRequest) {

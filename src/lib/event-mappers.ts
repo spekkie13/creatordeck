@@ -1,5 +1,6 @@
-import type { cheerEvents, followEvents, raidEvents, subEvents, ytMemberEvents, ytSuperChatEvents } from "@/lib/schema"
 import type { LiveEvent } from "@/types/events"
+
+import type { cheerEvents, followEvents, raidEvents, subEvents, ytMemberEvents, ytSuperChatEvents } from "@/lib/schema"
 
 type SubRow        = typeof subEvents.$inferSelect
 type FollowRow     = typeof followEvents.$inferSelect

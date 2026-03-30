@@ -1,7 +1,9 @@
 import { and, desc, eq, gt, gte, lte } from "drizzle-orm"
+
+import type { CheerEvent, InsertCheerEvent } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { cheerEvents } from "@/lib/schema"
-import type { CheerEvent, InsertCheerEvent } from "@/types/entities"
 
 class CheerEventsRepository {
   async insert(data: InsertCheerEvent): Promise<void> {

@@ -1,7 +1,9 @@
 import { and, eq, desc, gt, gte, lte, sql, isNotNull } from "drizzle-orm"
+
+import type { SubEvent, InsertSubEvent } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { subEvents } from "@/lib/schema"
-import type { SubEvent, InsertSubEvent } from "@/types/entities"
 
 class SubEventsRepository {
   async insert(data: InsertSubEvent): Promise<void> {

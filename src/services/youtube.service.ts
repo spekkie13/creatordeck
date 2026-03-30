@@ -1,4 +1,4 @@
-﻿import { linkedAccountsRepository } from "@/repositories";
+﻿import { linkedAccountsRepository } from "@/repositories"
 
 class YoutubeService {
     async fetchYouTubeSubCount(

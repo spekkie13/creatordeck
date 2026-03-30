@@ -1,6 +1,9 @@
 "use client"
+
 import { useState } from "react"
+
 import type { LiveEvent, LiveEventType } from "@/types/events"
+
 import { TYPE_BADGE, TYPE_ICON, TYPE_FILTER_STYLE } from "@/lib/event-types"
 import { formatAmount, formatRelativeTime } from "@/lib/format"
 

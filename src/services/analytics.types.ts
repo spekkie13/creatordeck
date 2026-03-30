@@ -1,4 +1,4 @@
-﻿import {LiveEvent} from "@/types/events";
+﻿import type { LiveEvent } from "@/types/events"
 
 export type AnalyticsTotals = {
     follows: number

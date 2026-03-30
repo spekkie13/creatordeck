@@ -1,4 +1,4 @@
-﻿import type {SubscriptionTier} from "@/lib/gates";
+﻿import type { SubscriptionTier } from "@/lib/gates"
 
 export type PricingCardProps = {
     currentTier: SubscriptionTier

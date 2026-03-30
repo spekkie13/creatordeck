@@ -1,13 +1,18 @@
 "use client"
+
 import { useState } from "react"
+
 import { TIER_LABELS, TIER_MONTHLY_PRICES, TIER_ANNUAL_PRICES } from "@/lib/gates"
 import type { SubscriptionTier } from "@/lib/gates"
+
+import type { PricingCardProps } from "@/props/pricing-card.props"
+import { PAID_TIERS, TIER_FEATURES } from "@/constants/billing"
+import type { BillingCycle, PaidTier } from "@/constants/billing"
+
 import { WaitlistModal } from "@/app/billing/waitlist-modal"
-import {Spinner} from "@/app/billing/spinner";
-import {Feature} from "@/app/billing/feature";
-import {CurrentPlanBadge} from "@/app/billing/current-plan-badge";
-import {PricingCardProps} from "@/props/pricing-card.props";
-import {BillingCycle, PAID_TIERS, PaidTier, TIER_FEATURES} from "@/constants/billing";
+import { Spinner } from "@/app/billing/spinner"
+import { Feature } from "@/app/billing/feature"
+import { CurrentPlanBadge } from "@/app/billing/current-plan-badge"
 
 
 export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitchLogin, prices }: PricingCardProps) {

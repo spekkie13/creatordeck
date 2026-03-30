@@ -1,7 +1,9 @@
-﻿import type {AnalyticsSession} from "@/services";
-import {formatDateShort, formatDuration} from "@/lib/format";
-import {CHART_COLORS} from "@/lib/chart-config";
-import Link from "next/link";
+﻿import Link from "next/link"
+
+import type { AnalyticsSession } from "@/services"
+
+import { CHART_COLORS } from "@/lib/chart-config"
+import { formatDateShort, formatDuration } from "@/lib/format"
 
 export function SessionsTable({ sessions }: { sessions: AnalyticsSession[] }) {
     if (sessions.length === 0) {

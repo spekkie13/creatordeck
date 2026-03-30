@@ -1,4 +1,4 @@
-﻿import {ConnectionRowProps} from "@/props/connection-row.props";
+﻿import type { ConnectionRowProps } from "@/props/connection-row.props"
 
 export function ConnectionRow({ name, description, connected, logo, detail, comingSoon, connectButton, disconnectButton, children }: ConnectionRowProps) {
     return (

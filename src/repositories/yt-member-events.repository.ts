@@ -1,7 +1,9 @@
 import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm"
+
+import type { YtMemberEvent, InsertYtMemberEvent } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { ytMemberEvents } from "@/lib/schema"
-import type { YtMemberEvent, InsertYtMemberEvent } from "@/types/entities"
 
 class YtMemberEventsRepository {
   async insert(data: InsertYtMemberEvent): Promise<void> {

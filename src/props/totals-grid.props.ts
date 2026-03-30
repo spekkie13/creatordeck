@@ -1,5 +1,5 @@
-﻿import type {AnalyticsTotals} from "@/services";
-import {EventTypeKey} from "@/constants/analytics";
+﻿import type { AnalyticsTotals } from "@/services"
+import type { EventTypeKey } from "@/constants/analytics"
 
 export type TotalsGridProps = {
     totals: AnalyticsTotals

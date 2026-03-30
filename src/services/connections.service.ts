@@ -1,4 +1,4 @@
-﻿import {LINK_ERRORS} from "@/constants/errors";
+﻿import { LINK_ERRORS } from "@/constants/errors"
 
 export function fromSearchError(error: string): string {
     switch (error) {

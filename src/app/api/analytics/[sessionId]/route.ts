@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import {getServerSession, Session} from "next-auth"
+import { getServerSession, Session } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
+
 import { analyticsService } from "@/services"
-import {SessionDetail} from "@/services/analytics.types";
+import type { SessionDetail } from "@/services/analytics.types"
 
 export async function GET(
   _req: NextRequest,

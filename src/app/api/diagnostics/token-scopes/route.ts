@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { linkedAccountsRepository } from "@/repositories"
+
 import { PLATFORM_TWITCH } from "@/types/platform"
+
+import { authOptions } from "@/lib/auth"
+
+import { linkedAccountsRepository } from "@/repositories"
 
 export async function GET() {
   const session = await getServerSession(authOptions)

@@ -1,5 +1,7 @@
 "use client"
+
 import React, { useState } from "react"
+
 import type { LiveEvent } from "@/types/events"
 
 export function ReplayButton({ event }: { event: LiveEvent }) {

@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server"
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
+
 import { liveEventFeedService } from "@/services"
 
 const POLL_INTERVAL_MS = 3000

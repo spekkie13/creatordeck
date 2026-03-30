@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+
 import { env } from "@/lib/env"
+import { authOptions } from "@/lib/auth"
 
 async function getAppToken(): Promise<string> {
   const res = await fetch(

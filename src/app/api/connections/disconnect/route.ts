@@ -1,5 +1,7 @@
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
+
 import { linkedAccountsRepository } from "@/repositories"
 
 export async function POST(req: Request) {

@@ -1,8 +1,11 @@
 "use client"
+
 import { signIn } from "next-auth/react"
-import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos";
-import { SignInButtonProps } from "@/props/sign-in-button.props";
-import {PLATFORM_TWITCH} from "@/types/platform";
+
+import type { SignInButtonProps } from "@/props/sign-in-button.props"
+import { PLATFORM_TWITCH } from "@/types/platform"
+
+import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
 
 export function SignInButton({ variant = "primary" }: SignInButtonProps) {
   if (variant === "ghost") {

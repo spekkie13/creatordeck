@@ -1,8 +1,10 @@
 "use client"
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+
 import { CreatorDeckLogo } from "@/components/creator-deck-logo"
-import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 type Props = {
   displayName: string

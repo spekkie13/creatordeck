@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+
 import { userRepository, linkedAccountsRepository } from "@/repositories"
+
 import { widgetGoalService } from "@/services"
 
 export async function GET(req: NextRequest) {

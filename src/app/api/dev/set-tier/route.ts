@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+import { eq } from "drizzle-orm"
+
+import type { SubscriptionTier } from "@/lib/gates"
 import { authOptions } from "@/lib/auth"
-import { userRepository } from "@/repositories"
 import { db } from "@/lib/db"
 import { users } from "@/lib/schema"
-import { eq } from "drizzle-orm"
-import type { SubscriptionTier } from "@/lib/gates"
+
+import { userRepository } from "@/repositories"
 
 const VALID_TIERS: SubscriptionTier[] = ["free", "tier1", "tier2", "tier3"]
 

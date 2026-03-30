@@ -1,10 +1,13 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
-import { AppHeader } from "@/app/dashboard/app-header"
+
 import { TIER_LABELS } from "@/lib/gates"
 import { env } from "@/lib/env"
+import { authOptions } from "@/lib/auth"
+
 import { userRepository } from "@/repositories"
+
+import { AppHeader } from "@/app/dashboard/app-header"
 import { PricingCards } from "./pricing-cards"
 
 export default async function BillingPage() {

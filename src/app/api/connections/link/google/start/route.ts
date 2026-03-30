@@ -1,8 +1,9 @@
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { env } from "@/lib/env"
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
 import { randomBytes, createHash } from "crypto"
+
+import { env } from "@/lib/env"
+import { authOptions } from "@/lib/auth"
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!.replace(/\/$/, "")
 

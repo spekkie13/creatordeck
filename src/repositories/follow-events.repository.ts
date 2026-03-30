@@ -1,7 +1,9 @@
 import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm"
+
+import type { FollowEvent, InsertFollowEvent } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { followEvents } from "@/lib/schema"
-import type { FollowEvent, InsertFollowEvent } from "@/types/entities"
 
 class FollowEventsRepository {
   async insert(data: InsertFollowEvent): Promise<void> {

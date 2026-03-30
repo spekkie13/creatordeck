@@ -1,29 +1,36 @@
 "use client"
-import { TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
-import { useStreamEvents } from "@/hooks/use-stream-events"
-import { ReplayButton } from "@/components/replay-button"
+
 import type { LiveEvent } from "@/types/events"
-import {AppHeader} from "@/app/dashboard/app-header";
-import {SpotifyPlayer} from "@/app/live/spotify-player";
-import {GoalBar} from "@/app/live/goal-bar";
-import {LiveBadge} from "@/app/live/live-badge";
-import {GoalBarProps} from "@/props/goal-bar.props";
-import {formatUptime} from "@/lib/format";
-import {TwitchChatMessage, useTwitchChat} from "@/hooks/use-twitch-chat";
-import {useYouTubeChat} from "@/hooks/use-youtube-chat";
-import {useStreamInfo} from "@/hooks/use-stream-info";
-import {TwitchLogo, YouTubeLogo} from "@/components/platform-logos";
+import type { StreamInfo } from "@/types/stream"
+import { PLATFORM_YOUTUBE } from "@/types/platform"
+
+import { formatUptime } from "@/lib/format"
+import { TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
+
+import { useStreamEvents } from "@/hooks/use-stream-events"
+import { useStreamInfo } from "@/hooks/use-stream-info"
+import { ChatMessage, useTwitchChat } from "@/hooks/use-twitch-chat"
+import { useYouTubeChat } from "@/hooks/use-youtube-chat"
+
+import { ReplayButton } from "@/components/replay-button"
+import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
+
+import { AppHeader } from "@/app/dashboard/app-header"
+import type { GoalBarProps } from "@/props/goal-bar.props"
+import { GoalBar } from "@/app/live/goal-bar"
+import { LiveBadge } from "@/app/live/live-badge"
+import { SpotifyPlayer } from "@/app/live/spotify-player"
 
 export function LiveClient({
   displayName, twitchLogin, hasYouTube, hasSpotify, initialStreamInfo, initialEvents,
   subGoal, subTotal, followGoal, followTotal, ytMemberGoal, ytMemberTotal,
 }: GoalBarProps) {
   const events: LiveEvent[] = useStreamEvents(initialEvents)
-  const streamInfo = useStreamInfo(initialStreamInfo)
+  const streamInfo: StreamInfo = useStreamInfo(initialStreamInfo)
 
-  const twitchMessages: TwitchChatMessage[] = useTwitchChat(twitchLogin)
-  const youtubeMessages: TwitchChatMessage[] = useYouTubeChat(hasYouTube)
-  const chatMessages = [...twitchMessages, ...youtubeMessages]
+  const twitchMessages: ChatMessage[] = useTwitchChat(twitchLogin)
+  const youtubeMessages: ChatMessage[] = useYouTubeChat(hasYouTube)
+  const chatMessages: ChatMessage[] = [...twitchMessages, ...youtubeMessages]
     .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
 
   return (
@@ -75,9 +82,9 @@ export function LiveClient({
                 No messages yet — chat will appear here in real time
               </p>
             ) : (
-              [...chatMessages].reverse().map(msg => (
+              [...chatMessages].reverse().map((msg: ChatMessage) => (
                 <div key={msg.id} className="flex items-baseline gap-2 py-0.5">
-                  {msg.platform === "youtube"
+                  {msg.platform === PLATFORM_YOUTUBE
                     ? <YouTubeLogo className="w-3.5 h-3.5 shrink-0 text-[#FF0000] self-center" />
                     : <TwitchLogo className="w-3.5 h-3.5 shrink-0 text-[#9146FF] self-center" />
                   }

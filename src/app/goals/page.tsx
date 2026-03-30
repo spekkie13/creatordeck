@@ -1,14 +1,19 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
+
+import { eq, count } from "drizzle-orm"
+
+import type { LinkedAccount } from "@/types/entities"
+import type { GoalRow } from "@/repositories/goals.repository"
+
 import { db } from "@/lib/db"
 import { subEvents, subGoals, followEvents, ytMemberEvents } from "@/lib/schema"
-import { eq, count } from "drizzle-orm"
-import { AppHeader } from "@/app/dashboard/app-header"
+import { authOptions } from "@/lib/auth"
+
 import { linkedAccountsRepository, goalsRepository } from "@/repositories"
+
+import { AppHeader } from "@/app/dashboard/app-header"
 import { GoalsClient } from "./goals-client"
-import {LinkedAccount} from "@/types/entities";
-import {GoalRow} from "@/repositories/goals.repository";
 
 export default async function GoalsPage() {
   const session: Session | null = await getServerSession(authOptions)

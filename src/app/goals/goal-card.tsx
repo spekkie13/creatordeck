@@ -1,6 +1,10 @@
-﻿import {GoalCardProps} from "@/props/goal-card.props";
-import {useState} from "react";
-import {toDateInputValue} from "@/lib/format";
+﻿"use client"
+
+import { useState } from "react"
+
+import { toDateInputValue } from "@/lib/format"
+
+import type { GoalCardProps } from "@/props/goal-card.props"
 
 export function GoalCard({ label, logo, total, savedGoal, endsAt, accentColor, apiType, initialCount = 0 }: GoalCardProps) {
     const defaultGoal: number = savedGoal ?? 100

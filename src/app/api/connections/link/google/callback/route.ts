@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { linkedAccountsRepository } from "@/repositories"
+
 import { env } from "@/lib/env"
+
+import { linkedAccountsRepository } from "@/repositories"
 
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!
 

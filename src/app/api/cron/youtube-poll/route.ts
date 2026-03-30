@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server"
+
+import type { LinkedAccount } from "@/types/entities"
+
+import { env } from "@/lib/env"
+
 import {
   linkedAccountsRepository,
   ytSuperChatEventsRepository,
@@ -6,8 +11,6 @@ import {
   ytStreamSessionsRepository,
   chatMessagesRepository,
 } from "@/repositories"
-import { env } from "@/lib/env"
-import type { LinkedAccount } from "@/types/entities"
 
 export const runtime = "nodejs"
 export const maxDuration = 60

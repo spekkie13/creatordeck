@@ -1,7 +1,10 @@
 import { NextRequest } from "next/server"
-import { userRepository, linkedAccountsRepository, eventReplaysRepository } from "@/repositories"
-import { liveEventFeedService } from "@/services"
+
 import type { LiveEvent } from "@/types/events"
+
+import { userRepository, linkedAccountsRepository, eventReplaysRepository } from "@/repositories"
+
+import { liveEventFeedService } from "@/services"
 
 const POLL_INTERVAL_MS = 3000
 

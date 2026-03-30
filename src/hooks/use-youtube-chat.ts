@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { TwitchChatMessage } from "./use-twitch-chat"
+
+import { PLATFORM_YOUTUBE } from "@/types/platform"
+import type { ChatMessage } from "./use-twitch-chat"
 
 const MAX_MESSAGES = 200
 
-export function useYouTubeChat(enabled: boolean): TwitchChatMessage[] {
-  const [messages, setMessages] = useState<TwitchChatMessage[]>([])
+export function useYouTubeChat(enabled: boolean): ChatMessage[] {
+  const [messages, setMessages] = useState<ChatMessage[]>([])
 
   useEffect(() => {
     if (!enabled) return
@@ -21,9 +23,9 @@ export function useYouTubeChat(enabled: boolean): TwitchChatMessage[] {
           message: string
           occurredAt: string
         }>
-        const incoming: TwitchChatMessage[] = rows.map(r => ({
+        const incoming: ChatMessage[] = rows.map(r => ({
           id: r.id,
-          platform: "youtube" as const,
+          platform: PLATFORM_YOUTUBE,
           userDisplayName: r.userDisplayName ?? "Unknown",
           message: r.message,
           occurredAt: r.occurredAt,

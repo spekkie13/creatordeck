@@ -1,7 +1,9 @@
-﻿import { EVENT_COLORS } from "@/constants/colors";
-import { formatSuperchatTotal } from "@/lib/format";
-import { AnalyticsTotals } from "@/services";
-import { StatCard } from "@/app/analytics/[sessionId]/StatCard";
+﻿import type { AnalyticsTotals } from "@/services"
+
+import { EVENT_COLORS } from "@/constants/colors"
+import { formatSuperchatTotal } from "@/lib/format"
+
+import { StatCard } from "@/app/analytics/[sessionId]/StatCard"
 
 export function TotalsRow({ totals }: { totals: AnalyticsTotals }) {
     return (

@@ -1,10 +1,13 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { WaitlistForm } from "./waitlist-form"
-import { SignInButton } from "./sign-in-button"
+
+import { authOptions } from "@/lib/auth"
+
 import { CreatorDeckLogo } from "@/components/creator-deck-logo"
 import { ScreenshotCarousel } from "@/components/screenshot-carousel"
+
+import { SignInButton } from "./sign-in-button"
+import { WaitlistForm } from "./waitlist-form"
 
 const FEATURES = [
   {

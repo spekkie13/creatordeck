@@ -1,14 +1,18 @@
 "use client"
+
 import { useState, useCallback } from "react"
+
+import type { AnalyticsOverview } from "@/services"
+
+import type { AnalyticsClientProps } from "@/props/analytics-client.props"
+import { GATED_RANGES, RANGE_LABELS } from "@/constants/analytics"
+import type { ChartTab, EventTypeKey, Range } from "@/constants/analytics"
+
 import { AppHeader } from "@/app/dashboard/app-header"
 import { UpgradeModal } from "@/app/billing/upgrade-modal"
-import type { AnalyticsOverview } from "@/services"
-import {ChartTab, EventTypeKey, GATED_RANGES, RANGE_LABELS} from "@/constants/analytics";
-import {AnalyticsClientProps} from "@/props/analytics-client.props";
-import {TotalsGrid} from "@/app/analytics/TotalsGrid";
-import {ActivityChart, RevenueChart} from "@/app/analytics/Charts";
-import {SessionsTable} from "@/app/analytics/SessionsTable";
-import type { Range } from "@/constants/analytics";
+import { TotalsGrid } from "@/app/analytics/TotalsGrid"
+import { ActivityChart, RevenueChart } from "@/app/analytics/Charts"
+import { SessionsTable } from "@/app/analytics/SessionsTable"
 
 export function AnalyticsClient({
   initialData,

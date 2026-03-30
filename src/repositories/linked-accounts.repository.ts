@@ -1,8 +1,10 @@
 import { and, eq, isNotNull } from "drizzle-orm"
 import { randomBytes } from "crypto"
+
+import type { LinkedAccount } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { users, linkedAccounts } from "@/lib/schema"
-import type { LinkedAccount } from "@/types/entities"
 
 class LinkedAccountsRepository {
   async findByProvider(provider: string, providerAccountId: string): Promise<LinkedAccount | null> {

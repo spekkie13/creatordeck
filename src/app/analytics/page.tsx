@@ -1,8 +1,12 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
-import {AnalyticsOverview, analyticsService} from "@/services"
+
+import { authOptions } from "@/lib/auth"
 import { hasAccess } from "@/lib/gates"
+
+import { analyticsService } from "@/services"
+import type { AnalyticsOverview } from "@/services"
+
 import { AnalyticsClient } from "./analytics-client"
 
 export default async function AnalyticsPage() {

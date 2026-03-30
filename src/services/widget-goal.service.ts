@@ -1,6 +1,8 @@
-import { subEventsRepository, followEventsRepository, ytMemberEventsRepository, subGoalsRepository, goalsRepository } from "@/repositories"
 import type { GoalType } from "@/repositories/goals.repository"
-import {WidgetGoalData} from "@/services/widget-goal.types";
+
+import { subEventsRepository, followEventsRepository, ytMemberEventsRepository, subGoalsRepository, goalsRepository } from "@/repositories"
+
+import type { WidgetGoalData } from "@/services/widget-goal.types"
 
 class WidgetGoalService {
   async getGoalData(

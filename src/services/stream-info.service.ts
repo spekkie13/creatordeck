@@ -1,4 +1,4 @@
-﻿import {StreamInfo} from "@/types/stream";
+﻿import type { StreamInfo } from "@/types/stream"
 
 export class StreamInfoService {
     async fetchStreamInfo(broadcasterId: string, accessToken: string): Promise<StreamInfo> {

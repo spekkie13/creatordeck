@@ -1,10 +1,13 @@
 "use client"
+
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
-import {ReadonlyURLSearchParams, useRouter, useSearchParams} from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+
 import { TIER_LABELS } from "@/lib/gates"
 import type { SubscriptionTier } from "@/lib/gates"
-import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export default function BillingSuccessPage() {
   const { update } = useSession()

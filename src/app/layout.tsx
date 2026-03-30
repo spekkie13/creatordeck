@@ -1,10 +1,14 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import "./globals.css"
-import { SessionProvider } from "./session-provider"
-import { ThemeProvider } from "@/components/theme-provider"
 import { getServerSession } from "next-auth"
+
+import "./globals.css"
+
 import { authOptions } from "@/lib/auth"
+
+import { ThemeProvider } from "@/components/theme-provider"
+
+import { SessionProvider } from "./session-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 

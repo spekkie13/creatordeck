@@ -1,21 +1,27 @@
 import { getServerSession, Session } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
+
+import type { LinkedAccount } from "@/types/entities"
+import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
+
+import { authOptions } from "@/lib/auth"
+
+import { eventSubSubscriptionsRepository, linkedAccountsRepository, ytStreamSessionsRepository } from "@/repositories"
+
+import { fromSearchError } from "@/services/connections.service"
+
 import {
   SpotifyLogo,
   TwitchLogo, TwitchManage,
   WidgetTokenSection,
   YouTubeConnectButton, YouTubeLogo, YouTubeManage
 } from "@/components"
-import { eventSubSubscriptionsRepository, linkedAccountsRepository, ytStreamSessionsRepository } from "@/repositories"
-import { LinkedAccount } from "@/types/entities";
-import { fromSearchError } from "@/services/connections.service";
-import {PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
-import {ConnectionsUpdater} from "@/app/connections/connections-updater";
-import {ConnectionRow} from "@/app/connections/connection-row";
-import {AppHeader} from "@/app/dashboard/app-header";
-import {DisconnectButton} from "@/app/connections/disconnect-button";
-import {SpotifyConnectButton} from "@/app/connections/spotify-connect";
+
+import { AppHeader } from "@/app/dashboard/app-header"
+import { ConnectionsUpdater } from "@/app/connections/connections-updater"
+import { ConnectionRow } from "@/app/connections/connection-row"
+import { DisconnectButton } from "@/app/connections/disconnect-button"
+import { SpotifyConnectButton } from "@/app/connections/spotify-connect"
 
 export default async function ConnectionsPage({ searchParams }: {
   searchParams: { error?: string; linked?: string }

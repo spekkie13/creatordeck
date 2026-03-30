@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
-import { goalsRepository, type GoalType } from "@/repositories/goals.repository"
+
+import { goalsRepository } from "@/repositories/goals.repository"
+import type { GoalType } from "@/repositories/goals.repository"
 
 const VALID_TYPES: GoalType[] = ["twitch_follow", "youtube_member"]
 

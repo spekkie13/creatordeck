@@ -1,4 +1,4 @@
-﻿import {FeatureRowProps} from "@/props/feature-row.props";
+﻿import type { FeatureRowProps } from "@/props/feature-row.props"
 
 export function FeatureRow({ name, description, enabled = false, comingSoon }: FeatureRowProps) {
     return (

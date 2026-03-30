@@ -1,7 +1,9 @@
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
-import { linkedAccountsRepository } from "@/repositories"
 import { spotifyFetch } from "@/lib/spotify"
+
+import { linkedAccountsRepository } from "@/repositories"
 
 type Action = "play" | "pause" | "skip" | "previous" | "volume"
 

@@ -1,7 +1,10 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { eventReplaysRepository } from "@/repositories"
+
 import type { LiveEvent } from "@/types/events"
+
+import { authOptions } from "@/lib/auth"
+
+import { eventReplaysRepository } from "@/repositories"
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)

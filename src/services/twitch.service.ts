@@ -24,4 +24,4 @@
     }
 }
 
-export const twitchService = new TwitchService();
+export const twitchService = new TwitchService()

@@ -1,17 +1,23 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
-import { linkedAccountsRepository, goalsRepository, streamSessionRepository } from "@/repositories"
-import { liveEventFeedService } from "@/services"
+
+import { eq, count } from "drizzle-orm"
+
+import type { StreamInfo } from "@/types/stream"
+import type { LinkedAccount } from "@/types/entities"
+import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
+
 import { db } from "@/lib/db"
 import { subGoals, subEvents, ytMemberEvents, followEvents } from "@/lib/schema"
-import { eq, count } from "drizzle-orm"
+import { authOptions } from "@/lib/auth"
+
+import { linkedAccountsRepository, goalsRepository, streamSessionRepository } from "@/repositories"
+import type { GoalRow } from "@/repositories/goals.repository"
+
+import { liveEventFeedService } from "@/services"
+import { streamInfoService } from "@/services/stream-info.service"
+
 import { LiveClient } from "./live-client"
-import {StreamInfo} from "@/types/stream";
-import {streamInfoService} from "@/services/stream-info.service";
-import {LinkedAccount} from "@/types/entities";
-import {PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
-import {GoalRow} from "@/repositories/goals.repository";
 
 export default async function LivePage() {
   const session: Session | null = await getServerSession(authOptions)

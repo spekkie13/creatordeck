@@ -1,8 +1,10 @@
-﻿import {DayBucket} from "@/services";
-import {Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis} from "recharts";
-import {EventTypeKey} from "@/constants/analytics";
-import {formatAxisDate, formatDateShort} from "@/lib/format";
-import {CHART_COLORS, CHART_TOOLTIP_STYLE} from "@/lib/chart-config";
+﻿import { Bar, BarChart, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
+
+import type { DayBucket } from "@/services"
+import type { EventTypeKey } from "@/constants/analytics"
+
+import { CHART_COLORS, CHART_TOOLTIP_STYLE } from "@/lib/chart-config"
+import { formatAxisDate, formatDateShort } from "@/lib/format"
 
 export function ActivityChart({ data, selected }: { data: DayBucket[]; selected: Set<EventTypeKey> }) {
     const show = (k: EventTypeKey) => selected.size === 0 || selected.has(k)

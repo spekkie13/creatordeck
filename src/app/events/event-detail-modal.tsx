@@ -1,9 +1,13 @@
-﻿import {useEffect} from "react";
-import {LiveEvent} from "@/types/events";
-import {SUB_KIND_LABEL, TWITCH_TIER_LABEL, TYPE_BADGE, TYPE_ICON} from "@/lib/event-types";
-import {formatAmount} from "@/lib/format";
-import {TwitchLogo, YouTubeLogo} from "@/components/platform-logos";
-import {DetailRow} from "@/app/events/detail-row";
+﻿import { useEffect } from "react"
+
+import type { LiveEvent } from "@/types/events"
+
+import { SUB_KIND_LABEL, TWITCH_TIER_LABEL, TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
+import { formatAmount } from "@/lib/format"
+
+import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
+
+import { DetailRow } from "@/app/events/detail-row"
 
 export function EventDetailModal({ event, onClose }: { event: LiveEvent; onClose: () => void }) {
     useEffect(() => {

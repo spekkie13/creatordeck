@@ -1,7 +1,9 @@
 "use client"
+
 import { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
+
 import { TIER_LABELS, TIER_PRICES } from "@/lib/gates"
 import type { SubscriptionTier } from "@/lib/gates"
 

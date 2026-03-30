@@ -1,9 +1,11 @@
 "use client"
+
 import { useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import {DisconnectButtonProps} from "@/props/disconnect-button.props";
-import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+
+import type { DisconnectButtonProps } from "@/props/disconnect-button.props"
 
 export function DisconnectButton({ provider }: DisconnectButtonProps) {
   const { update } = useSession()

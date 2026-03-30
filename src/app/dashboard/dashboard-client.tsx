@@ -1,13 +1,20 @@
 "use client"
-import { useStreamEvents } from "@/hooks/use-stream-events"
+
 import Link from "next/link"
-import { AppHeader } from "@/app/dashboard/app-header"
-import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
+
+import type { LiveEvent, LiveEventType } from "@/types/events"
+
+import { STATUS_CONFIG } from "@/constants/dashboard"
+import type { PlatformStatusInfo, StatusInfo, StatusVariant } from "@/constants/dashboard"
 import { TYPE_BADGE, TYPE_ICON } from "@/lib/event-types"
 import { formatAmount, formatCount, greeting } from "@/lib/format"
-import type { LiveEvent, LiveEventType } from "@/types/events"
-import {DashboardProps} from "@/props/dashboard.props";
-import {PlatformStatusInfo, STATUS_CONFIG, StatusInfo, StatusVariant} from "@/constants/dashboard";
+
+import { useStreamEvents } from "@/hooks/use-stream-events"
+
+import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
+
+import type { DashboardProps } from "@/props/dashboard.props"
+import { AppHeader } from "@/app/dashboard/app-header"
 
 export function DashboardClient({
   session, goal, initialCount, endsAt, total, initialEvents,

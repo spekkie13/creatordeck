@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { analyticsService } from "@/services"
+import { getServerSession, Session } from "next-auth"
+
 import { hasAccess } from "@/lib/gates"
-import {AnalyticsOverview} from "@/services/analytics.types";
+import { authOptions } from "@/lib/auth"
+
+import { analyticsService } from "@/services"
+import type { AnalyticsOverview } from "@/services/analytics.types"
 
 const RANGES = { "7d": 7, "30d": 30, "90d": 90 } as const
 type Range = keyof typeof RANGES

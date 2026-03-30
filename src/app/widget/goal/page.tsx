@@ -1,8 +1,12 @@
 "use client"
+
 import { useEffect, useState, useCallback } from "react"
-import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation"
-import { PLATFORM_COLOR } from "@/constants/colors";
-import { WidgetGoalData } from "@/services/widget-goal.types";
+import { useSearchParams } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
+
+import { PLATFORM_COLOR } from "@/constants/colors"
+
+import type { WidgetGoalData } from "@/services/widget-goal.types"
 
 export default function GoalWidget() {
   const params: ReadonlyURLSearchParams = useSearchParams()

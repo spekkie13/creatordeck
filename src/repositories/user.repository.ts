@@ -1,8 +1,10 @@
 import { eq } from "drizzle-orm"
+
+import type { User } from "@/types/entities"
+import type { StripeInfo } from "@/types/stripeInfo"
+
 import { db } from "@/lib/db"
 import { users } from "@/lib/schema"
-import type { User } from "@/types/entities"
-import {StripeInfo} from "@/types/stripeInfo";
 
 class UserRepository {
   async findById(id: string): Promise<User | null> {

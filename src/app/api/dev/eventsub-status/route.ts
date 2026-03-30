@@ -1,7 +1,9 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { linkedAccountsRepository } from "@/repositories"
+
 import { env } from "@/lib/env"
+import { authOptions } from "@/lib/auth"
+
+import { linkedAccountsRepository } from "@/repositories"
 
 async function getAppToken(): Promise<string> {
   const res = await fetch(

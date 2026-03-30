@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server"
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { userRepository } from "@/repositories"
+import { getServerSession, Session } from "next-auth"
+
 import type { User } from "@/types/entities"
+
+import { authOptions } from "@/lib/auth"
+
+import { userRepository } from "@/repositories"
 
 export async function GET(): Promise<NextResponse<{error: string }> | NextResponse<{token: string}>> {
   const session: Session | null = await getServerSession(authOptions)

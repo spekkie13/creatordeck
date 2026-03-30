@@ -1,10 +1,13 @@
 "use client"
+
 import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+
 import { CreatorDeckLogo, ThemeToggle } from "@/components"
-import {FeedbackButton} from "@/app/dashboard/feedback-button";
+
+import { FeedbackButton } from "@/app/dashboard/feedback-button"
 
 type Props = {
   displayName: string

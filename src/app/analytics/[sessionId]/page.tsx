@@ -1,13 +1,18 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
-import {analyticsService, SessionDetail} from "@/services"
-import { AppHeader } from "@/app/dashboard/app-header"
+
 import type { LiveEventType } from "@/types/events"
+
+import { authOptions } from "@/lib/auth"
+import { formatDuration } from "@/lib/format"
+
+import { analyticsService } from "@/services"
+import type { SessionDetail } from "@/services"
+
+import { AppHeader } from "@/app/dashboard/app-header"
+import { TotalsRow } from "@/app/analytics/[sessionId]/TotalsRow"
 import { SessionTimeline } from "./session-timeline"
-import {TotalsRow} from "@/app/analytics/[sessionId]/TotalsRow";
-import {formatDuration} from "@/lib/format";
 
 export default async function SessionDetailPage({ params }: { params: { sessionId: string } }) {
   const session: Session | null = await getServerSession(authOptions)

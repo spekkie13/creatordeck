@@ -1,8 +1,11 @@
 "use client"
+
 import Link from "next/link"
-import {TwitchLogo, YouTubeLogo} from "@/components";
-import {GoalsClientProps} from "@/props/goals-client.props";
-import {GoalCard} from "@/app/goals/goal-card";
+
+import { TwitchLogo, YouTubeLogo } from "@/components"
+
+import type { GoalsClientProps } from "@/props/goals-client.props"
+import { GoalCard } from "@/app/goals/goal-card"
 
 export function GoalsClient({
   subGoal, subInitialCount, subEndsAt, subTotal,

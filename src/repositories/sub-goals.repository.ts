@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm"
+
+import type { SubGoal } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { subGoals } from "@/lib/schema"
-import type { SubGoal } from "@/types/entities"
 
 class SubGoalsRepository {
   async findByBroadcasterId(broadcasterId: string): Promise<SubGoal | null> {

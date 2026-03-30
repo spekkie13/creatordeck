@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm"
+
+import type { InsertEventSubSubscription } from "@/types/entities"
+
 import { db } from "@/lib/db"
 import { eventsubSubscriptions } from "@/lib/schema"
-import type { InsertEventSubSubscription } from "@/types/entities"
 
 class EventSubSubscriptionsRepository {
   async insert(data: InsertEventSubSubscription): Promise<void> {

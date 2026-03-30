@@ -1,6 +1,8 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
+
+import { authOptions } from "@/lib/auth"
+
 import { EventsClient } from "./events-client"
 
 export default async function EventsPage() {

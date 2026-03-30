@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { linkedAccountsRepository } from "@/repositories"
-import { streamInfoService } from "@/services/stream-info.service"
+
 import type { StreamInfo } from "@/types/stream"
 import { PLATFORM_TWITCH } from "@/types/platform"
+
+import { authOptions } from "@/lib/auth"
+
+import { linkedAccountsRepository } from "@/repositories"
+
+import { streamInfoService } from "@/services/stream-info.service"
 
 const OFFLINE: StreamInfo = { isLive: false, title: null, category: null, viewerCount: null, startedAt: null }
 

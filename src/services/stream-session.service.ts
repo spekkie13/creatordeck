@@ -1,5 +1,6 @@
+import type { StreamSession } from "@/types/entities"
+
 import { streamSessionRepository } from "@/repositories/stream-session.repository"
-import {StreamSession} from "@/types/entities";
 
 class StreamSessionService {
   async handleOnline(broadcasterId: string, occurredAt: Date) : Promise<void> {

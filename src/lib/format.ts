@@ -1,7 +1,4 @@
 import type { LiveEventType } from "@/types/events"
-import {GoalBarProps} from "@/props/goal-bar.props";
-import {useStreamEvents} from "@/hooks/use-stream-events";
-import {useTwitchChat} from "@/hooks/use-twitch-chat";
 
 export function formatAmount(type: LiveEventType, amount: number | null, currency?: string | null): string | null {
   if (amount === null) return null

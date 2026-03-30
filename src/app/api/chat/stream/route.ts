@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server"
-import {getServerSession, Session} from "next-auth"
+import { getServerSession, Session } from "next-auth"
+
+import { INITIAL_LOOKBACK_MS, POLL_INTERVAL_MS } from "@/constants/chat_api"
 import { authOptions } from "@/lib/auth"
+
 import { chatMessagesRepository } from "@/repositories"
-import {INITIAL_LOOKBACK_MS, POLL_INTERVAL_MS} from "@/constants/chat_api";
 
 export async function GET(req: NextRequest) {
   const session: Session | null = await getServerSession(authOptions)

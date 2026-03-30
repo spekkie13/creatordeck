@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+
 import { authOptions } from "@/lib/auth"
+
 import { linkedAccountsRepository, followEventsRepository, subEventsRepository } from "@/repositories"
 
 const MAX_PAGES = 50 // cap at 5 000 records per type to avoid serverless timeouts

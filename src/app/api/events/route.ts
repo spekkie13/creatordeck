@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { liveEventFeedService } from "@/services"
+
 import type { LiveEventType } from "@/types/events"
 import type { EventSortBy, SortOrder } from "@/types/event-filter"
+
+import { authOptions } from "@/lib/auth"
+
+import { liveEventFeedService } from "@/services"
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)

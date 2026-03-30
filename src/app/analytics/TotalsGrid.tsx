@@ -1,8 +1,11 @@
-﻿import { EventTypeKey } from "@/constants/analytics";
-import { CHART_COLORS } from "@/lib/chart-config";
-import { formatSuperchatTotal } from "@/lib/format";
-import { TotalsGridProps } from "@/props/totals-grid.props";
-import { StatCard } from "@/app/analytics/StatCard";
+﻿import type { EventTypeKey } from "@/constants/analytics"
+
+import { CHART_COLORS } from "@/lib/chart-config"
+import { formatSuperchatTotal } from "@/lib/format"
+
+import type { TotalsGridProps } from "@/props/totals-grid.props"
+
+import { StatCard } from "@/app/analytics/StatCard"
 
 export function TotalsGrid({ totals, hasYouTube, selectedTypes, onToggle }: TotalsGridProps) {
     const anySelected = selectedTypes.size > 0

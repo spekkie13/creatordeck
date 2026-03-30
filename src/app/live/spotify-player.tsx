@@ -1,6 +1,7 @@
-import {useEffect, useRef, useState} from "react";
-import {NowPlaying, QueueTrack} from "@/types/spotify";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+
+import type { NowPlaying, QueueTrack } from "@/types/spotify"
 
 export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
     const [nowPlaying, setNowPlaying] = useState<NowPlaying>(null)

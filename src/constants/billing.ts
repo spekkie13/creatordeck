@@ -1,4 +1,4 @@
-﻿import type {SubscriptionTier} from "@/lib/gates";
+﻿import type { SubscriptionTier } from "@/lib/gates"
 
 export type BillingCycle = "monthly" | "annual"
 export type PaidTier = "tier1" | "tier2" | "tier3"

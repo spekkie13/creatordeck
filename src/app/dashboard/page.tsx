@@ -1,17 +1,23 @@
-import {getServerSession, Session} from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
+
+import { eq, count, and, gt, ne, isNull } from "drizzle-orm"
+
+import type { LinkedAccount } from "@/types/entities"
+import type { GoalRow } from "@/repositories/goals.repository"
+import { PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
+
 import { db } from "@/lib/db"
 import { subEvents, subGoals, followEvents, ytMemberEvents, streamSessions, ytStreamSessions } from "@/lib/schema"
-import { eq, count, and, gt, ne, isNull } from "drizzle-orm"
-import { liveEventFeedService } from "@/services"
+import { authOptions } from "@/lib/auth"
+
 import { eventSubSubscriptionsRepository, userRepository, linkedAccountsRepository, goalsRepository } from "@/repositories"
+
+import { liveEventFeedService } from "@/services"
+import { twitchService } from "@/services/twitch.service"
+import { youtubeService } from "@/services/youtube.service"
+
 import { DashboardClient } from "./dashboard-client"
-import {twitchService} from "@/services/twitch.service";
-import {youtubeService} from "@/services/youtube.service";
-import {LinkedAccount} from "@/types/entities";
-import {GoalRow} from "@/repositories/goals.repository";
-import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 
 export default async function DashboardPage() {
   const session: Session | null = await getServerSession(authOptions)

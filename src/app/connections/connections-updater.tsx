@@ -1,8 +1,10 @@
 "use client"
+
 import { useEffect } from "react"
 import { useSession } from "next-auth/react"
-import {useSearchParams, useRouter, ReadonlyURLSearchParams} from "next/navigation"
-import {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useSearchParams, useRouter } from "next/navigation"
+import type { ReadonlyURLSearchParams } from "next/navigation"
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
 export function ConnectionsUpdater() {
   const { update } = useSession()

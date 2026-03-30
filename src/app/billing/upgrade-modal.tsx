@@ -2,7 +2,9 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import { TIER_LABELS, TIER_MONTHLY_PRICES, type SubscriptionTier } from "@/lib/gates"
+
+import { TIER_LABELS, TIER_MONTHLY_PRICES } from "@/lib/gates"
+import type { SubscriptionTier } from "@/lib/gates"
 
 const TIER_PERKS: Record<SubscriptionTier, string[]> = {
   free: [],
