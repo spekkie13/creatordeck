@@ -35,7 +35,7 @@ export function DevToolbar() {
             <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Dev toolbar</p>
             <h1 className="text-lg font-semibold text-white mt-1">Switch subscription tier</h1>
             <p className="text-sm text-zinc-400 mt-1">
-              Current: <span className="text-purple-400 font-medium">{TIER_LABELS[current]}</span>
+              Current: <span className="text-teal-400 font-medium">{TIER_LABELS[current]}</span>
             </p>
           </div>
           <Link href="/dashboard" className="text-xs text-zinc-400 hover:text-white transition-colors">
@@ -51,7 +51,7 @@ export function DevToolbar() {
               disabled={loading !== null}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
                 current === tier
-                  ? "border-purple-500 bg-purple-500/10 text-purple-300"
+                  ? "border-teal-500 bg-teal-500/10 text-teal-300"
                   : "border-zinc-700 bg-zinc-800 text-zinc-300 hover:border-zinc-500 hover:text-white"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
@@ -59,10 +59,10 @@ export function DevToolbar() {
               <span className="flex items-center gap-2">
                 <span className="text-zinc-500 text-xs">{TIER_PRICES[tier]}</span>
                 {loading === tier && (
-                  <span className="w-3.5 h-3.5 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="w-3.5 h-3.5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
                 )}
                 {current === tier && loading === null && (
-                  <span className="text-purple-400 text-xs">✓ active</span>
+                  <span className="text-teal-400 text-xs">✓ active</span>
                 )}
               </span>
             </button>

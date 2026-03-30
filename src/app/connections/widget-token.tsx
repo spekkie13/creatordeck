@@ -74,7 +74,7 @@ export function WidgetTokenSection({ appUrl }: { appUrl: string }) {
           <button
             onClick={() => token && copy(alertUrl(), ALERT_WIDGET.key)}
             disabled={!token}
-            className="shrink-0 text-xs text-purple-500 hover:text-purple-400 transition-colors disabled:opacity-40"
+            className="shrink-0 text-xs text-teal-500 hover:text-teal-400 transition-colors disabled:opacity-40"
           >
             {copied === ALERT_WIDGET.key ? "Copied!" : "Copy"}
           </button>
@@ -90,7 +90,7 @@ export function WidgetTokenSection({ appUrl }: { appUrl: string }) {
             <button
               onClick={() => token && copy(widgetUrl(t.value), t.value)}
               disabled={!token}
-              className="shrink-0 text-xs text-purple-500 hover:text-purple-400 transition-colors disabled:opacity-40"
+              className="shrink-0 text-xs text-teal-500 hover:text-teal-400 transition-colors disabled:opacity-40"
             >
               {copied === t.value ? "Copied!" : "Copy"}
             </button>

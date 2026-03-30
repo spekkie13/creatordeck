@@ -50,9 +50,9 @@ export function SetupWizard({ displayName }: Props) {
             key={s}
             className={`h-1.5 rounded-full transition-all duration-300 ${
               s === step
-                ? "w-8 bg-purple-500"
+                ? "w-8 bg-teal-500"
                 : s < step
-                  ? "w-4 bg-purple-500/50"
+                  ? "w-4 bg-teal-500/50"
                   : "w-4 bg-zinc-200 dark:bg-zinc-700"
             }`}
           />
@@ -64,7 +64,7 @@ export function SetupWizard({ displayName }: Props) {
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 space-y-6 text-center">
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">
-              Welcome, <span className="text-purple-500">{displayName}</span> 👋
+              Welcome, <span className="text-teal-500">{displayName}</span> 👋
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Let&apos;s get CreatorDeck connected to your channel. It only takes a minute.
@@ -72,7 +72,7 @@ export function SetupWizard({ displayName }: Props) {
           </div>
           <button
             onClick={() => setStep(2)}
-            className="w-full bg-purple-500 hover:bg-purple-600 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
+            className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
           >
             Get started
           </button>
@@ -83,7 +83,7 @@ export function SetupWizard({ displayName }: Props) {
       {step === 2 && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 space-y-6">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-purple-500 uppercase tracking-wider">Step 1 of 2</p>
+            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">Step 1 of 2</p>
             <h2 className="text-xl font-bold">Connect Twitch events</h2>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
               This registers your channel with Twitch so CreatorDeck receives follows, subs, bits, and raids in real time. It only needs to be done once.
@@ -92,7 +92,7 @@ export function SetupWizard({ displayName }: Props) {
           <button
             onClick={registerSubscriptions}
             disabled={registering}
-            className="w-full bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
+            className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
           >
             {registering ? "Connecting..." : "Connect Twitch events"}
           </button>
@@ -108,7 +108,7 @@ export function SetupWizard({ displayName }: Props) {
       {step === 3 && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 space-y-6">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-purple-500 uppercase tracking-wider">Step 2 of 2</p>
+            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">Step 2 of 2</p>
             <h2 className="text-xl font-bold">Connect YouTube</h2>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Stream on YouTube too? Link your channel to unify Super Chats, memberships, and live events alongside Twitch — all in one dashboard.
@@ -118,7 +118,7 @@ export function SetupWizard({ displayName }: Props) {
             <button
               onClick={() => complete("/connections")}
               disabled={completing}
-              className="w-full bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
+              className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
             >
               {completing ? "Just a moment..." : "Connect YouTube"}
             </button>
@@ -148,7 +148,7 @@ export function SetupWizard({ displayName }: Props) {
           <button
             onClick={() => complete("/dashboard")}
             disabled={completing}
-            className="w-full bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
+            className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
           >
             {completing ? "Opening dashboard..." : "Go to dashboard"}
           </button>

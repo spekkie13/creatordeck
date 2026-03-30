@@ -15,7 +15,7 @@ export function ApiKeyToggle({ apiKey }: { apiKey: string }) {
     <div className="space-y-2">
       <button
         onClick={() => setVisible(v => !v)}
-        className="text-sm text-purple-500 hover:text-purple-400 transition-colors"
+        className="text-sm text-teal-500 hover:text-teal-400 transition-colors"
       >
         {visible ? "Hide API key" : "Click to show API key"}
       </button>

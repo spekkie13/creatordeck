@@ -31,7 +31,7 @@ export function ConnectionRow({ name, description, connected, logo, detail, comi
                     ) : connectButton ?? (
                         <button
                             disabled={comingSoon}
-                            className="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="text-xs bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                             Connect
                         </button>

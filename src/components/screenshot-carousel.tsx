@@ -143,7 +143,7 @@ export function ScreenshotCarousel() {
             <span
               className={`block h-1 rounded-full transition-all duration-300 ${
                 i === active
-                  ? "bg-purple-500 w-6"
+                  ? "bg-teal-500 w-6"
                   : "bg-zinc-300 dark:bg-zinc-700 w-2 group-hover:bg-zinc-400 dark:group-hover:bg-zinc-500"
               }`}
             />

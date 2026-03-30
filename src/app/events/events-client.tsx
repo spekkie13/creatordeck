@@ -106,7 +106,7 @@ export function EventsClient({ displayName }: { displayName: string }) {
                 type="datetime-local"
                 value={from}
                 onChange={e => { setFrom(e.target.value); setPage(1) }}
-                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-purple-500"
+                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-teal-500"
               />
             </div>
             <div className="space-y-1">
@@ -115,7 +115,7 @@ export function EventsClient({ displayName }: { displayName: string }) {
                 type="datetime-local"
                 value={to}
                 onChange={e => { setTo(e.target.value); setPage(1) }}
-                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-purple-500"
+                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-teal-500"
               />
             </div>
             <div className="space-y-1">
@@ -123,7 +123,7 @@ export function EventsClient({ displayName }: { displayName: string }) {
               <select
                 value={sortBy}
                 onChange={e => handleSortBy(e.target.value as EventSortBy)}
-                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-purple-500"
+                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-teal-500"
               >
                 <option value="occurredAt">Date</option>
                 <option value="amount">Amount</option>

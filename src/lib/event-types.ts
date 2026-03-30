@@ -3,7 +3,7 @@ import type { LiveEventType } from "@/types/events"
 export const ALL_TYPES: LiveEventType[] = ["follow", "sub", "bits", "raid", "superchat", "member"]
 
 export const TYPE_BADGE: Record<LiveEventType, string> = {
-  sub:       "bg-purple-500/20 text-purple-400 border border-purple-500/40",
+  sub:       "bg-teal-500/20 text-teal-400 border border-teal-500/40",
   follow:    "bg-blue-500/20 text-blue-400 border border-blue-500/40",
   bits:      "bg-yellow-500/20 text-yellow-500 border border-yellow-500/40",
   raid:      "bg-green-500/20 text-green-500 border border-green-500/40",
@@ -22,7 +22,7 @@ export const TYPE_ICON: Record<LiveEventType, string> = {
 
 /** Active filter pill style — slightly brighter than badge, used in filter toggles */
 export const TYPE_FILTER_STYLE: Record<LiveEventType, string> = {
-  sub:       "border-purple-500/40 text-purple-400 bg-purple-500/10",
+  sub:       "border-teal-500/40 text-teal-400 bg-teal-500/10",
   follow:    "border-blue-500/40 text-blue-400 bg-blue-500/10",
   bits:      "border-yellow-500/40 text-yellow-500 bg-yellow-500/10",
   raid:      "border-green-500/40 text-green-500 bg-green-500/10",
@@ -32,7 +32,7 @@ export const TYPE_FILTER_STYLE: Record<LiveEventType, string> = {
 
 /** Filter button definitions for the event history page */
 export const EVENT_TYPES: { value: LiveEventType; label: string; activeClass: string }[] = [
-  { value: "sub",       label: "Subs",       activeClass: "bg-purple-500/20 text-purple-500 border-purple-500/40" },
+  { value: "sub",       label: "Subs",       activeClass: "bg-teal-500/20 text-teal-500 border-teal-500/40" },
   { value: "follow",    label: "Follows",    activeClass: "bg-blue-500/20 text-blue-500 border-blue-500/40" },
   { value: "bits",      label: "Bits",       activeClass: "bg-yellow-500/20 text-yellow-500 border-yellow-500/40" },
   { value: "raid",      label: "Raids",      activeClass: "bg-green-500/20 text-green-500 border-green-500/40" },

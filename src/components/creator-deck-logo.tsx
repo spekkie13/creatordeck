@@ -17,9 +17,9 @@ export function CreatorDeckLogo({ size = "sm" }: Props) {
   if (size === "lg") {
     return (
       <div className="flex flex-col items-center gap-3">
-        <Mark className="w-12 h-auto text-purple-500" />
+        <Mark className="w-12 h-auto text-teal-500" />
         <span className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">
-          Creator<span className="text-purple-500">Deck</span>
+          Creator<span className="text-teal-500">Deck</span>
         </span>
       </div>
     )
@@ -27,9 +27,9 @@ export function CreatorDeckLogo({ size = "sm" }: Props) {
 
   return (
     <div className="flex items-center gap-2.5">
-      <Mark className="w-5 h-auto text-purple-500" />
+      <Mark className="w-5 h-auto text-teal-500" />
       <span className="text-xl font-bold">
-        Creator<span className="text-purple-500">Deck</span>
+        Creator<span className="text-teal-500">Deck</span>
       </span>
     </div>
   )

@@ -27,7 +27,7 @@ export function YouTubeManage({ channelId, displayName, isPollerActive }: Props)
             href={`https://youtube.com/channel/${channelId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-purple-500 hover:text-purple-400 transition-colors"
+            className="text-xs text-teal-500 hover:text-teal-400 transition-colors"
           >
             Open →
           </a>

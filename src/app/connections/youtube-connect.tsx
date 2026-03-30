@@ -4,7 +4,7 @@ export function YouTubeConnectButton({ retry }: { retry?: boolean }) {
   return (
     <a
       href="/api/connections/link/google/start"
-      className="text-xs bg-purple-500 hover:bg-purple-600 text-white px-3 py-1.5 rounded-lg transition-colors"
+      className="text-xs bg-teal-500 hover:bg-teal-600 text-white px-3 py-1.5 rounded-lg transition-colors"
     >
       {retry ? "Try again" : "Connect"}
     </a>

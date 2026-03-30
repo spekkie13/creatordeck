@@ -18,7 +18,7 @@ export function FeatureRow({ name, description, enabled = false, comingSoon }: F
                     comingSoon
                         ? "bg-zinc-200 dark:bg-zinc-700 opacity-40"
                         : enabled
-                            ? "bg-purple-500"
+                            ? "bg-teal-500"
                             : "bg-zinc-200 dark:bg-zinc-700"
                 }`}
             >

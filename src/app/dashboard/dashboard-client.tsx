@@ -47,7 +47,7 @@ export function DashboardClient({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="space-y-1">
               <h1 className="text-xl font-semibold tracking-tight">
-                {greeting()}, <span className="text-purple-500">{session.displayName}</span> 👋
+                {greeting()}, <span className="text-teal-500">{session.displayName}</span> 👋
               </h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">{s.subtext}</p>
             </div>
@@ -148,7 +148,7 @@ export function DashboardClient({
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-6 pt-4 pb-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Goals</h2>
-            <Link href="/goals" className="text-xs text-purple-500 hover:text-purple-400 transition-colors">
+            <Link href="/goals" className="text-xs text-teal-500 hover:text-teal-400 transition-colors">
               Manage →
             </Link>
           </div>
@@ -182,7 +182,7 @@ export function DashboardClient({
                 </div>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">No follow goal set.</p>
                 <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2" />
-                <Link href="/goals" className="text-xs text-purple-500 hover:text-purple-400 transition-colors">Set a goal →</Link>
+                <Link href="/goals" className="text-xs text-teal-500 hover:text-teal-400 transition-colors">Set a goal →</Link>
               </div>
             )}
 
@@ -197,7 +197,7 @@ export function DashboardClient({
                 <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {goal.toLocaleString()}</span>
               </div>
               <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-                <div className="bg-purple-500 h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                <div className="bg-teal-500 h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
               <p className="text-xs text-zinc-500">{progress.toFixed(1)}%</p>
             </div>
@@ -212,7 +212,7 @@ export function DashboardClient({
                 </div>
                 <p className="text-xs font-medium text-amber-600 dark:text-amber-400">YouTube not connected</p>
                 <div className="w-full bg-amber-100 dark:bg-amber-900/20 rounded-full h-2" />
-                <Link href="/connections" className="text-xs text-purple-500 hover:text-purple-400 transition-colors">Connect account →</Link>
+                <Link href="/connections" className="text-xs text-teal-500 hover:text-teal-400 transition-colors">Connect account →</Link>
               </div>
             ) : ytMemberGoal !== null ? (() => {
               const memberProgress = Math.min((ytMemberTotal / ytMemberGoal) * 100, 100)
@@ -241,7 +241,7 @@ export function DashboardClient({
                 </div>
                 <p className="text-xs text-zinc-400 dark:text-zinc-500">No member goal set.</p>
                 <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2" />
-                <Link href="/goals" className="text-xs text-purple-500 hover:text-purple-400 transition-colors">Set a goal →</Link>
+                <Link href="/goals" className="text-xs text-teal-500 hover:text-teal-400 transition-colors">Set a goal →</Link>
               </div>
             )}
 
@@ -258,7 +258,7 @@ export function DashboardClient({
                 Live
               </span>
             </div>
-            <Link href="/events" className="text-xs text-purple-500 hover:text-purple-400 transition-colors">
+            <Link href="/events" className="text-xs text-teal-500 hover:text-teal-400 transition-colors">
               View all events →
             </Link>
           </div>

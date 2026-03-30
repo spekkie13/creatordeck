@@ -57,7 +57,7 @@ export function WaitlistModal({ tier, twitchLogin, onClose }: Props) {
             </p>
             <button
               onClick={onClose}
-              className="mt-2 text-sm text-purple-500 hover:text-purple-400 transition-colors"
+              className="mt-2 text-sm text-teal-500 hover:text-teal-400 transition-colors"
             >
               Close
             </button>
@@ -80,7 +80,7 @@ export function WaitlistModal({ tier, twitchLogin, onClose }: Props) {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 disabled={status === "loading"}
-                className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
+                className="w-full px-4 py-2.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50"
               />
               {status === "error" && (
                 <p className="text-xs text-red-500">Something went wrong — try again.</p>
@@ -88,7 +88,7 @@ export function WaitlistModal({ tier, twitchLogin, onClose }: Props) {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="w-full py-2.5 rounded-lg text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-2.5 rounded-lg text-sm font-medium bg-teal-600 hover:bg-teal-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {status === "loading" ? "Saving..." : "Notify me"}
               </button>

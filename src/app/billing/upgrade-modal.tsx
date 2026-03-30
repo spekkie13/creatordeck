@@ -53,7 +53,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
         {/* Header */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase tracking-wider text-purple-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-teal-500">
               {TIER_LABELS[requiredTier]} · {TIER_MONTHLY_PRICES[requiredTier]}
             </span>
             <button
@@ -75,7 +75,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
           <ul className="space-y-2">
             {perks.map(perk => (
               <li key={perk} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                <span className="text-purple-500 mt-0.5 shrink-0">✓</span>
+                <span className="text-teal-500 mt-0.5 shrink-0">✓</span>
                 {perk}
               </li>
             ))}
@@ -87,7 +87,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
           <Link
             href="/billing"
             onClick={onClose}
-            className="w-full text-center bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+            className="w-full text-center bg-teal-600 hover:bg-teal-500 text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
           >
             View plans
           </Link>

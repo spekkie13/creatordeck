@@ -84,7 +84,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
         {/* Free */}
         <div className={`relative flex flex-col rounded-2xl border p-6 gap-5 ${
           currentTier === "free"
-            ? "border-purple-500 ring-1 ring-purple-500 bg-white dark:bg-zinc-900"
+            ? "border-teal-500 ring-1 ring-teal-500 bg-white dark:bg-zinc-900"
             : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
         }`}>
           {currentTier === "free" && <CurrentPlanBadge />}
@@ -111,7 +111,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
               key={tier}
               className={`relative flex flex-col rounded-2xl border p-6 gap-5 ${
                 isCurrent
-                  ? "border-purple-500 ring-1 ring-purple-500 bg-white dark:bg-zinc-900"
+                  ? "border-teal-500 ring-1 ring-teal-500 bg-white dark:bg-zinc-900"
                   : isPopular
                   ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
                   : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
@@ -120,7 +120,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
               {isCurrent && <CurrentPlanBadge />}
               {isPopular && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most popular</span>
+                  <span className="bg-teal-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Most popular</span>
                 </div>
               )}
 
@@ -145,7 +145,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
                 <button
                   onClick={() => handleUpgrade(tier)}
                   disabled={loading !== null}
-                  className="w-full py-2.5 rounded-lg text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 rounded-lg text-sm font-medium bg-teal-600 hover:bg-teal-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoadingThis ? <Spinner /> : `Upgrade to ${TIER_LABELS[tier]}`}
                 </button>

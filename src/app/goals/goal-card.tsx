@@ -72,7 +72,7 @@ export function GoalCard({ label, logo, total, savedGoal, endsAt, accentColor, a
                                 type="number"
                                 value={initialCountInput}
                                 onChange={e => setInitialCountInput(e.target.value)}
-                                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 text-zinc-900 dark:text-white"
+                                className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-zinc-900 dark:text-white"
                                 min={0}
                             />
                             <p className="text-xs text-zinc-400">Subs before CreatorDeck</p>
@@ -84,7 +84,7 @@ export function GoalCard({ label, logo, total, savedGoal, endsAt, accentColor, a
                             type="number"
                             value={goalInput}
                             onChange={e => setGoalInput(e.target.value)}
-                            className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 text-zinc-900 dark:text-white"
+                            className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-zinc-900 dark:text-white"
                             min={1}
                         />
                     </div>
@@ -97,7 +97,7 @@ export function GoalCard({ label, logo, total, savedGoal, endsAt, accentColor, a
                                 type="date"
                                 value={endsAtInput}
                                 onChange={e => setEndsAtInput(e.target.value)}
-                                className="flex-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500 text-zinc-900 dark:text-white"
+                                className="flex-1 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-500 text-zinc-900 dark:text-white"
                             />
                             {endsAtInput && (
                                 <button onClick={() => setEndsAtInput("")} className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors shrink-0">
@@ -111,7 +111,7 @@ export function GoalCard({ label, logo, total, savedGoal, endsAt, accentColor, a
                     <button
                         onClick={save}
                         disabled={saving}
-                        className="bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
+                        className="bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors"
                     >
                         {saving ? "Saving..." : "Save"}
                     </button>

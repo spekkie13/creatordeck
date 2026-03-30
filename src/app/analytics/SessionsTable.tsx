@@ -41,7 +41,7 @@ export function SessionsTable({ sessions }: { sessions: AnalyticsSession[] }) {
                     </div>
                     <Link
                         href={`/analytics/${s.id}`}
-                        className="text-xs text-purple-500 hover:text-purple-400 transition-colors shrink-0"
+                        className="text-xs text-teal-500 hover:text-teal-400 transition-colors shrink-0"
                     >
                         View →
                     </Link>

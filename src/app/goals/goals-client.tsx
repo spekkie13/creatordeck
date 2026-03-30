@@ -19,7 +19,7 @@ export function GoalsClient({
           total={subTotal}
           savedGoal={subGoal}
           endsAt={subEndsAt}
-          accentColor="bg-purple-500"
+          accentColor="bg-teal-500"
           initialCount={subInitialCount}
         />
       )}
@@ -56,7 +56,7 @@ export function GoalsClient({
           </div>
           <p className="text-sm text-zinc-500">
             Connect your YouTube account to track membership goals.{" "}
-            <Link href="/connections" className="text-purple-500 hover:text-purple-400">Go to Connections →</Link>
+            <Link href="/connections" className="text-teal-500 hover:text-teal-400">Go to Connections →</Link>
           </p>
         </div>
       )}

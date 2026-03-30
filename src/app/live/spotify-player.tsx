@@ -57,7 +57,7 @@ export function SpotifyPlayer({ hasSpotify }: { hasSpotify: boolean }) {
                     <div className="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center text-sm">🎵</div>
                     <div className="min-w-0 flex-1">
                         <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 truncate">Spotify not connected</p>
-                        <Link href="/connections" className="text-[10px] text-purple-500 hover:text-purple-400">Connect in Settings →</Link>
+                        <Link href="/connections" className="text-[10px] text-teal-500 hover:text-teal-400">Connect in Settings →</Link>
                     </div>
                 </div>
                 <div className="h-1 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden" />

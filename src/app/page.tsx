@@ -48,11 +48,11 @@ export default async function LandingPage() {
       <section className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 relative overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-purple-500/10 dark:bg-purple-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-teal-500/10 dark:bg-teal-500/20 rounded-full blur-3xl" />
         </div>
 
         <div className="relative flex flex-col items-center gap-6 max-w-2xl">
-          <span className="text-xs font-medium text-purple-500 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-full tracking-wide uppercase">
+          <span className="text-xs font-medium text-teal-500 bg-teal-500/10 border border-teal-500/20 px-3 py-1 rounded-full tracking-wide uppercase">
             Early access
           </span>
 
