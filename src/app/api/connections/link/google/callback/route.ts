@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   }
 
   // Verify state cookie
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const linkStateCookie = cookieStore.get("yt_link_state")
   if (!linkStateCookie) {
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)

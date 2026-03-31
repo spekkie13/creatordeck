@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(`${BASE_URL}/connections?error=missing_params`)
   }
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const linkStateCookie = cookieStore.get("spotify_link_state")
   if (!linkStateCookie) {
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
