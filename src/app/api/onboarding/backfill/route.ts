@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { linkedAccountsRepository, followEventsRepository, subEventsRepository } from "@/repositories"
+import {SessionResult} from "@/types/session";
+import {LinkedAccount} from "@/types/entities";
+import {PLATFORM_TWITCH} from "@/types/platform";
 
 const MAX_PAGES = 50 // cap at 5 000 records per type to avoid serverless timeouts
 
@@ -100,14 +102,19 @@ async function backfillSubs(broadcasterId: string, accessToken: string): Promise
   return total
 }
 
-export async function POST() {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+export async function POST(): Promise<NextResponse> {
+  const result: SessionResult = await requireSession()
+  if (result instanceof NextResponse)
+    return result
 
-  if (!session.twitchId) return NextResponse.json({ error: "No Twitch account linked" }, { status: 400 })
+  const { session } = result
 
-  const twitchAccount = await linkedAccountsRepository.findByProvider("twitch", session.twitchId)
-  if (!twitchAccount?.accessToken) return NextResponse.json({ error: "No access token" }, { status: 400 })
+  if (!session.twitchId)
+    return NextResponse.json({ error: "No Twitch account linked" }, { status: 400 })
+
+  const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByProvider(PLATFORM_TWITCH, session.twitchId)
+  if (!twitchAccount?.accessToken)
+    return NextResponse.json({ error: "No access token" }, { status: 400 })
 
   const results: Record<string, number | string> = {}
 

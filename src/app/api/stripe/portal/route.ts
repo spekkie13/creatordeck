@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
 import { stripe } from "@/lib/stripe"
+import { requireSession } from "@/lib/session-auth"
 
 import { userRepository } from "@/repositories"
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { stripeCustomerId } = await userRepository.getStripeInfo(session.userId)
   if (!stripeCustomerId) return NextResponse.json({ error: "No billing account found" }, { status: 400 })

@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from "next/server"
-import { userRepository, linkedAccountsRepository, subEventsRepository } from "@/repositories"
+import { linkedAccountsRepository, subEventsRepository } from "@/repositories"
+import { validateApiKey } from "@/lib/api-auth"
+import { PLATFORM_TWITCH } from "@/types/platform"
+import {LinkedAccount, SubEvent} from "@/types/entities"
+import {ApiAuthResult} from "@/types/session";
 
-export async function GET(req: NextRequest) {
-  const apiKey = req.headers.get("x-api-key") ?? req.nextUrl.searchParams.get("key") ?? ""
-  const since = req.nextUrl.searchParams.get("since")
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const result: ApiAuthResult = await validateApiKey(req)
+  if (result instanceof NextResponse) return result
+  const { user } = result
 
-  if (!apiKey) return NextResponse.json({ error: "Missing API key" }, { status: 401 })
+  const since: string | null = req.nextUrl.searchParams.get("since")
 
-  const user = await userRepository.findByApiKey(apiKey)
-  if (!user) return NextResponse.json({ error: "Invalid API key" }, { status: 401 })
+  const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(user.id, PLATFORM_TWITCH)
+  if (!twitchAccount)
+    return NextResponse.json({ events: [] })
 
-  const accounts = await linkedAccountsRepository.findByUserId(user.id)
-  const twitchAccount = accounts.find(a => a.provider === "twitch")
-  if (!twitchAccount) return NextResponse.json({ events: [] })
+  const events: SubEvent[] = await subEventsRepository.findByBroadcasterId(
+      twitchAccount.providerAccountId,
+      since
+          ? new Date(since)
+          : undefined
+  )
 
-  const events = await subEventsRepository.findByBroadcasterId(twitchAccount.providerAccountId, since ? new Date(since) : undefined)
   return NextResponse.json({ events })
 }

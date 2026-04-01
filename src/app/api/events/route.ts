@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
 import type { LiveEventType } from "@/types/events"
 import type { EventSortBy, SortOrder } from "@/types/event-filter"
 
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession } from "@/lib/session-auth"
 
 import { liveEventFeedService } from "@/services"
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const twitchSession = await requireTwitchSession()
+  if (twitchSession instanceof NextResponse) return twitchSession
+  const { session } = twitchSession
 
   const params = req.nextUrl.searchParams
 

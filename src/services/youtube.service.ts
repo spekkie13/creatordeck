@@ -1,4 +1,5 @@
 ﻿import { linkedAccountsRepository } from "@/repositories"
+import {PLATFORM_YOUTUBE} from "@/types/platform";
 
 class YoutubeService {
     async fetchYouTubeSubCount(
@@ -17,7 +18,7 @@ class YoutubeService {
             if (res.status === 401 && refreshToken) {
                 const newToken: string | null = await this.refreshYouTubeToken(refreshToken)
                 if (!newToken) return null
-                await linkedAccountsRepository.updateAccessToken("youtube", channelId, newToken)
+                await linkedAccountsRepository.updateAccessToken(PLATFORM_YOUTUBE, channelId, newToken)
                 res = await doFetch(newToken)
             }
 

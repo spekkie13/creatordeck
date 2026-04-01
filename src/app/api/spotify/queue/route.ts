@@ -1,20 +1,22 @@
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 
-import { authOptions } from "@/lib/auth"
-import { spotifyFetch } from "@/lib/spotify"
+import { requireSession } from "@/lib/session-auth"
 
 import { linkedAccountsRepository } from "@/repositories"
+import {spotifyService} from "@/services/spotify-service";
+import { PLATFORM_SPOTIFY } from "@/types/platform"
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
-  const accounts = await linkedAccountsRepository.findByUserId(session.userId)
-  const spotifyAccount = accounts.find(a => a.provider === "spotify")
-  if (!spotifyAccount?.accessToken) return Response.json([])
+  const spotifyAccount = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_SPOTIFY)
+  if (!spotifyAccount?.accessToken)
+      return Response.json([])
 
   try {
-    const res = await spotifyFetch(
+    const res: Response = await spotifyService.spotifyFetch(
       {
         providerAccountId: spotifyAccount.providerAccountId,
         accessToken: spotifyAccount.accessToken,
@@ -26,10 +28,10 @@ export async function GET() {
     if (!res.ok) return Response.json([])
 
     const data = await res.json()
-    const queue = (data.queue as Record<string, unknown>[] | undefined) ?? []
+    const queue: Record<string, unknown>[] = (data.queue as Record<string, unknown>[] | undefined) ?? []
 
     return Response.json(
-      queue.slice(0, 10).map(item => ({
+      queue.slice(0, 10).map((item: Record<string, unknown>) => ({
         track: item.name as string,
         artist: (item.artists as { name: string }[]).map(a => a.name).join(", "),
         albumArt: (item.album as { images: { url: string }[] }).images?.[0]?.url ?? null,

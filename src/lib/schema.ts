@@ -17,7 +17,7 @@ export const users = pgTable("users", {
 export const linkedAccounts = pgTable("linked_accounts", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull(),                // "twitch" | "youtube"
+  provider: text("provider").notNull(),
   providerAccountId: text("provider_account_id").notNull(),
   login: text("login"),
   displayName: text("display_name"),
@@ -173,7 +173,7 @@ export const eventReplays = pgTable("event_replays", {
 
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").defaultRandom().primaryKey(),
-  platform: text("platform").notNull(), // "twitch" | "youtube"
+  platform: text("platform").notNull(),
   channelId: text("channel_id").notNull(), // broadcasterId (Twitch) or channelId (YouTube)
   eventId: text("event_id").unique().notNull(), // dedup key
   userId: text("user_id"),

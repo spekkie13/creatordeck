@@ -2,23 +2,22 @@ import { NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 
 import { env } from "@/lib/env"
-import { buildPriceTierMap } from "@/lib/gates"
+import {buildPriceTierMap, SubscriptionTier} from "@/lib/gates"
 import { stripe } from "@/lib/stripe"
 
 import { userRepository } from "@/repositories"
 
-// Must be raw body — disable Next.js body parsing
 export const runtime = "nodejs"
 
-const priceTierMap = buildPriceTierMap(env.stripePrices)
+const priceTierMap: Record<string,  SubscriptionTier> = buildPriceTierMap(env.stripePrices)
 
 function getPriceId(subscription: Stripe.Subscription): string | null {
   return subscription.items.data[0]?.price.id ?? null
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.text()
-  const sig = req.headers.get("stripe-signature")
+  const body: string = await req.text()
+  const sig: string | null = req.headers.get("stripe-signature")
 
   if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 })
 
@@ -32,16 +31,16 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const checkoutSession = event.data.object as Stripe.Checkout.Session
-      const userId = checkoutSession.metadata?.userId
+      const userId: string | undefined = checkoutSession.metadata?.userId
       const customerId = checkoutSession.customer as string
       const subscriptionId = checkoutSession.subscription as string
 
       if (!userId || !customerId || !subscriptionId) break
 
       // Fetch subscription to get the price ID and determine tier
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-      const priceId = getPriceId(subscription)
-      const tier = priceId ? priceTierMap[priceId] : null
+      const subscription: Stripe.Response<Stripe.Subscription> = await stripe.subscriptions.retrieve(subscriptionId)
+      const priceId: string | null = getPriceId(subscription)
+      const tier: SubscriptionTier | null = priceId ? priceTierMap[priceId] : null
 
       if (!tier) break
 
@@ -53,11 +52,11 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.updated": {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
-      const user = await userRepository.findByStripeCustomerId(customerId)
+      const user: {id: string, tier: string} | null = await userRepository.findByStripeCustomerId(customerId)
       if (!user) break
 
-      const priceId = getPriceId(subscription)
-      const tier = priceId ? priceTierMap[priceId] : null
+      const priceId: string | null = getPriceId(subscription)
+      const tier: SubscriptionTier | null = priceId ? priceTierMap[priceId] : null
 
       // Only update tier if the subscription is active.
       // If cancel_at_period_end is true the subscription is still active until
@@ -75,7 +74,7 @@ export async function POST(req: NextRequest) {
       // Subscription has fully ended (after cancel_at_period_end or immediate cancel)
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
-      const user = await userRepository.findByStripeCustomerId(customerId)
+      const user: { id: string; tier: string } | null = await userRepository.findByStripeCustomerId(customerId)
       if (!user) break
 
       await userRepository.setTier(user.id, "free")

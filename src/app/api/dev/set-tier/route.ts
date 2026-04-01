@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 import { eq } from "drizzle-orm"
 
 import type { SubscriptionTier } from "@/lib/gates"
-import { authOptions } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { users } from "@/lib/schema"
+import { requireSession } from "@/lib/session-auth"
 
 import { userRepository } from "@/repositories"
 
@@ -16,8 +15,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Not available" }, { status: 404 })
   }
 
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { tier } = await req.json()
   if (!VALID_TIERS.includes(tier)) {

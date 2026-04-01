@@ -1,9 +1,10 @@
-import { getServerSession } from "next-auth"
+import {getServerSession, Session} from "next-auth"
 
 import { env } from "@/lib/env"
 import { authOptions } from "@/lib/auth"
 
 import { linkedAccountsRepository } from "@/repositories"
+import {PLATFORM_TWITCH} from "@/types/platform";
 
 async function getAppToken(): Promise<string> {
   const res = await fetch(
@@ -15,11 +16,11 @@ async function getAppToken(): Promise<string> {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId || !session?.twitchId) return new Response("Unauthorized", { status: 401 })
+  const session: Session | null = await getServerSession(authOptions)
+  if (!session?.userId || !session?.twitchId)
+    return new Response("Unauthorized", { status: 401 })
 
-  const accounts = await linkedAccountsRepository.findByUserId(session.userId)
-  const twitchAccount = accounts.find(a => a.provider === "twitch")
+  const twitchAccount = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH)
   if (!twitchAccount?.accessToken) return Response.json({ error: "No Twitch token" })
 
   // Check scopes on the stored user token

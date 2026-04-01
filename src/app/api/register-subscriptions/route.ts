@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession } from "@/lib/session-auth"
 
 import { eventSubSubscriptionsRepository } from "@/repositories"
 
 import { twitchEventSubService } from "@/services"
 
 export async function POST() {
-  const session = await getServerSession(authOptions)
-  if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireTwitchSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const results = await twitchEventSubService.registerSubscriptions(session.twitchId)
 

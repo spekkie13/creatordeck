@@ -1,6 +1,6 @@
 ﻿export type ChatMessage = {
     id: string
-    platform: "twitch" | "youtube"
+    platform: "youtube" | "twitch"
     userDisplayName: string
     message: string
     occurredAt: string

@@ -3,6 +3,7 @@ import type { GoalType } from "@/repositories/goals.repository"
 import { subEventsRepository, followEventsRepository, ytMemberEventsRepository, subGoalsRepository, goalsRepository } from "@/repositories"
 
 import type { WidgetGoalData } from "@/services/widget-goal.types"
+import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 
 class WidgetGoalService {
   async getGoalData(
@@ -19,7 +20,7 @@ class WidgetGoalService {
       ])
       const goal = goalRow?.goal ?? 100
       const current = total + (goalRow?.initialCount ?? 0)
-      return { current, goal, label: "Subscribers", platform: "twitch" }
+      return { current, goal, label: "Subscribers", platform: PLATFORM_TWITCH }
     }
 
     if (type === "twitch_follow") {
@@ -28,7 +29,7 @@ class WidgetGoalService {
         goalsRepository.findByUserIdAndType(userId, "twitch_follow" as GoalType),
         followEventsRepository.countByBroadcasterId(broadcasterId),
       ])
-      return { current, goal: goalRow?.goal ?? 100, label: "Followers", platform: "twitch" }
+      return { current, goal: goalRow?.goal ?? 100, label: "Followers", platform: PLATFORM_TWITCH }
     }
 
     if (type === "youtube_member") {
@@ -37,7 +38,7 @@ class WidgetGoalService {
         goalsRepository.findByUserIdAndType(userId, "youtube_member" as GoalType),
         ytMemberEventsRepository.countByChannelId(channelId),
       ])
-      return { current, goal: goalRow?.goal ?? 100, label: "Members", platform: "youtube" }
+      return { current, goal: goalRow?.goal ?? 100, label: "Members", platform: PLATFORM_YOUTUBE }
     }
 
     return null

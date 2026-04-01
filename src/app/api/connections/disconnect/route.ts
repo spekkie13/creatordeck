@@ -1,20 +1,23 @@
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { linkedAccountsRepository } from "@/repositories"
+import {PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
+import {LinkedAccount} from "@/types/entities";
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { provider } = await req.json() as { provider: string }
-  if (!provider || !["youtube", "twitch", "spotify"].includes(provider)) {
+  if (!provider || ![PLATFORM_YOUTUBE, PLATFORM_TWITCH, PLATFORM_SPOTIFY].includes(provider)) {
     return new Response("Invalid provider", { status: 400 })
   }
 
   // Prevent disconnecting the only linked account — user would be locked out
-  const allAccounts = await linkedAccountsRepository.findByUserId(session.userId)
+  const allAccounts: LinkedAccount[] = await linkedAccountsRepository.findByUserId(session.userId)
   if (allAccounts.length <= 1) {
     return new Response("Cannot disconnect your only linked account", { status: 400 })
   }

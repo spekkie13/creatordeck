@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { waitlistRepository } from "@/repositories"
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest): Promise<NextResponse<{ error: string }> | NextResponse<{ ok: boolean }>> {
   const { email, twitchLogin, interestedTier } = await req.json()
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

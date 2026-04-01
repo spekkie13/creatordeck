@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { goalsRepository } from "@/repositories/goals.repository"
 import type { GoalType } from "@/repositories/goals.repository"
@@ -9,8 +8,9 @@ import type { GoalType } from "@/repositories/goals.repository"
 const VALID_TYPES: GoalType[] = ["twitch_follow", "youtube_member"]
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { type, goal, endsAt } = await req.json()
   if (!VALID_TYPES.includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 })

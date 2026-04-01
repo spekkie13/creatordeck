@@ -13,9 +13,9 @@ const TWITCH_MESSAGE_SIGNATURE = "twitch-eventsub-message-signature"
 const MESSAGE_TYPE = "twitch-eventsub-message-type"
 
 function verifySignature(messageId: string, timestamp: string, body: string, signature: string): boolean {
-  const secret = env.twitchWebhookSecret
-  const hmacMessage = messageId + timestamp + body
-  const expected = "sha256=" + createHmac("sha256", secret).update(hmacMessage).digest("hex")
+  const secret: string = env.twitchWebhookSecret
+  const hmacMessage: string = messageId + timestamp + body
+  const expected: string = "sha256=" + createHmac("sha256", secret).update(hmacMessage).digest("hex")
   try {
     return timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
   } catch {
@@ -23,12 +23,12 @@ function verifySignature(messageId: string, timestamp: string, body: string, sig
   }
 }
 
-export async function POST(req: NextRequest) {
-  const body = await req.text()
-  const messageId = req.headers.get(TWITCH_MESSAGE_ID) ?? ""
-  const timestamp = req.headers.get(TWITCH_MESSAGE_TIMESTAMP) ?? ""
-  const signature = req.headers.get(TWITCH_MESSAGE_SIGNATURE) ?? ""
-  const messageType = req.headers.get(MESSAGE_TYPE) ?? ""
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const body: string = await req.text()
+  const messageId: string = req.headers.get(TWITCH_MESSAGE_ID) ?? ""
+  const timestamp: string = req.headers.get(TWITCH_MESSAGE_TIMESTAMP) ?? ""
+  const signature: string = req.headers.get(TWITCH_MESSAGE_SIGNATURE) ?? ""
+  const messageType: string = req.headers.get(MESSAGE_TYPE) ?? ""
 
   if (!verifySignature(messageId, timestamp, body, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 403 })

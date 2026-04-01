@@ -3,8 +3,8 @@ import { redirect } from "next/navigation"
 
 import { eq, count } from "drizzle-orm"
 
-import type { LinkedAccount } from "@/types/entities"
 import type { GoalRow } from "@/repositories/goals.repository"
+import { PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
 
 import { db } from "@/lib/db"
 import { subEvents, subGoals, followEvents, ytMemberEvents } from "@/lib/schema"
@@ -22,17 +22,18 @@ export default async function GoalsPage() {
   const broadcasterId: string = session.twitchId ?? ""
   const youtubeChannelId: string | null = session.youtubeChannelId ?? null
 
-  const [goalRows, subTotalRows, followTotalRows, ytMemberTotalRows, linkedAccounts, extraGoals] = await Promise.all([
+  const [goalRows, subTotalRows, followTotalRows, ytMemberTotalRows, twitchAccount, ytAccount, extraGoals] = await Promise.all([
     broadcasterId ? db.select().from(subGoals).where(eq(subGoals.broadcasterId, broadcasterId)).limit(1) : [],
     broadcasterId ? db.select({ total: count() }).from(subEvents).where(eq(subEvents.broadcasterId, broadcasterId)) : [{ total: 0 }],
     broadcasterId ? db.select({ total: count() }).from(followEvents).where(eq(followEvents.broadcasterId, broadcasterId)) : [{ total: 0 }],
     youtubeChannelId ? db.select({ total: count() }).from(ytMemberEvents).where(eq(ytMemberEvents.channelId, youtubeChannelId)) : [{ total: 0 }],
-    linkedAccountsRepository.findByUserId(session.userId),
+    linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH),
+    linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_YOUTUBE),
     goalsRepository.findByUserId(session.userId),
   ])
 
-  const hasTwitch: boolean = !!linkedAccounts.find((a: LinkedAccount) => a.provider === "twitch")
-  const hasYouTube: boolean = !!linkedAccounts.find((a: LinkedAccount) => a.provider === "youtube")
+  const hasTwitch: boolean = !!twitchAccount
+  const hasYouTube: boolean = !!ytAccount
 
   const subGoalRow = goalRows[0]
   const followGoalRow: GoalRow | null = extraGoals.find((g: GoalRow) => g.type === "twitch_follow") ?? null

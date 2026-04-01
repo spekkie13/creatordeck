@@ -1,9 +1,10 @@
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 
-import { authOptions } from "@/lib/auth"
-import { spotifyFetch } from "@/lib/spotify"
+import { requireSession } from "@/lib/session-auth"
 
 import { linkedAccountsRepository } from "@/repositories"
+import { PLATFORM_SPOTIFY } from "@/types/platform"
+import {spotifyService} from "@/services/spotify-service";
 
 type Action = "play" | "pause" | "skip" | "previous" | "volume"
 
@@ -15,14 +16,14 @@ const ACTION_MAP: Record<Exclude<Action, "volume">, { method: string; url: strin
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const body = await req.json() as { action: Action; volume?: number }
   const { action, volume } = body
 
-  const accounts = await linkedAccountsRepository.findByUserId(session.userId)
-  const spotifyAccount = accounts.find(a => a.provider === "spotify")
+  const spotifyAccount = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_SPOTIFY)
   if (!spotifyAccount?.accessToken) return new Response("Spotify not connected", { status: 400 })
 
   const account = {
@@ -35,10 +36,10 @@ export async function POST(req: Request) {
     let res: Response
     if (action === "volume") {
       const pct = Math.max(0, Math.min(100, Math.round(volume ?? 50)))
-      res = await spotifyFetch(account, `https://api.spotify.com/v1/me/player/volume?volume_percent=${pct}`, { method: "PUT" })
+      res = await spotifyService.spotifyFetch(account, `https://api.spotify.com/v1/me/player/volume?volume_percent=${pct}`, { method: "PUT" })
     } else if (action in ACTION_MAP) {
       const { method, url } = ACTION_MAP[action]
-      res = await spotifyFetch(account, url, { method })
+      res = await spotifyService.spotifyFetch(account, url, { method })
     } else {
       return new Response("Invalid action", { status: 400 })
     }

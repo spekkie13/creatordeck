@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession, devOnly } from "@/lib/session-auth"
 
 import { linkedAccountsRepository, followEventsRepository, subEventsRepository, cheerEventsRepository, raidEventsRepository } from "@/repositories"
+import {PLATFORM_TWITCH} from "@/types/platform";
+import {LinkedAccount} from "@/types/entities";
+import {TwitchSessionResult} from "@/types/session";
 
 const TWITCH_HEADERS = (accessToken: string) => ({
   "Authorization": `Bearer ${accessToken}`,
@@ -113,17 +115,21 @@ async function seedFakeRaids(broadcasterId: string): Promise<number> {
 }
 
 export async function POST() {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 404 })
-  }
+  const devCheck: NextResponse | null = devOnly()
+  if (devCheck)
+    return devCheck
 
-  const session = await getServerSession(authOptions)
-  if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result: TwitchSessionResult = await requireTwitchSession()
+  if (result instanceof NextResponse)
+    return result
 
-  const twitchAccount = await linkedAccountsRepository.findByProvider("twitch", session.twitchId)
-  if (!twitchAccount?.accessToken) return NextResponse.json({ error: "No access token — sign out and sign in again" }, { status: 400 })
+  const { session } = result
 
-  const broadcasterId = session.twitchId
+  const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByProvider(PLATFORM_TWITCH, session.twitchId)
+  if (!twitchAccount?.accessToken)
+    return NextResponse.json({ error: "No access token — sign out and sign in again" }, { status: 400 })
+
+  const broadcasterId: string = session.twitchId
   const results: Record<string, number | string> = {}
 
   try {

@@ -11,20 +11,21 @@ import {
   ytStreamSessionsRepository,
   chatMessagesRepository,
 } from "@/repositories"
+import {PLATFORM_YOUTUBE} from "@/types/platform";
 
 export const runtime = "nodejs"
 export const maxDuration = 60
 
 export async function GET(req: Request) {
-  const auth = req.headers.get("authorization")
+  const auth: string | null = req.headers.get("authorization")
   if (auth !== `Bearer ${env.cronSecret}`) {
     return new NextResponse("Unauthorized", { status: 401 })
   }
 
-  const accounts = await linkedAccountsRepository.findAllByProvider("youtube")
+  const accounts: LinkedAccount[] = await linkedAccountsRepository.findAllByProvider(PLATFORM_YOUTUBE)
   console.log(`[yt-poll] found ${accounts.length} account(s)`)
 
-  const results = await Promise.allSettled(accounts.map(pollAccount))
+  const results: PromiseSettledResult<void>[] = await Promise.allSettled(accounts.map(pollAccount))
   const errors = results
     .map((r, i) => r.status === "rejected" ? { account: accounts[i].providerAccountId, error: String(r.reason) } : null)
     .filter(Boolean)
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
 }
 
 async function refreshAccessToken(refreshToken: string): Promise<string | null> {
-  const res = await fetch("https://oauth2.googleapis.com/token", {
+  const res: Response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -59,41 +60,38 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 }
 
 async function pollAccount(account: LinkedAccount): Promise<void> {
-  let accessToken = account.accessToken!
+  let accessToken: string = account.accessToken!
 
-  // Fetch active or testing broadcasts, refreshing token on 401
   const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
   let broadcastsRes = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
     console.log(`[yt-poll] ${account.providerAccountId}: token expired, refreshing`)
-    const newToken = await refreshAccessToken(account.refreshToken)
+    const newToken: string | null = await refreshAccessToken(account.refreshToken)
     if (!newToken) {
       console.log(`[yt-poll] ${account.providerAccountId}: token refresh failed, skipping`)
       return
     }
-    await linkedAccountsRepository.updateAccessToken("youtube", account.providerAccountId, newToken)
+    await linkedAccountsRepository.updateAccessToken(PLATFORM_YOUTUBE, account.providerAccountId, newToken)
     accessToken = newToken
     broadcastsRes = await ytGet(broadcastsUrl, accessToken)
   }
 
   if (!broadcastsRes.ok) {
-    const body = await broadcastsRes.text().catch(() => "(unreadable)")
+    const body: string = await broadcastsRes.text().catch(() => "(unreadable)")
     console.error(`[yt-poll] ${account.providerAccountId}: broadcasts fetch failed with status ${broadcastsRes.status}: ${body}`)
     throw new Error(`broadcasts fetch ${broadcastsRes.status}: ${body}`)
   }
 
   const broadcastsData = await broadcastsRes.json()
   const broadcast = broadcastsData.items?.[0]
-  console.log(`[yt-poll] ${account.providerAccountId}: broadcast=${broadcast?.id ?? "none"}`)
+  console.log(`[yt-poll] ${account.providerAccountId}: broadcast=${broadcast?.id ?? "none"}, liveChatId=${broadcast?.snippet?.liveChatId ?? "MISSING"}, status=${broadcast?.status?.lifeCycleStatus ?? "?"}`)
 
   if (!broadcast) {
-    // No active broadcast — close any open session
     await ytStreamSessionsRepository.closeByChannelId(account.providerAccountId, new Date())
     return
   }
 
-  // Upsert stream session
   const actualStart = broadcast.snippet?.actualStartTime
   await ytStreamSessionsRepository.openIfNew(
     account.providerAccountId,
@@ -103,17 +101,32 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   )
 
   const liveChatId = broadcast.snippet?.liveChatId
-  if (!liveChatId) return
+  if (!liveChatId) {
+    console.warn(`[yt-poll] ${account.providerAccountId}: broadcast ${broadcast.id} has no liveChatId, skipping chat fetch`)
+    return
+  }
+
+  console.log(`[yt-poll] ${account.providerAccountId}: fetching chat for liveChatId=${liveChatId}`)
 
   // Fetch live chat messages
-  const chatRes = await ytGet(
+  const chatRes: Response = await ytGet(
     `liveChatMessages?part=id,snippet,authorDetails&liveChatId=${liveChatId}&maxResults=200`,
     accessToken,
   )
-  if (!chatRes.ok) return
+  if (!chatRes.ok) {
+    const body: string = await chatRes.text().catch(() => "(unreadable)")
+    console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: ${body}`)
+    return
+  }
 
   const chatData = await chatRes.json()
   const messages: Record<string, unknown>[] = chatData.items ?? []
+  const typeCounts = messages.reduce<Record<string, number>>((acc, m) => {
+    const t = ((m.snippet as Record<string, unknown>)?.type as string) ?? "unknown"
+    acc[t] = (acc[t] ?? 0) + 1
+    return acc
+  }, {})
+  console.log(`[yt-poll] ${account.providerAccountId}: received ${messages.length} chat message(s), types=${JSON.stringify(typeCounts)}`)
 
   for (const msg of messages) {
     const snippet = msg.snippet as Record<string, unknown> | undefined
@@ -151,7 +164,7 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
       const text = snippet?.displayMessage as string | undefined
       if (!text) continue
       await chatMessagesRepository.insert({
-        platform: "youtube",
+        platform: PLATFORM_YOUTUBE,
         channelId: account.providerAccountId,
         eventId: msg.id as string,
         userId: (authorDetails?.channelId as string) ?? null,

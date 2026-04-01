@@ -8,7 +8,7 @@ import { users, linkedAccounts } from "@/lib/schema"
 
 class LinkedAccountsRepository {
   async findByProvider(provider: string, providerAccountId: string): Promise<LinkedAccount | null> {
-    const rows = await db.select().from(linkedAccounts)
+    const rows: LinkedAccount[] = await db.select().from(linkedAccounts)
       .where(and(eq(linkedAccounts.provider, provider), eq(linkedAccounts.providerAccountId, providerAccountId)))
       .limit(1)
     return rows[0] ?? null
@@ -16,6 +16,13 @@ class LinkedAccountsRepository {
 
   async findByUserId(userId: string): Promise<LinkedAccount[]> {
     return db.select().from(linkedAccounts).where(eq(linkedAccounts.userId, userId))
+  }
+
+  async findByUserIdAndProvider(userId: string, provider: string): Promise<LinkedAccount | null> {
+    const rows: LinkedAccount[] = await db.select().from(linkedAccounts)
+      .where(and(eq(linkedAccounts.userId, userId), eq(linkedAccounts.provider, provider)))
+      .limit(1)
+    return rows[0] ?? null
   }
 
   async findAllByProvider(provider: string): Promise<LinkedAccount[]> {
@@ -35,8 +42,6 @@ class LinkedAccountsRepository {
       .where(and(eq(linkedAccounts.provider, provider), eq(linkedAccounts.providerAccountId, providerAccountId)))
   }
 
-  // Finds or creates a user+account pair, updates tokens on subsequent sign-ins.
-  // Returns the internal userId, apiKey, and subscription tier.
   async upsertWithUser(data: {
     provider: string
     providerAccountId: string

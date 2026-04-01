@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
 import { env } from "@/lib/env"
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession } from "@/lib/session-auth"
 
 async function getAppToken(): Promise<string> {
   const res = await fetch(
@@ -14,8 +13,9 @@ async function getAppToken(): Promise<string> {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireTwitchSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const token = await getAppToken()
 

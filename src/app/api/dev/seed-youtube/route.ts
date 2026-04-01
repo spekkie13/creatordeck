@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession, devOnly } from "@/lib/session-auth"
 
 import { ytSuperChatEventsRepository, ytMemberEventsRepository } from "@/repositories"
 
@@ -21,12 +20,12 @@ const FAKE_MEMBERS = [
 ]
 
 export async function POST() {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 404 })
-  }
+  const devCheck = devOnly()
+  if (devCheck) return devCheck
 
-  const session = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   // Use real channel ID if signed in with YouTube, otherwise use a dev placeholder
   const channelId = session.youtubeChannelId ?? "UC_dev_seed_channel"

@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { env } from "@/lib/env"
 
 import { linkedAccountsRepository } from "@/repositories"
+import {PLATFORM_YOUTUBE} from "@/types/platform";
 
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!
 
@@ -73,7 +74,7 @@ export async function GET(req: Request) {
   // Link to existing user
   try {
     await linkedAccountsRepository.upsertForUser(userId, {
-      provider: "youtube",
+      provider: PLATFORM_YOUTUBE,
       providerAccountId: channelId,
       login: channelId,
       displayName,
@@ -85,7 +86,7 @@ export async function GET(req: Request) {
   }
 
   // Clear the state cookie and redirect — client will call session.update()
-  const response = NextResponse.redirect(`${BASE_URL}/connections?linked=youtube`)
+  const response: NextResponse = NextResponse.redirect(`${BASE_URL}/connections?linked=youtube`)
   response.cookies.delete("yt_link_state")
   return response
 }

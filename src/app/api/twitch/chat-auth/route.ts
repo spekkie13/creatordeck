@@ -1,16 +1,20 @@
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { linkedAccountsRepository } from "@/repositories"
+import { PLATFORM_TWITCH } from "@/types/platform"
+import {SessionResult} from "@/types/session";
+import {LinkedAccount} from "@/types/entities";
 
-export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+export async function GET(): Promise<Response> {
+  const result: SessionResult = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
-  const accounts = await linkedAccountsRepository.findByUserId(session.userId)
-  const twitchAccount = accounts.find(a => a.provider === "twitch")
-  if (!twitchAccount?.accessToken) return new Response("No Twitch account", { status: 404 })
+  const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH)
+  if (!twitchAccount?.accessToken)
+    return new Response("No Twitch account", { status: 404 })
 
   return Response.json({
     token: twitchAccount.accessToken,

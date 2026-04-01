@@ -1,7 +1,6 @@
-import { NextRequest } from "next/server"
-import { getServerSession } from "next-auth"
+import { NextRequest, NextResponse } from "next/server"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { liveEventFeedService } from "@/services"
 
@@ -9,10 +8,9 @@ const POLL_INTERVAL_MS = 3000
 const INITIAL_LOOKBACK_MS = 5 * 60 * 1000 // send last 5 minutes on connect
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session) {
-    return new Response("Unauthorized", { status: 401 })
-  }
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const broadcasterId = session.twitchId ?? ""
   const youtubeChannelId = session.youtubeChannelId

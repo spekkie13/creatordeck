@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 import { eq, count } from "drizzle-orm"
 
 import type { StreamInfo } from "@/types/stream"
-import type { LinkedAccount } from "@/types/entities"
 import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
 
 import { db } from "@/lib/db"
@@ -26,10 +25,11 @@ export default async function LivePage() {
   const broadcasterId = session.twitchId ?? ""
   const youtubeChannelId = session.youtubeChannelId ?? null
 
-  const linkedAccounts: LinkedAccount[] = await linkedAccountsRepository.findByUserId(session.userId)
-  const twitchAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_TWITCH)
-  const ytAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
-  const spotifyAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_SPOTIFY)
+  const [twitchAccount, ytAccount, spotifyAccount] = await Promise.all([
+    linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH),
+    linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_YOUTUBE),
+    linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_SPOTIFY),
+  ])
 
   const [streamInfo, recentEvents, goalRows, extraGoals, followTotalRows, ytMemberTotalRows, subTotalRows] = await Promise.all([
     twitchAccount?.accessToken ? streamInfoService.fetchStreamInfo(broadcasterId, twitchAccount.accessToken) : Promise.resolve<StreamInfo>({ isLive: false, title: null, category: null, viewerCount: null, startedAt: null }),

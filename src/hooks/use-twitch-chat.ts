@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { ChatMessage } from "@/types/chat";
+import {PLATFORM_TWITCH} from "@/types/platform";
 
 const MAX_MESSAGES = 200
 
@@ -57,13 +58,13 @@ export function useTwitchChat(channelLogin: string): ChatMessage[] {
             }
 
             // With tags: @tags :nick!user@host.tmi.twitch.tv PRIVMSG #channel :message
-            const taggedMatch = line.match(/^@([^ ]+) :[^!]+![^ ]+ PRIVMSG #[^ ]+ :(.+)$/)
+            const taggedMatch: RegExpMatchArray | null = line.match(/^@([^ ]+) :[^!]+![^ ]+ PRIVMSG #[^ ]+ :(.+)$/)
             if (taggedMatch) {
-              const tags = parseTags(taggedMatch[1])
-              const displayName = tags["display-name"] || tags["login"] || "unknown"
+              const tags: Record<string, string> = parseTags(taggedMatch[1])
+              const displayName: string = tags["display-name"] || tags["login"] || "unknown"
               incoming.push({
                 id: crypto.randomUUID(),
-                platform: "twitch",
+                platform: PLATFORM_TWITCH,
                 userDisplayName: displayName,
                 message: taggedMatch[2],
                 occurredAt: new Date().toISOString(),
@@ -75,7 +76,7 @@ export function useTwitchChat(channelLogin: string): ChatMessage[] {
             if (plainMatch) {
               incoming.push({
                 id: crypto.randomUUID(),
-                platform: "twitch",
+                platform: PLATFORM_TWITCH,
                 userDisplayName: plainMatch[1],
                 message: plainMatch[2],
                 occurredAt: new Date().toISOString(),

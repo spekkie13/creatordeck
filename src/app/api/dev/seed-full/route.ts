@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession, devOnly } from "@/lib/session-auth"
 import { db } from "@/lib/db"
 import { streamSessions } from "@/lib/schema"
 
@@ -35,12 +34,12 @@ function historyTimestamps(count: number, minDays: number, maxDays: number): Dat
 }
 
 export async function POST() {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 404 })
-  }
+  const devCheck = devOnly()
+  if (devCheck) return devCheck
 
-  const session = await getServerSession(authOptions)
-  if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireTwitchSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const broadcasterId = session.twitchId
   const channelId = session.youtubeChannelId ?? "UC_dev_seed_channel"

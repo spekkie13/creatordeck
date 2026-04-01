@@ -1,14 +1,15 @@
-import { getServerSession } from "next-auth"
+import { NextResponse } from "next/server"
 
 import type { LiveEvent } from "@/types/events"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { eventReplaysRepository } from "@/repositories"
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { event } = await req.json() as { event: LiveEvent }
   if (!event?.id) return new Response("Invalid event", { status: 400 })

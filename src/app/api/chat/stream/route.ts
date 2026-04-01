@@ -1,14 +1,14 @@
-import { NextRequest } from "next/server"
-import { getServerSession, Session } from "next-auth"
+import { NextRequest, NextResponse } from "next/server"
 
 import { INITIAL_LOOKBACK_MS, POLL_INTERVAL_MS } from "@/constants/chat_api"
-import { authOptions } from "@/lib/auth"
+import { requireTwitchSession } from "@/lib/session-auth"
 
 import { chatMessagesRepository } from "@/repositories"
 
 export async function GET(req: NextRequest) {
-  const session: Session | null = await getServerSession(authOptions)
-  if (!session?.twitchId) return new Response("Unauthorized", { status: 401 })
+  const result = await requireTwitchSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const broadcasterId: string = session.twitchId
 

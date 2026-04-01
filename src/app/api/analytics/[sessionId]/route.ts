@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession, Session } from "next-auth"
 
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { analyticsService } from "@/services"
 import type { SessionDetail } from "@/services/analytics.types"
@@ -11,8 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
   const { sessionId } = await params
-  const session: Session | null = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   if (!session.twitchId) return NextResponse.json({ error: "Twitch account required" }, { status: 400 })
 

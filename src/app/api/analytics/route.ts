@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession, Session } from "next-auth"
 
 import { hasAccess } from "@/lib/gates"
-import { authOptions } from "@/lib/auth"
+import { requireSession } from "@/lib/session-auth"
 
 import { analyticsService } from "@/services"
 import type { AnalyticsOverview } from "@/services/analytics.types"
@@ -11,8 +10,9 @@ const RANGES = { "7d": 7, "30d": 30, "90d": 90 } as const
 type Range = keyof typeof RANGES
 
 export async function GET(req: NextRequest) {
-  const session: Session | null = await getServerSession(authOptions)
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
   const { searchParams } = new URL(req.url)
   let range: Range = (searchParams.get("range") ?? "7d") as Range

@@ -1,27 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { userRepository, linkedAccountsRepository } from "@/repositories"
+import { linkedAccountsRepository } from "@/repositories"
+import { validateWidgetToken } from "@/lib/widget-auth"
 
-import { widgetGoalService } from "@/services"
+import {WidgetGoalData, widgetGoalService} from "@/services"
+import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
+import {WidgetAuthResult} from "@/types/session";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse> {
+  const result: WidgetAuthResult = await validateWidgetToken(req)
+  if (result instanceof NextResponse) return result
+  const { user } = result
+
   const { searchParams } = new URL(req.url)
-  const token = searchParams.get("token")
-  const type = searchParams.get("type") ?? "twitch_sub"
+  const type: string = searchParams.get("type") ?? "twitch_sub"
 
-  if (!token) return NextResponse.json({ error: "Missing token" }, { status: 400 })
+  const [twitchAccount, ytAccount] = await Promise.all([
+    linkedAccountsRepository.findByUserIdAndProvider(user.id, PLATFORM_TWITCH),
+    linkedAccountsRepository.findByUserIdAndProvider(user.id, PLATFORM_YOUTUBE),
+  ])
+  const broadcasterId: string = twitchAccount?.providerAccountId ?? ""
+  const channelId: string = ytAccount?.providerAccountId ?? ""
 
-  const user = await userRepository.findByWidgetToken(token)
-  if (!user) return NextResponse.json({ error: "Invalid token" }, { status: 401 })
-
-  const linkedAccounts = await linkedAccountsRepository.findByUserId(user.id)
-  const twitchAccount = linkedAccounts.find(a => a.provider === "twitch")
-  const ytAccount = linkedAccounts.find(a => a.provider === "youtube")
-  const broadcasterId = twitchAccount?.providerAccountId ?? ""
-  const channelId = ytAccount?.providerAccountId ?? ""
-
-  const data = await widgetGoalService.getGoalData(user.id, broadcasterId, channelId, type)
-  if (!data) return NextResponse.json({ error: "Invalid type or platform not connected" }, { status: 400 })
+  const data: WidgetGoalData | null = await widgetGoalService.getGoalData(user.id, broadcasterId, channelId, type)
+  if (!data)
+    return NextResponse.json({ error: "Invalid type or platform not connected" }, { status: 400 })
 
   return NextResponse.json(data)
 }

@@ -12,3 +12,9 @@ export type QueueTrack = {
     artist: string
     albumArt: string | null
 }
+
+export type SpotifyAccount = {
+    providerAccountId: string
+    accessToken: string
+    refreshToken: string | null
+}

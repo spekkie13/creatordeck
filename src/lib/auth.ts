@@ -1,4 +1,4 @@
-import { NextAuthOptions } from "next-auth"
+import {NextAuthOptions, Session} from "next-auth"
 import TwitchProvider from "next-auth/providers/twitch"
 import GoogleProvider from "next-auth/providers/google"
 
@@ -6,6 +6,9 @@ import { env } from "@/lib/env"
 import type { SubscriptionTier } from "@/lib/gates"
 
 import { linkedAccountsRepository, userRepository } from "@/repositories"
+import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
+import {JWT} from "next-auth/jwt";
+import {LinkedAccount} from "@/types/entities";
 
 async function fetchYouTubeChannelId(accessToken: string): Promise<string | null> {
   const res = await fetch("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true", {
@@ -41,17 +44,15 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async signIn({ account }) {
-      return account?.provider === "twitch" || account?.provider === "google"
+      return account?.provider === PLATFORM_TWITCH || account?.provider === "google"
     },
     async jwt({ token, account, profile, trigger }) {
-      // Called when client calls session.update() — refresh linked accounts + tier from DB
       if (trigger === "update" && token.userId) {
-        const [accounts, tier] = await Promise.all([
-          linkedAccountsRepository.findByUserId(token.userId as string),
+        const [ytAccount, twitchAccount, tier] = await Promise.all([
+          linkedAccountsRepository.findByUserIdAndProvider(token.userId as string, PLATFORM_YOUTUBE),
+          linkedAccountsRepository.findByUserIdAndProvider(token.userId as string, PLATFORM_TWITCH),
           userRepository.getTier(token.userId as string),
         ])
-        const ytAccount = accounts.find(a => a.provider === "youtube")
-        const twitchAccount = accounts.find(a => a.provider === "twitch")
         token.youtubeChannelId = ytAccount?.providerAccountId ?? null
         token.twitchId = twitchAccount?.providerAccountId ?? null
         token.tier = tier as SubscriptionTier
@@ -63,11 +64,11 @@ export const authOptions: NextAuthOptions = {
         const p = profile as Record<string, string>
         const existingUserId = token.userId as string | undefined
 
-        if (account.provider === "twitch") {
+        if (account.provider === PLATFORM_TWITCH) {
           if (existingUserId) {
             try {
               await linkedAccountsRepository.upsertForUser(existingUserId, {
-                provider: "twitch",
+                provider: PLATFORM_TWITCH,
                 providerAccountId: p.sub,
                 login: p.preferred_username,
                 displayName: p.preferred_username,
@@ -81,15 +82,14 @@ export const authOptions: NextAuthOptions = {
             }
           } else {
             const { userId, apiKey, tier } = await linkedAccountsRepository.upsertWithUser({
-              provider: "twitch",
+              provider: PLATFORM_TWITCH,
               providerAccountId: p.sub,
               login: p.preferred_username,
               displayName: p.preferred_username,
               accessToken: account.access_token ?? "",
               refreshToken: account.refresh_token ?? "",
             })
-            const allAccounts = await linkedAccountsRepository.findByUserId(userId)
-            const ytAccount = allAccounts.find(a => a.provider === "youtube")
+            const ytAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_YOUTUBE)
             token.userId = userId
             token.twitchId = p.sub
             token.youtubeChannelId = ytAccount?.providerAccountId ?? null
@@ -99,7 +99,7 @@ export const authOptions: NextAuthOptions = {
           }
 
         } else if (account.provider === "google") {
-          const channelId = await fetchYouTubeChannelId(account.access_token ?? "")
+          const channelId: string | null = await fetchYouTubeChannelId(account.access_token ?? "")
           if (!channelId) {
             token.linkingError = "no_youtube_channel"
             return token
@@ -108,7 +108,7 @@ export const authOptions: NextAuthOptions = {
           if (existingUserId) {
             try {
               await linkedAccountsRepository.upsertForUser(existingUserId, {
-                provider: "youtube",
+                provider: PLATFORM_YOUTUBE,
                 providerAccountId: channelId,
                 login: channelId,
                 displayName: p.name ?? channelId,
@@ -122,15 +122,14 @@ export const authOptions: NextAuthOptions = {
             }
           } else {
             const { userId, apiKey, tier } = await linkedAccountsRepository.upsertWithUser({
-              provider: "youtube",
+              provider: PLATFORM_YOUTUBE,
               providerAccountId: channelId,
               login: channelId,
               displayName: p.name ?? channelId,
               accessToken: account.access_token ?? "",
               refreshToken: account.refresh_token ?? "",
             })
-            const allAccounts = await linkedAccountsRepository.findByUserId(userId)
-            const twitchAccount = allAccounts.find(a => a.provider === "twitch")
+            const twitchAccount = await linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_TWITCH)
             token.userId = userId
             token.twitchId = twitchAccount?.providerAccountId ?? null
             token.youtubeChannelId = channelId
@@ -142,7 +141,7 @@ export const authOptions: NextAuthOptions = {
       }
       return token
     },
-    async session({ session, token }) {
+    async session({ session, token } : {session: Session; token: JWT}) {
       session.userId = token.userId as string
       session.twitchId = token.twitchId as string | null
       session.youtubeChannelId = token.youtubeChannelId as string | null
