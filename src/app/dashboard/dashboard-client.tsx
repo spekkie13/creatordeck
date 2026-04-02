@@ -164,7 +164,8 @@ export function DashboardClient({
 
             {/* Twitch follow goal */}
             {followGoal !== null ? (() => {
-              const followProgress = Math.min((followTotal / followGoal) * 100, 100)
+              const displayFollowers = followerCount ?? followTotal
+              const followProgress = Math.min((displayFollowers / followGoal) * 100, 100)
               return (
                 <div className="bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60 rounded-lg p-4 space-y-2">
                   <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -172,7 +173,7 @@ export function DashboardClient({
                     Twitch Followers
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold">{followTotal.toLocaleString()}</span>
+                    <span className="text-2xl font-bold">{displayFollowers.toLocaleString()}</span>
                     <span className="text-sm text-zinc-400 dark:text-zinc-500">/ {followGoal.toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">

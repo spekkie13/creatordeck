@@ -47,8 +47,8 @@ export default async function DashboardPage() {
   const ytAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
 
   const [followerCount, subCount, ytSubCount, followerGrowthRows, subGrowthRows] = await Promise.all([
-    twitchAccount?.accessToken ? twitchService.fetchTwitchFollowerCount(broadcasterId, twitchAccount.accessToken) : null,
-    twitchAccount?.accessToken ? twitchService.fetchTwitchSubCount(broadcasterId, twitchAccount.accessToken) : null,
+    twitchAccount?.accessToken ? twitchService.fetchTwitchFollowerCount(broadcasterId, twitchAccount.accessToken, twitchAccount.refreshToken) : null,
+    twitchAccount?.accessToken ? twitchService.fetchTwitchSubCount(broadcasterId, twitchAccount.accessToken, twitchAccount.refreshToken) : null,
     ytAccount?.accessToken ? youtubeService.fetchYouTubeSubCount(ytAccount.accessToken, ytAccount.refreshToken ?? null, ytAccount.providerAccountId) : null,
     broadcasterId
       ? db.select({ total: count() }).from(followEvents).where(and(eq(followEvents.broadcasterId, broadcasterId), gt(followEvents.occurredAt, thirtyDaysAgo)))
