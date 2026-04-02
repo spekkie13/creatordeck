@@ -62,11 +62,7 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken: string = account.accessToken!
 
-  const tokenInfo = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`)
-  const tokenInfoData = await tokenInfo.json()
-  console.log(`[yt-poll] ${account.providerAccountId}: token scopes=${tokenInfoData.scope ?? tokenInfoData.error ?? "unknown"}`)
-
-  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&broadcastType=all"
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
   let broadcastsRes: Response = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
@@ -119,7 +115,7 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   )
   if (!chatRes.ok) {
     const body: string = await chatRes.text().catch(() => "(unreadable)")
-    console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: |${body}|`)
+    console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: ${body}`)
     return
   }
 
