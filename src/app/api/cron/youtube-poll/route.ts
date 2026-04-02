@@ -62,6 +62,10 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken: string = account.accessToken!
 
+  const tokenInfo = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${accessToken}`)
+  const tokenInfoData = await tokenInfo.json()
+  console.log(`[yt-poll] ${account.providerAccountId}: token scopes=${tokenInfoData.scope ?? tokenInfoData.error ?? "unknown"}`)
+
   const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&broadcastType=all"
   let broadcastsRes: Response = await ytGet(broadcastsUrl, accessToken)
 
