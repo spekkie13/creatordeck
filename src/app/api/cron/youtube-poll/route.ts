@@ -115,7 +115,7 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   )
   if (!chatRes.ok) {
     const body: string = await chatRes.text().catch(() => "(unreadable)")
-    console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: ${body}`)
+    console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: |${body}|`)
     return
   }
 
