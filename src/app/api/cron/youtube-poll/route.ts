@@ -62,7 +62,7 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken: string = account.accessToken!
 
-  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastType=persistent&broadcastStatus=active"
   let broadcastsRes: Response = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
@@ -85,7 +85,7 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
 
   const broadcastsData = await broadcastsRes.json()
   const broadcast = broadcastsData.items?.[0]
-  console.log(`[yt-poll] ${account.providerAccountId}: broadcast=${broadcast?.id ?? "none"}, liveChatId=${broadcast?.snippet?.liveChatId ?? "MISSING"}, status=${broadcast?.status?.lifeCycleStatus ?? "?"}`)
+  console.log(`[yt-poll] ${account.providerAccountId}: broadcast=${broadcast?.id ?? "none"}, type=${broadcast?.snippet?.broadcastType ?? "??"}, liveChatId=${broadcast?.snippet?.liveChatId ?? "MISSING"}, status=${broadcast?.status?.lifeCycleStatus ?? "?"}`)
 
   if (!broadcast) {
     await ytStreamSessionsRepository.closeByChannelId(account.providerAccountId, new Date())
