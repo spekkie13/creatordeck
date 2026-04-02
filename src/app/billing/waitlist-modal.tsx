@@ -1,12 +1,10 @@
 "use client"
 
 import React, { RefObject, useEffect, useRef, useState } from "react"
-
-import { TIER_LABELS } from "@/lib/gates"
-import type { SubscriptionTier } from "@/lib/gates"
+import { Tier } from "@/types/tier";
 
 type Props = {
-  tier: Exclude<SubscriptionTier, "free">
+  tier: Tier
   twitchLogin?: string
   onClose: () => void
 }
@@ -54,7 +52,7 @@ export function WaitlistModal({ tier, twitchLogin, onClose }: Props) {
             <p className="text-2xl">🎉</p>
             <p className="text-lg font-semibold">You&apos;re on the list!</p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              We&apos;ll email you as soon as {TIER_LABELS[tier]} launches.
+              We&apos;ll email you as soon as {Tier.PAID_TIERS.find((t: Tier) => t === tier)?.label} launches.
             </p>
             <button
               onClick={onClose}
@@ -68,7 +66,7 @@ export function WaitlistModal({ tier, twitchLogin, onClose }: Props) {
             <div className="space-y-1">
               <h2 className="text-lg font-semibold">Paid plans coming soon</h2>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                You tried to upgrade to <span className="font-medium text-zinc-700 dark:text-zinc-200">{TIER_LABELS[tier]}</span> — leave your email and we&apos;ll notify you the moment it&apos;s available.
+                You tried to upgrade to <span className="font-medium text-zinc-700 dark:text-zinc-200">{Tier.PAID_TIERS.find((t: Tier) => t === tier)?.label}</span> — leave your email and we&apos;ll notify you the moment it&apos;s available.
               </p>
             </div>
 

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { env } from "@/lib/env"
-import {buildPriceTierMap, SubscriptionTier} from "@/lib/gates"
+import { buildPriceTierMap } from "@/lib/gates"
 import { stripe } from "@/lib/stripe"
 import { requireSession } from "@/lib/session-auth"
 
 import { userRepository } from "@/repositories"
 import {SessionResult} from "@/types/session";
 import Stripe from "stripe";
+import { SubscriptionTier } from "@/types/tier";
 
 const priceTierMap: Record<string, SubscriptionTier> = buildPriceTierMap(env.stripePrices)
 

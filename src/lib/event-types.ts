@@ -1,7 +1,5 @@
 import type { LiveEventType } from "@/types/events"
 
-export const ALL_TYPES: LiveEventType[] = ["follow", "sub", "bits", "raid", "superchat", "member"]
-
 export const TYPE_BADGE: Record<LiveEventType, string> = {
   sub:       "bg-purple-500/20 text-purple-400 border border-purple-500/40",
   follow:    "bg-blue-500/20 text-blue-400 border border-blue-500/40",

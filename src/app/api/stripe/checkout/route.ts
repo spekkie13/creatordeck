@@ -1,24 +1,28 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { env } from "@/lib/env"
 import { stripe } from "@/lib/stripe"
 import { requireSession } from "@/lib/session-auth"
 
 import { userRepository } from "@/repositories"
+import {SessionResult} from "@/types/session";
+import Stripe from "stripe";
 
-export async function POST(req: NextRequest) {
-  const result = await requireSession()
-  if (result instanceof NextResponse) return result
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const result: SessionResult = await requireSession()
+  if (result instanceof NextResponse)
+    return result
+
   const { session } = result
 
   const { priceId } = await req.json()
-  if (!priceId) return NextResponse.json({ error: "Missing priceId" }, { status: 400 })
+  if (!priceId)
+    return NextResponse.json({ error: "Missing priceId" }, { status: 400 })
 
   const { stripeCustomerId } = await userRepository.getStripeInfo(session.userId)
 
-  const origin = req.headers.get("origin") ?? "http://localhost:3000"
+  const origin: string = req.headers.get("origin") ?? "http://localhost:3000"
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const checkoutSession: Stripe.Response<Stripe.Checkout.Session> = await stripe.checkout.sessions.create({
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],

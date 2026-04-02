@@ -76,7 +76,15 @@ class UserRepository {
   }
 
   async findByStripeCustomerId(customerId: string): Promise<{ id: string; tier: string } | null> {
-    const rows = await db.select({ id: users.id, tier: users.tier }).from(users).where(eq(users.stripeCustomerId, customerId)).limit(1)
+    const rows =
+        await db
+            .select({ id: users.id, tier: users.tier })
+            .from(users)
+            .where(
+                eq(users.stripeCustomerId, customerId)
+            )
+            .limit(1)
+
     return rows[0] ?? null
   }
 

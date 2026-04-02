@@ -1,13 +1,9 @@
-﻿import type { SubscriptionTier } from "@/lib/gates"
+﻿import {PaidSubscriptionTier, SubscriptionTier} from "@/types/tier";
 
 export type PricingCardProps = {
-    currentTier: SubscriptionTier
+    currentTier: SubscriptionTier;
     hasSubscription: boolean
     waitlistMode: boolean
     twitchLogin?: string
-    prices: {
-        tier1: { monthly: string; annual: string }
-        tier2: { monthly: string; annual: string }
-        tier3: { monthly: string; annual: string }
-    }
+    prices: Record<PaidSubscriptionTier, { monthly: string; annual: string; }>
 }

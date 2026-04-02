@@ -5,9 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { ReadonlyURLSearchParams } from "next/navigation"
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
-
-import { TIER_LABELS } from "@/lib/gates"
-import type { SubscriptionTier } from "@/lib/gates"
+import {SubscriptionTier, Tier} from "@/types/tier";
 
 export default function BillingSuccessPage() {
   const { update } = useSession()
@@ -26,7 +24,9 @@ export default function BillingSuccessPage() {
     async function verify() {
       try {
         const res: Response = await fetch(`/api/stripe/verify-checkout?session_id=${sessionId}`)
-        if (!res.ok) throw new Error("Verification failed")
+        if (!res.ok)
+          throw new Error("Verification failed")
+
         const data = await res.json()
         setTier(data.tier)
         setStatus("success")
@@ -56,7 +56,7 @@ export default function BillingSuccessPage() {
             <p className="text-2xl">🎉</p>
             <p className="text-lg font-semibold">You&apos;re all set!</p>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              {tier ? `${TIER_LABELS[tier]} activated` : "Plan activated"} — redirecting to billing...
+              {tier ? `${Tier.ALL.find((t: Tier) => t.id === tier)?.label} activated` : "Plan activated"} — redirecting to billing...
             </p>
           </>
         )}

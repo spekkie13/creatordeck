@@ -2,31 +2,29 @@
 
 import { useState } from "react"
 
-import { TIER_LABELS, TIER_MONTHLY_PRICES, TIER_ANNUAL_PRICES } from "@/lib/gates"
-import type { SubscriptionTier } from "@/lib/gates"
-
 import type { PricingCardProps } from "@/props/pricing-card.props"
-import { PAID_TIERS, TIER_FEATURES } from "@/constants/billing"
-import type { BillingCycle, PaidTier } from "@/constants/billing"
+import { TIER_FEATURES } from "@/constants/billing"
+import type { BillingCycle } from "@/constants/billing"
 
 import { WaitlistModal } from "@/app/billing/waitlist-modal"
 import { Spinner } from "@/app/billing/spinner"
 import { Feature } from "@/app/billing/feature"
 import { CurrentPlanBadge } from "@/app/billing/current-plan-badge"
-
+import {PaidSubscriptionTier, SubscriptionTier, Tier} from "@/types/tier";
 
 export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitchLogin, prices }: PricingCardProps) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly")
   const [loading, setLoading] = useState<string | null>(null)
-  const [waitlistTier, setWaitlistTier] = useState<PaidTier | null>(null)
+  const [waitlistTier, setWaitlistTier] = useState<Tier | null>(null)
 
-  async function handleUpgrade(tier: PaidTier) {
+  async function handleUpgrade(tier: Tier) {
     if (waitlistMode) {
       setWaitlistTier(tier)
       return
     }
-    const priceId: string = prices[tier][cycle]
-    setLoading(tier)
+
+    const priceId: string = prices[tier.id as PaidSubscriptionTier][cycle]
+    setLoading(tier.label)
     try {
       const res: Response = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -52,7 +50,9 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
   }
 
   const displayPrice = (tier: SubscriptionTier) =>
-    cycle === "monthly" ? TIER_MONTHLY_PRICES[tier] : TIER_ANNUAL_PRICES[tier]
+    cycle === "monthly" ?
+        Tier.PAID_TIERS.find((t: Tier) => t.id === tier)?.monthlyPrice :
+        Tier.PAID_TIERS.find((t: Tier) => t.id === tier)?.annualPrice
 
   return (
     <div className="space-y-6">
@@ -94,7 +94,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
         }`}>
           {currentTier === "free" && <CurrentPlanBadge />}
           <div>
-            <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{TIER_LABELS.free}</p>
+            <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{Tier.ALL[0].label}</p>
             <p className="text-3xl font-bold mt-1">Free</p>
           </div>
           <ul className="flex-1 space-y-2">
@@ -106,14 +106,14 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
         </div>
 
         {/* Paid tiers */}
-        {PAID_TIERS.map(tier => {
-          const isCurrent = currentTier === tier
-          const isPopular = tier === "tier1"
-          const isLoadingThis = loading === tier
+        {Tier.PAID_TIERS.map(tier => {
+          const isCurrent: boolean = currentTier === tier.id
+          const isPopular: boolean = tier.id === "tier1"
+          const isLoadingThis: boolean = loading === tier.id
 
           return (
             <div
-              key={tier}
+              key={tier.id}
               className={`relative flex flex-col rounded-2xl border p-6 gap-5 ${
                 isCurrent
                   ? "border-teal-500 ring-1 ring-teal-500 bg-white dark:bg-zinc-900"
@@ -130,12 +130,12 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
               )}
 
               <div>
-                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{TIER_LABELS[tier]}</p>
-                <p className="text-3xl font-bold mt-1">{displayPrice(tier)}</p>
+                <p className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{tier.label}</p>
+                <p className="text-3xl font-bold mt-1">{displayPrice(tier.id)}</p>
               </div>
 
               <ul className="flex-1 space-y-2">
-                {TIER_FEATURES[tier].map(f => <Feature key={f} text={f} />)}
+                {TIER_FEATURES[tier.id].map(f => <Feature key={f} text={f} />)}
               </ul>
 
               {isCurrent ? (
@@ -152,7 +152,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
                   disabled={loading !== null}
                   className="w-full py-2.5 rounded-lg text-sm font-medium bg-teal-600 hover:bg-teal-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoadingThis ? <Spinner /> : `Upgrade to ${TIER_LABELS[tier]}`}
+                  {isLoadingThis ? <Spinner /> : `Upgrade to ${tier.label}`}
                 </button>
               )}
             </div>

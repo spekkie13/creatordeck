@@ -3,12 +3,12 @@ import TwitchProvider from "next-auth/providers/twitch"
 import GoogleProvider from "next-auth/providers/google"
 
 import { env } from "@/lib/env"
-import type { SubscriptionTier } from "@/lib/gates"
 
 import { linkedAccountsRepository, userRepository } from "@/repositories"
 import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 import {JWT} from "next-auth/jwt";
 import {LinkedAccount} from "@/types/entities";
+import {SubscriptionTier} from "@/types/tier";
 
 async function fetchYouTubeChannelId(accessToken: string): Promise<string | null> {
   const res = await fetch("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true", {

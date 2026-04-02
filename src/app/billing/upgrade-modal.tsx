@@ -2,9 +2,7 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-
-import { TIER_LABELS, TIER_MONTHLY_PRICES } from "@/lib/gates"
-import type { SubscriptionTier } from "@/lib/gates"
+import {SubscriptionTier, Tier} from "@/types/tier";
 
 const TIER_PERKS: Record<SubscriptionTier, string[]> = {
   free: [],
@@ -56,7 +54,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-teal-500">
-              {TIER_LABELS[requiredTier]} · {TIER_MONTHLY_PRICES[requiredTier]}
+              {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.label} · {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.monthlyPrice}
             </span>
             <button
               onClick={onClose}
@@ -68,7 +66,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
           </div>
           <h2 className="text-lg font-semibold">Upgrade to unlock {featureName}</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            This feature requires {TIER_LABELS[requiredTier]}.
+            This feature requires {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.label}.
           </p>
         </div>
 

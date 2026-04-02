@@ -1,35 +1,4 @@
-export type SubscriptionTier = "free" | "tier1" | "tier2" | "tier3"
-
-const TIER_RANK: Record<SubscriptionTier, number> = {
-  free:  0,
-  tier1: 1,
-  tier2: 2,
-  tier3: 3,
-}
-
-export const TIER_LABELS: Record<SubscriptionTier, string> = {
-  free:  "Free",
-  tier1: "Tier 1",
-  tier2: "Tier 2",
-  tier3: "Tier 3",
-}
-
-export const TIER_MONTHLY_PRICES: Record<SubscriptionTier, string> = {
-  free:  "Free",
-  tier1: "$4.99/mo",
-  tier2: "$11.99/mo",
-  tier3: "$19.99/mo",
-}
-
-export const TIER_ANNUAL_PRICES: Record<SubscriptionTier, string> = {
-  free:  "Free",
-  tier1: "$49.99/yr",
-  tier2: "$124.99/yr",
-  tier3: "$199.99/yr",
-}
-
-/** @deprecated use TIER_MONTHLY_PRICES or TIER_ANNUAL_PRICES */
-export const TIER_PRICES = TIER_MONTHLY_PRICES
+import {PaidSubscriptionTier, SubscriptionTier, Tier} from "@/types/tier";
 
 /**
  * Maps Stripe price IDs to their subscription tier.
@@ -39,7 +8,7 @@ export function buildPriceTierMap(prices: {
   tier1: { monthly: string; annual: string }
   tier2: { monthly: string; annual: string }
   tier3: { monthly: string; annual: string }
-}): Record<string, SubscriptionTier> {
+}): Record<string, PaidSubscriptionTier> {
   return {
     [prices.tier1.monthly]: "tier1",
     [prices.tier1.annual]:  "tier1",
@@ -52,7 +21,7 @@ export function buildPriceTierMap(prices: {
 
 /** Returns true if userTier meets or exceeds the requiredTier. */
 export function hasAccess(userTier: SubscriptionTier, requiredTier: SubscriptionTier): boolean {
-  return TIER_RANK[userTier] >= TIER_RANK[requiredTier]
+  return Tier.from(userTier).meetsOrExceeds(Tier.from(requiredTier));
 }
 
 /**

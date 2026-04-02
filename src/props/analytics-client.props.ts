@@ -1,6 +1,6 @@
 ﻿import type { AnalyticsOverview } from "@/services"
-import type { SubscriptionTier } from "@/lib/gates"
 import type { Range } from "@/constants/analytics"
+import { SubscriptionTier } from "@/types/tier";
 
 export type AnalyticsClientProps = {
     initialData: AnalyticsOverview

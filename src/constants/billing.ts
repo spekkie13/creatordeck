@@ -1,8 +1,6 @@
-﻿import type { SubscriptionTier } from "@/lib/gates"
+﻿import {SubscriptionTier} from "@/types/tier";
 
 export type BillingCycle = "monthly" | "annual"
-export type PaidTier = "tier1" | "tier2" | "tier3"
-export const PAID_TIERS: PaidTier[] = ["tier1", "tier2", "tier3"]
 
 export const TIER_FEATURES: Record<SubscriptionTier, string[]> = {
     free: [

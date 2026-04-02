@@ -62,8 +62,8 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken: string = account.accessToken!
 
-  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
-  let broadcastsRes = await ytGet(broadcastsUrl, accessToken)
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active&mine=true"
+  let broadcastsRes: Response = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
     console.log(`[yt-poll] ${account.providerAccountId}: token expired, refreshing`)

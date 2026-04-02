@@ -1,11 +1,11 @@
 import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
 
-import { TIER_LABELS } from "@/lib/gates"
 import { authOptions } from "@/lib/auth"
 
 import { AppHeader } from "@/app/dashboard/app-header"
 import { ApiKeyToggle } from "./api-key-toggle"
+import {Tier} from "@/types/tier";
 
 export default async function AccountPage() {
   const session: Session | null = await getServerSession(authOptions)
@@ -27,7 +27,7 @@ export default async function AccountPage() {
           </div>
           <div className="px-6 py-4 flex items-center justify-between">
             <span className="text-sm text-zinc-500 dark:text-zinc-400">Plan</span>
-            <span className="text-sm text-zinc-900 dark:text-white">{TIER_LABELS[session.tier]}</span>
+            <span className="text-sm text-zinc-900 dark:text-white">{Tier.ALL.find((t: Tier) => t.id === session.tier)?.label}</span>
           </div>
           <div className="px-6 py-4 flex items-center justify-between">
             <span className="text-sm text-zinc-500 dark:text-zinc-400">Twitch ID</span>

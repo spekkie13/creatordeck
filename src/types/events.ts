@@ -1,11 +1,11 @@
-import {Platform} from "esbuild";
+import {Platform} from "@/types/platform";
 
 export type LiveEventType = "sub" | "follow" | "bits" | "raid" | "superchat" | "member"
 
 export type LiveEvent = {
   id: string
   type: LiveEventType
-  platform: "youtube" | "twitch"
+  platform: Platform
   fromUser: string
   amount: number | null
   currency?: string | null        // superchat only — ISO 4217 code e.g. "USD"

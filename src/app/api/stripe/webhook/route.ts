@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from "next/server"
 import type Stripe from "stripe"
 
 import { env } from "@/lib/env"
-import {buildPriceTierMap, SubscriptionTier} from "@/lib/gates"
+import { buildPriceTierMap } from "@/lib/gates"
 import { stripe } from "@/lib/stripe"
 
 import { userRepository } from "@/repositories"
+import { SubscriptionTier } from "@/types/tier";
 
 export const runtime = "nodejs"
 
-const priceTierMap: Record<string,  SubscriptionTier> = buildPriceTierMap(env.stripePrices)
+const priceTierMap: Record<string, SubscriptionTier> = buildPriceTierMap(env.stripePrices)
 
 function getPriceId(subscription: Stripe.Subscription): string | null {
   return subscription.items.data[0]?.price.id ?? null

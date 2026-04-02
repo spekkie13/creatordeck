@@ -1,7 +1,6 @@
 import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
 
-import { TIER_LABELS } from "@/lib/gates"
 import { env } from "@/lib/env"
 import { authOptions } from "@/lib/auth"
 
@@ -9,12 +8,14 @@ import { userRepository } from "@/repositories"
 
 import { AppHeader } from "@/app/dashboard/app-header"
 import { PricingCards } from "./pricing-cards"
+import {Tier} from "@/types/tier";
+import {StripeInfo} from "@/types/stripeInfo";
 
 export default async function BillingPage() {
   const session: Session | null = await getServerSession(authOptions)
   if (!session) redirect("/")
 
-  const stripeInfo = await userRepository.getStripeInfo(session.userId)
+  const stripeInfo: StripeInfo = await userRepository.getStripeInfo(session.userId)
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -25,7 +26,7 @@ export default async function BillingPage() {
         <div className="space-y-1">
           <h1 className="text-xl font-semibold tracking-tight">Billing & Plans</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            You are currently on the <span className="font-medium text-zinc-700 dark:text-zinc-300">{TIER_LABELS[session.tier]}</span> plan.
+            You are currently on the <span className="font-medium text-zinc-700 dark:text-zinc-300">{Tier.ALL.find((t: Tier) => t.id === session.tier)?.label}</span> plan.
           </p>
         </div>
 

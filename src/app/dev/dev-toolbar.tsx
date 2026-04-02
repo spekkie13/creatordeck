@@ -3,11 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-
-import { TIER_LABELS, TIER_PRICES } from "@/lib/gates"
-import type { SubscriptionTier } from "@/lib/gates"
-
-const TIERS: SubscriptionTier[] = ["free", "tier1", "tier2", "tier3"]
+import {SubscriptionTier, Tier} from "@/types/tier";
 
 export function DevToolbar() {
   const { data: session, update } = useSession()
@@ -37,7 +33,7 @@ export function DevToolbar() {
             <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">Dev toolbar</p>
             <h1 className="text-lg font-semibold text-white mt-1">Switch subscription tier</h1>
             <p className="text-sm text-zinc-400 mt-1">
-              Current: <span className="text-teal-400 font-medium">{TIER_LABELS[current]}</span>
+              Current: <span className="text-teal-400 font-medium">{Tier.ALL.find((t: Tier) => t.id === current)?.label}</span>
             </p>
           </div>
           <Link href="/dashboard" className="text-xs text-zinc-400 hover:text-white transition-colors">
@@ -46,24 +42,24 @@ export function DevToolbar() {
         </div>
 
         <div className="space-y-2">
-          {TIERS.map(tier => (
+          {Tier.ALL.map(tier => (
             <button
-              key={tier}
-              onClick={() => setTier(tier)}
+              key={tier.label}
+              onClick={() => setTier(tier.label as SubscriptionTier)}
               disabled={loading !== null}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-all ${
-                current === tier
+                current === tier.label
                   ? "border-teal-500 bg-teal-500/10 text-teal-300"
                   : "border-zinc-700 bg-zinc-800 text-zinc-300 hover:border-zinc-500 hover:text-white"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <span>{TIER_LABELS[tier]}</span>
+              <span>{Tier.ALL.find((t: Tier) => t.id === tier.id)?.label}</span>
               <span className="flex items-center gap-2">
-                <span className="text-zinc-500 text-xs">{TIER_PRICES[tier]}</span>
-                {loading === tier && (
+                <span className="text-zinc-500 text-xs">{Tier.ALL.find((t: Tier) => t.id === tier.id)?.label}</span>
+                {loading === tier.id && (
                   <span className="w-3.5 h-3.5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
                 )}
-                {current === tier && loading === null && (
+                {current === tier.id && loading === null && (
                   <span className="text-teal-400 text-xs">✓ active</span>
                 )}
               </span>
