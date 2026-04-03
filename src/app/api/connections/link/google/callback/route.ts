@@ -30,7 +30,8 @@ export async function GET(req: Request) {
       return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
     }
     userId = parsed.userId
-  } catch {
+  } catch (err) {
+    console.error("[google/callback] Failed to parse state cookie:", err)
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
   }
 
@@ -80,7 +81,8 @@ export async function GET(req: Request) {
       accessToken: tokenData.access_token,
       refreshToken: tokenData.refresh_token ?? "",
     })
-  } catch {
+  } catch (err) {
+    console.error("[google/callback] Failed to upsert linked account for userId", userId, err)
     return NextResponse.redirect(`${BASE_URL}/connections?error=account_conflict`)
   }
 

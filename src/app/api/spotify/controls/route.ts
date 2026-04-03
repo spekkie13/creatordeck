@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
+import { apiError } from "@/lib/api-response"
 import { spotifyFetch } from "@/lib/spotify"
 
 import { linkedAccountsRepository } from "@/repositories"
@@ -16,14 +17,14 @@ const ACTION_MAP: Record<Exclude<Action, "volume">, { method: string; url: strin
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  if (!session?.userId) return apiError(401, 'Unauthorized')
 
   const body = await req.json() as { action: Action; volume?: number }
   const { action, volume } = body
 
   const accounts = await linkedAccountsRepository.findByUserId(session.userId)
   const spotifyAccount = accounts.find(a => a.provider === "spotify")
-  if (!spotifyAccount?.accessToken) return new Response("Spotify not connected", { status: 400 })
+  if (!spotifyAccount?.accessToken) return apiError(400, 'Spotify not connected')
 
   const account = {
     providerAccountId: spotifyAccount.providerAccountId,
@@ -40,15 +41,16 @@ export async function POST(req: Request) {
       const { method, url } = ACTION_MAP[action]
       res = await spotifyFetch(account, url, { method })
     } else {
-      return new Response("Invalid action", { status: 400 })
+      return apiError(400, 'Invalid action')
     }
 
     // Spotify returns 204 on success, 403 if not Premium, 404 if no active device
     if (res.status === 204) return new Response(null, { status: 204 })
-    if (res.status === 403) return new Response("Spotify Premium required", { status: 403 })
-    if (res.status === 404) return new Response("No active Spotify device", { status: 404 })
-    return new Response(null, { status: res.status })
-  } catch {
-    return new Response("Internal error", { status: 500 })
+    if (res.status === 403) return apiError(403, 'Spotify Premium required')
+    if (res.status === 404) return apiError(404, 'No active Spotify device')
+    return apiError(res.status, 'Spotify error')
+  } catch (err) {
+    console.error('[spotify/controls] Unexpected error:', err)
+    return apiError(500, 'Internal error')
   }
 }

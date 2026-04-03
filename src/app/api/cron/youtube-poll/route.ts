@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import type { LinkedAccount } from "@/types/entities"
 
 import { env } from "@/lib/env"
+import { apiError } from "@/lib/api-response"
 
 import {
   linkedAccountsRepository,
@@ -18,7 +19,7 @@ export const maxDuration = 60
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization")
   if (auth !== `Bearer ${env.cronSecret}`) {
-    return new NextResponse("Unauthorized", { status: 401 })
+    return apiError(401, 'Unauthorized')
   }
 
   const accounts = await linkedAccountsRepository.findAllByProvider("youtube")
@@ -78,7 +79,10 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   }
 
   if (!broadcastsRes.ok) {
-    const body = await broadcastsRes.text().catch(() => "(unreadable)")
+    const body = await broadcastsRes.text().catch((err) => {
+      console.error(`[yt-poll] ${account.providerAccountId}: failed to read error body:`, err)
+      return "(unreadable)"
+    })
     console.error(`[yt-poll] ${account.providerAccountId}: broadcasts fetch failed with status ${broadcastsRes.status}: ${body}`)
     throw new Error(`broadcasts fetch ${broadcastsRes.status}: ${body}`)
   }

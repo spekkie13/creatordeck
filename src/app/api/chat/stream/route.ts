@@ -3,12 +3,13 @@ import { getServerSession, Session } from "next-auth"
 
 import { INITIAL_LOOKBACK_MS, POLL_INTERVAL_MS } from "@/constants/chat_api"
 import { authOptions } from "@/lib/auth"
+import { apiError } from "@/lib/api-response"
 
 import { chatMessagesRepository } from "@/repositories"
 
 export async function GET(req: NextRequest) {
   const session: Session | null = await getServerSession(authOptions)
-  if (!session?.twitchId) return new Response("Unauthorized", { status: 401 })
+  if (!session?.twitchId) return apiError(401, 'Unauthorized')
 
   const broadcasterId: string = session.twitchId
 
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encode([...messages].reverse()))
           }
         } catch (err) {
-          console.error("Chat SSE poll error:", err)
+          console.error(`[chat/stream] SSE poll error (broadcaster=${broadcasterId}):`, err)
         }
       }
 

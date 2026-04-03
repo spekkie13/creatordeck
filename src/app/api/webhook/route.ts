@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createHmac, timingSafeEqual } from "crypto"
 
 import { env } from "@/lib/env"
+import { apiError } from "@/lib/api-response"
 
 import { subEventsRepository, followEventsRepository, cheerEventsRepository, raidEventsRepository } from "@/repositories"
 
@@ -34,7 +35,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 403 })
   }
 
-  const payload = JSON.parse(body)
+  let payload: ReturnType<typeof JSON.parse>
+  try {
+    payload = JSON.parse(body)
+  } catch (err) {
+    console.error("[webhook] Failed to parse body:", err)
+    return apiError(400, 'Invalid payload')
+  }
 
   if (messageType === "webhook_callback_verification") {
     return new NextResponse(payload.challenge, { status: 200, headers: { "Content-Type": "text/plain" } })
@@ -81,11 +88,12 @@ export async function POST(req: NextRequest) {
         case "channel.raid":
           await raidEventsRepository.insert({ broadcasterId, eventId: messageId, fromBroadcasterId: event.from_broadcaster_user_id, fromBroadcasterLogin: event.from_broadcaster_user_login, fromBroadcasterDisplayName: event.from_broadcaster_user_name, viewerCount: event.viewers, occurredAt })
           break
-
-
       }
+
+      return NextResponse.json({ ok: true })
     } catch (err) {
-      console.error("Webhook handler error:", err)
+      console.error(`[webhook] Handler error for ${subscription.type} (broadcaster=${broadcasterId}):`, err)
+      return apiError(500, 'Handler error')
     }
   }
 

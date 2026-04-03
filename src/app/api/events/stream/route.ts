@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
+import { apiError } from "@/lib/api-response"
 
 import { liveEventFeedService } from "@/services"
 
@@ -11,7 +12,7 @@ const INITIAL_LOOKBACK_MS = 5 * 60 * 1000 // send last 5 minutes on connect
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) {
-    return new Response("Unauthorized", { status: 401 })
+    return apiError(401, 'Unauthorized')
   }
 
   const broadcasterId = session.twitchId ?? ""
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encode(events))
           }
         } catch (err) {
-          console.error("SSE poll error:", err)
+          console.error(`[events/stream] SSE poll error (broadcaster=${broadcasterId}, youtube=${youtubeChannelId ?? 'none'}):`, err)
         }
       }
 

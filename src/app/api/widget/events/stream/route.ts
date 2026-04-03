@@ -2,6 +2,8 @@ import { NextRequest } from "next/server"
 
 import type { LiveEvent } from "@/types/events"
 
+import { apiError } from "@/lib/api-response"
+
 import { userRepository, linkedAccountsRepository, eventReplaysRepository } from "@/repositories"
 
 import { liveEventFeedService } from "@/services"
@@ -11,10 +13,10 @@ const POLL_INTERVAL_MS = 3000
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const token = searchParams.get("token")
-  if (!token) return new Response("Missing token", { status: 400 })
+  if (!token) return apiError(400, 'Missing token')
 
   const user = await userRepository.findByWidgetToken(token)
-  if (!user) return new Response("Invalid token", { status: 401 })
+  if (!user) return apiError(401, 'Invalid token')
 
   const linkedAccounts = await linkedAccountsRepository.findByUserId(user.id)
   const twitchAccount = linkedAccounts.find(a => a.provider === "twitch")
@@ -53,7 +55,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encode(all))
           }
         } catch (err) {
-          console.error("Widget SSE poll error:", err)
+          console.error(`[widget/events/stream] SSE poll error (userId=${user.id}):`, err)
         }
       }
 

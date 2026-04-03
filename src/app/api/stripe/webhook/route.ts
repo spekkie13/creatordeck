@@ -36,14 +36,20 @@ export async function POST(req: NextRequest) {
       const customerId = checkoutSession.customer as string
       const subscriptionId = checkoutSession.subscription as string
 
-      if (!userId || !customerId || !subscriptionId) break
+      if (!userId || !customerId || !subscriptionId) {
+        console.warn("[stripe/webhook] checkout.session.completed missing required fields", { userId, customerId, subscriptionId, eventId: event.id })
+        break
+      }
 
       // Fetch subscription to get the price ID and determine tier
       const subscription = await stripe.subscriptions.retrieve(subscriptionId)
       const priceId = getPriceId(subscription)
       const tier = priceId ? priceTierMap[priceId] : null
 
-      if (!tier) break
+      if (!tier) {
+        console.warn("[stripe/webhook] checkout.session.completed unrecognised priceId", { priceId, subscriptionId, eventId: event.id })
+        break
+      }
 
       await userRepository.setStripeCustomer(userId, customerId, subscriptionId)
       await userRepository.setTier(userId, tier)
@@ -54,7 +60,10 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
       const user = await userRepository.findByStripeCustomerId(customerId)
-      if (!user) break
+      if (!user) {
+        console.warn("[stripe/webhook] customer.subscription.updated no user found for customerId", { customerId, eventId: event.id })
+        break
+      }
 
       const priceId = getPriceId(subscription)
       const tier = priceId ? priceTierMap[priceId] : null
@@ -76,7 +85,10 @@ export async function POST(req: NextRequest) {
       const subscription = event.data.object as Stripe.Subscription
       const customerId = subscription.customer as string
       const user = await userRepository.findByStripeCustomerId(customerId)
-      if (!user) break
+      if (!user) {
+        console.warn("[stripe/webhook] customer.subscription.deleted no user found for customerId", { customerId, eventId: event.id })
+        break
+      }
 
       await userRepository.setTier(user.id, "free")
       await userRepository.clearStripeSubscription(user.id)

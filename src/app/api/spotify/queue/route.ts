@@ -1,17 +1,19 @@
+import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
+import { apiError } from "@/lib/api-response"
 import { spotifyFetch } from "@/lib/spotify"
 
 import { linkedAccountsRepository } from "@/repositories"
 
 export async function GET() {
   const session = await getServerSession(authOptions)
-  if (!session?.userId) return new Response("Unauthorized", { status: 401 })
+  if (!session?.userId) return apiError(401, 'Unauthorized')
 
   const accounts = await linkedAccountsRepository.findByUserId(session.userId)
   const spotifyAccount = accounts.find(a => a.provider === "spotify")
-  if (!spotifyAccount?.accessToken) return Response.json([])
+  if (!spotifyAccount?.accessToken) return NextResponse.json([])
 
   try {
     const res = await spotifyFetch(
@@ -23,12 +25,12 @@ export async function GET() {
       "https://api.spotify.com/v1/me/player/queue",
     )
 
-    if (!res.ok) return Response.json([])
+    if (!res.ok) return NextResponse.json([])
 
     const data = await res.json()
     const queue = (data.queue as Record<string, unknown>[] | undefined) ?? []
 
-    return Response.json(
+    return NextResponse.json(
       queue.slice(0, 10).map(item => ({
         track: item.name as string,
         artist: (item.artists as { name: string }[]).map(a => a.name).join(", "),
@@ -36,6 +38,6 @@ export async function GET() {
       }))
     )
   } catch {
-    return Response.json([])
+    return NextResponse.json([])
   }
 }
