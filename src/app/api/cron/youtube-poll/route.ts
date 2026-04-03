@@ -62,7 +62,7 @@ async function ytGet(path: string, accessToken: string): Promise<Response> {
 async function pollAccount(account: LinkedAccount): Promise<void> {
   let accessToken: string = account.accessToken!
 
-  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastType=persistent&broadcastStatus=active"
+  const broadcastsUrl = "liveBroadcasts?part=id,snippet,status&broadcastStatus=active"
   let broadcastsRes: Response = await ytGet(broadcastsUrl, accessToken)
 
   if (broadcastsRes.status === 401 && account.refreshToken) {
@@ -115,7 +115,9 @@ async function pollAccount(account: LinkedAccount): Promise<void> {
   )
   if (!chatRes.ok) {
     const body: string = await chatRes.text().catch(() => "(unreadable)")
+    const headers = Object.fromEntries(chatRes.headers.entries())
     console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: ${body}`)
+    console.error(`[yt-poll] ${account.providerAccountId}: chat response headers: ${JSON.stringify(headers)}`)
     return
   }
 
