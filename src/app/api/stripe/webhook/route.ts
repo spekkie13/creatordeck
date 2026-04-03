@@ -4,6 +4,7 @@ import type Stripe from "stripe"
 import { env } from "@/lib/env"
 import { buildPriceTierMap } from "@/lib/gates"
 import { stripe } from "@/lib/stripe"
+import { CheckoutSessionPayloadSchema, SubscriptionPayloadSchema } from "@/lib/schemas/stripe.schema"
 
 import { userRepository } from "@/repositories"
 
@@ -31,15 +32,13 @@ export async function POST(req: NextRequest) {
 
   switch (event.type) {
     case "checkout.session.completed": {
-      const checkoutSession = event.data.object as Stripe.Checkout.Session
-      const userId = checkoutSession.metadata?.userId
-      const customerId = checkoutSession.customer as string
-      const subscriptionId = checkoutSession.subscription as string
-
-      if (!userId || !customerId || !subscriptionId) {
-        console.warn("[stripe/webhook] checkout.session.completed missing required fields", { userId, customerId, subscriptionId, eventId: event.id })
+      const parsed = CheckoutSessionPayloadSchema.safeParse(event.data.object)
+      if (!parsed.success) {
+        console.warn("[stripe/webhook] checkout.session.completed invalid payload", { issues: parsed.error.issues, eventId: event.id })
         break
       }
+
+      const { metadata: { userId }, customer: customerId, subscription: subscriptionId } = parsed.data
 
       // Fetch subscription to get the price ID and determine tier
       const subscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -57,14 +56,20 @@ export async function POST(req: NextRequest) {
     }
 
     case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
+      const parsed = SubscriptionPayloadSchema.safeParse(event.data.object)
+      if (!parsed.success) {
+        console.warn("[stripe/webhook] customer.subscription.updated invalid payload", { issues: parsed.error.issues, eventId: event.id })
+        break
+      }
+
+      const { customer: customerId, id: subscriptionId } = parsed.data
       const user = await userRepository.findByStripeCustomerId(customerId)
       if (!user) {
         console.warn("[stripe/webhook] customer.subscription.updated no user found for customerId", { customerId, eventId: event.id })
         break
       }
 
+      const subscription = event.data.object as Stripe.Subscription
       const priceId = getPriceId(subscription)
       const tier = priceId ? priceTierMap[priceId] : null
 
@@ -76,14 +81,18 @@ export async function POST(req: NextRequest) {
       }
 
       // Update subscriptionId in case it changed (e.g. plan upgrade)
-      await userRepository.setStripeCustomer(user.id, customerId, subscription.id)
+      await userRepository.setStripeCustomer(user.id, customerId, subscriptionId)
       break
     }
 
     case "customer.subscription.deleted": {
-      // Subscription has fully ended (after cancel_at_period_end or immediate cancel)
-      const subscription = event.data.object as Stripe.Subscription
-      const customerId = subscription.customer as string
+      const parsed = SubscriptionPayloadSchema.safeParse(event.data.object)
+      if (!parsed.success) {
+        console.warn("[stripe/webhook] customer.subscription.deleted invalid payload", { issues: parsed.error.issues, eventId: event.id })
+        break
+      }
+
+      const { customer: customerId } = parsed.data
       const user = await userRepository.findByStripeCustomerId(customerId)
       if (!user) {
         console.warn("[stripe/webhook] customer.subscription.deleted no user found for customerId", { customerId, eventId: event.id })

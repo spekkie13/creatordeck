@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 
 import { authOptions } from "@/lib/auth"
+import { apiError } from "@/lib/api-response"
+import { CreateSubGoalSchema } from "@/lib/schemas/goals.schema"
 
 import { subGoalsRepository } from "@/repositories"
 
@@ -17,10 +19,11 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.twitchId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { goal, initialCount, endsAt } = await req.json()
-  if (typeof goal !== "number" || goal < 1) return NextResponse.json({ error: "Invalid goal" }, { status: 400 })
-  const safeInitialCount = typeof initialCount === "number" && initialCount >= 0 ? Math.floor(initialCount) : 0
+  const result = CreateSubGoalSchema.safeParse(await req.json())
+  if (!result.success) return apiError(400, result.error.issues[0].message)
 
+  const { goal, initialCount, endsAt } = result.data
+  const safeInitialCount = initialCount ?? 0
   const endsAtDate = endsAt ? new Date(endsAt) : null
 
   await subGoalsRepository.upsert(session.twitchId, goal, safeInitialCount, endsAtDate)
