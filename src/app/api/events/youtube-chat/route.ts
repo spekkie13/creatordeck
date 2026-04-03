@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { apiError } from "@/lib/api-response"
 
-import { chatMessagesRepository } from "@/repositories"
+import { youtubeService } from "@/services"
 
 const POLL_INTERVAL_MS = 5000
 const INITIAL_LOOKBACK_MS = 5 * 60 * 1000
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
       const poll = async () => {
         try {
-          const messages = await chatMessagesRepository.getSince(channelId, lastSent)
+          const messages = await youtubeService.getChatMessagesSince(channelId, lastSent)
           if (messages.length > 0) {
             lastSent = new Date()
             controller.enqueue(encode(messages))
