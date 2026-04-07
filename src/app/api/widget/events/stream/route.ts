@@ -5,11 +5,11 @@ import type { LiveEvent } from "@/types/events"
 import { linkedAccountsRepository, eventReplaysRepository } from "@/repositories"
 import { validateWidgetToken } from "@/lib/widget-auth"
 
+import { WIDGET_STREAM_POLL_MS } from "@/constants/chat_api"
+
 import { liveEventFeedService } from "@/services"
 import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 import {WidgetAuthResult} from "@/types/session";
-
-const POLL_INTERVAL_MS = 3000
 
 export async function GET(req: NextRequest): Promise<Response> {
   const result: WidgetAuthResult = await validateWidgetToken(req)
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest): Promise<Response> {
       }
 
       await poll()
-      const interval = setInterval(poll, POLL_INTERVAL_MS)
+      const interval = setInterval(poll, WIDGET_STREAM_POLL_MS)
 
       req.signal.addEventListener("abort", () => {
         clearInterval(interval)

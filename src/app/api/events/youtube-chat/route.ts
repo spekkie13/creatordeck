@@ -4,10 +4,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { apiError } from "@/lib/api-response"
 
-import { youtubeService } from "@/services"
+import { YOUTUBE_CHAT_POLL_MS, SSE_INITIAL_LOOKBACK_MS } from "@/constants/chat_api"
 
-const POLL_INTERVAL_MS = 5000
-const INITIAL_LOOKBACK_MS = 5 * 60 * 1000
+import { youtubeService } from "@/services"
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -22,7 +21,7 @@ export async function GET(req: NextRequest) {
       const encode = (data: unknown) =>
         new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`)
 
-      let lastSent = new Date(Date.now() - INITIAL_LOOKBACK_MS)
+      let lastSent = new Date(Date.now() - SSE_INITIAL_LOOKBACK_MS)
 
       const poll = async () => {
         try {
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
       }
 
       await poll()
-      const interval = setInterval(poll, POLL_INTERVAL_MS)
+      const interval = setInterval(poll, YOUTUBE_CHAT_POLL_MS)
 
       req.signal.addEventListener("abort", () => {
         clearInterval(interval)

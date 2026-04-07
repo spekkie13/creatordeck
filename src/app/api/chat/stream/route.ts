@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { INITIAL_LOOKBACK_MS, POLL_INTERVAL_MS } from "@/constants/chat_api"
+import { TWITCH_CHAT_POLL_MS, SSE_INITIAL_LOOKBACK_MS } from "@/constants/chat_api"
 import { requireTwitchSession } from "@/lib/session-auth"
 
 import { chatMessagesRepository } from "@/repositories"
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
       const encode = (data: unknown) =>
         new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`)
 
-      let lastSent: Date = new Date(Date.now() - INITIAL_LOOKBACK_MS)
+      let lastSent: Date = new Date(Date.now() - SSE_INITIAL_LOOKBACK_MS)
 
       const poll = async () => {
         try {
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
       }
 
       await poll()
-      const interval = setInterval(poll, POLL_INTERVAL_MS)
+      const interval = setInterval(poll, TWITCH_CHAT_POLL_MS)
 
       req.signal.addEventListener("abort", () => {
         clearInterval(interval)

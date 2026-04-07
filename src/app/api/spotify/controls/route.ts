@@ -8,6 +8,9 @@ import { linkedAccountsRepository } from "@/repositories"
 import { PLATFORM_SPOTIFY } from "@/types/platform"
 import {spotifyService} from "@/services/spotify-service";
 
+const MIN_VOLUME = 0
+const MAX_VOLUME = 100
+
 const ACTION_MAP: Record<string, { method: string; url: string }> = {
   play:     { method: "PUT",  url: "https://api.spotify.com/v1/me/player/play" },
   pause:    { method: "PUT",  url: "https://api.spotify.com/v1/me/player/pause" },
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
   try {
     let res: Response
     if (action === "volume") {
-      const pct = Math.max(0, Math.min(100, Math.round(volume ?? 50)))
+      const pct = Math.max(MIN_VOLUME, Math.min(MAX_VOLUME, Math.round(volume ?? 50)))
       res = await spotifyService.spotifyFetch(account, `https://api.spotify.com/v1/me/player/volume?volume_percent=${pct}`, { method: "PUT" })
     } else if (action in ACTION_MAP) {
       const { method, url } = ACTION_MAP[action]

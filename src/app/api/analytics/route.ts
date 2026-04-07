@@ -4,6 +4,7 @@ import { hasAccess } from "@/lib/gates"
 import { requireSession } from "@/lib/session-auth"
 import { apiError } from "@/lib/api-response"
 import { AnalyticsRangeSchema } from "@/lib/schemas/analytics.schema"
+import { ONE_DAY_MS } from "@/constants/analytics"
 
 import { analyticsService } from "@/services"
 import type { AnalyticsOverview } from "@/services/analytics.types"
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
   // Enforce free-tier cap server-side regardless of what the client sends
   if ((range === "30d" || range === "90d") && !hasAccess(session.tier, "tier1")) range = "7d"
 
-  const since = new Date(Date.now() - RANGES[range] * 24 * 60 * 60 * 1000)
+  const since = new Date(Date.now() - RANGES[range] * ONE_DAY_MS)
 
   const data: AnalyticsOverview = await analyticsService.getOverview(
     session.twitchId ?? "",

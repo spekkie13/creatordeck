@@ -12,6 +12,8 @@ import {
 
 type PollError = { account: string; error: string }
 
+const YOUTUBE_CHAT_MAX_RESULTS = 200
+
 class YoutubeService {
   async fetchYouTubeSubCount(
     accessToken: string,
@@ -130,7 +132,7 @@ class YoutubeService {
     console.log(`[yt-poll] ${account.providerAccountId}: fetching chat for liveChatId=${liveChatId}`)
 
     const chatRes = await this.ytGet(
-      `liveChatMessages?part=id,snippet,authorDetails&liveChatId=${liveChatId}&maxResults=200`,
+      `liveChatMessages?part=id,snippet,authorDetails&liveChatId=${liveChatId}&maxResults=${YOUTUBE_CHAT_MAX_RESULTS}`,
       accessToken,
     )
     if (!chatRes.ok) {

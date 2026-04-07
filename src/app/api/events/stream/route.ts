@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
+import { EVENT_STREAM_POLL_MS, SSE_INITIAL_LOOKBACK_MS } from "@/constants/chat_api"
 
 import { liveEventFeedService } from "@/services"
-
-const POLL_INTERVAL_MS = 3000
-const INITIAL_LOOKBACK_MS = 5 * 60 * 1000 // send last 5 minutes on connect
 
 export async function GET(req: NextRequest) {
   const result = await requireSession()
@@ -20,7 +18,7 @@ export async function GET(req: NextRequest) {
       const encode = (data: unknown) =>
         new TextEncoder().encode(`data: ${JSON.stringify(data)}\n\n`)
 
-      let lastSent = new Date(Date.now() - INITIAL_LOOKBACK_MS)
+      let lastSent = new Date(Date.now() - SSE_INITIAL_LOOKBACK_MS)
 
       const poll = async () => {
         try {
@@ -35,7 +33,7 @@ export async function GET(req: NextRequest) {
       }
 
       await poll()
-      const interval = setInterval(poll, POLL_INTERVAL_MS)
+      const interval = setInterval(poll, EVENT_STREAM_POLL_MS)
 
       req.signal.addEventListener("abort", () => {
         clearInterval(interval)
