@@ -11,6 +11,7 @@ Next.js app (gedeployed op Vercel)
 ├── Neon DB (Drizzle ORM)             ✅ gereed
 ├── Web dashboard                     ✅ gereed (live feed, sub goal, audience pills, goals page, event detail modal, landing page carousel)
 ├── Guided onboarding wizard          ✅ gereed
+├── Code kwaliteit (shortcomings)     ✅ Cat 1–6 gereed (branch: fix-violations, nog niet gemerged)  ⚠️ Cat 7–8 open
 └── Analytics & config API            🔴 nog te bouwen
 
 C# Desktop app (lokaal)
@@ -70,6 +71,26 @@ C# Desktop app (lokaal)
 -   [POLISH-4] — Algemene UI tweaks: typografie, witruimte, dark mode inconsistenties, lege states
 ```
 
+### ✅ Code kwaliteit — shortcomings review (branch: fix-violations)
+```
+✅  Cat 1  — API response helpers (apiError / apiSuccess) toegevoegd
+✅  Cat 2  — Stille errors gesurface'd (webhooks, Stripe, SSE)
+✅  Cat 3  — Zod input validatie op alle API boundaries
+✅  Cat 4  — Business logic uit route handlers gehaald → services
+✅  Cat 5  — Diepe nesting opgelost (downstream effect van Cat 4)
+✅  Cat 6  — Single Responsibility hersteld (downstream effect van Cat 4)
+⚠️  Cat 7  — Magic numbers/strings (TODO: named constants)
+⚠️  Cat 8  — Duplicatie (TODO: gedeelde polling constants, OAuth callback structuur)
+⚠️       fix-violations branch nog niet gemerged naar main
+```
+
+### 🐛 Bekende bugs
+```
+-   [BUG-1] — YouTube chat verschijnt niet in /live unified chat panel
+              Pipeline: cron-job.org → /api/cron/youtube-poll → DB → SSE → client
+              Onderzoek gestart; root cause nog niet vastgesteld
+```
+
 ### 🔨 Fase 2 — Integratie completeren (volgende stap)
 > Sluit de gratis tier af: YouTube events volledig zichtbaar in de live feed zodat de unified dashboard belofte waargemaakt wordt.
 ```
@@ -83,7 +104,7 @@ C# Desktop app (lokaal)
 2.  [8.1]   — Widget authenticatie (token-based, geen browser sessie nodig)      ✅ gereed
 3.  [8.3]   — Goal overlay widget (/widget/goal) — animated progress bar in OBS      ✅ gereed
 4.  [IDEA-3] — Custom browser sources (event ticker, now-playing, etc.)
-5.  [IDEA-4] — Alert overlay widget (/widget/alerts) — Tier 2 feature
+5.  [IDEA-4] — Alert overlay widget (/widget/alerts) — Tier 2 feature  ✅ Spec gereed (specs/IDEA-4-alert-config.md) — pre-req: rebase feature/alerts-engine op main
 ```
 
 ### 🔨 Fase 4 — Analytics + Stripe (Tier 1 activeren)
