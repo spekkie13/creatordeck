@@ -2,7 +2,7 @@ import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
 
 import type { LinkedAccount } from "@/types/entities"
-import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
+import { PLATFORM_SPOTIFY, PLATFORM_STREAMELEMENTS, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
 
 import { authOptions } from "@/lib/auth"
 
@@ -22,6 +22,7 @@ import { ConnectionsUpdater } from "@/app/connections/connections-updater"
 import { ConnectionRow } from "@/app/connections/connection-row"
 import { DisconnectButton } from "@/app/connections/disconnect-button"
 import { SpotifyConnectButton } from "@/app/connections/spotify-connect"
+import { StreamElementsConnectButton } from "@/app/connections/streamelements-connect"
 
 export default async function ConnectionsPage({ searchParams }: {
   searchParams: { error?: string; linked?: string }
@@ -41,6 +42,7 @@ export default async function ConnectionsPage({ searchParams }: {
   const youtubeAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
   const twitchAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_TWITCH)
   const spotifyAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_SPOTIFY)
+  const seAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_STREAMELEMENTS)
   const canDisconnect: boolean = linkedAccounts.length > 1
   const hasYouTubeError: boolean = !!searchParams.error
   const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhook`
@@ -105,6 +107,15 @@ export default async function ConnectionsPage({ searchParams }: {
             detail={spotifyAccount ? `Connected as ${spotifyAccount.displayName ?? spotifyAccount.login}` : undefined}
             connectButton={<SpotifyConnectButton />}
             disconnectButton={spotifyAccount ? <DisconnectButton provider="spotify" /> : undefined}
+          />
+          <ConnectionRow
+            name="StreamElements"
+            description="Enables live YouTube chat in the unified chat panel via StreamElements."
+            connected={!!seAccount}
+            logo={<span className="w-5 h-5 flex items-center justify-center text-xs font-bold text-indigo-500">SE</span>}
+            detail={seAccount ? `Connected as ${seAccount.displayName ?? seAccount.login ?? seAccount.providerAccountId}` : undefined}
+            connectButton={<StreamElementsConnectButton />}
+            disconnectButton={seAccount ? <DisconnectButton provider="streamelements" /> : undefined}
           />
         </div>
 

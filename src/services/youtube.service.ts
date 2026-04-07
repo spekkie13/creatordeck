@@ -12,8 +12,6 @@ import {
 
 type PollError = { account: string; error: string }
 
-const YOUTUBE_CHAT_MAX_RESULTS = 200
-
 class YoutubeService {
   async fetchYouTubeSubCount(
     accessToken: string,
@@ -123,84 +121,6 @@ class YoutubeService {
       actualStart ? new Date(actualStart) : new Date(),
     )
 
-    const liveChatId = broadcast.snippet?.liveChatId
-    if (!liveChatId) {
-      console.warn(`[yt-poll] ${account.providerAccountId}: broadcast ${broadcast.id} has no liveChatId, skipping chat fetch`)
-      return
-    }
-
-    console.log(`[yt-poll] ${account.providerAccountId}: fetching chat for liveChatId=${liveChatId}`)
-
-    const chatRes = await this.ytGet(
-      `liveChatMessages?part=id,snippet,authorDetails&liveChatId=${liveChatId}&maxResults=${YOUTUBE_CHAT_MAX_RESULTS}`,
-      accessToken,
-    )
-    if (!chatRes.ok) {
-      const body = await chatRes.text().catch(() => '(unreadable)')
-      const headers = Object.fromEntries(chatRes.headers.entries())
-      console.error(`[yt-poll] ${account.providerAccountId}: chat fetch failed with status ${chatRes.status}: ${body}`)
-      console.error(`[yt-poll] ${account.providerAccountId}: chat response headers: ${JSON.stringify(headers)}`)
-      return
-    }
-
-    const chatData = await chatRes.json()
-    const messages: Record<string, unknown>[] = chatData.items ?? []
-    const typeCounts = messages.reduce<Record<string, number>>((acc, m) => {
-      const t = ((m.snippet as Record<string, unknown>)?.type as string) ?? 'unknown'
-      acc[t] = (acc[t] ?? 0) + 1
-      return acc
-    }, {})
-    console.log(`[yt-poll] ${account.providerAccountId}: received ${messages.length} chat message(s), types=${JSON.stringify(typeCounts)}`)
-
-    for (const msg of messages) {
-      await this.processMessage(account.providerAccountId, msg)
-    }
-  }
-
-  private async processMessage(channelId: string, msg: Record<string, unknown>): Promise<void> {
-    const snippet = msg.snippet as Record<string, unknown> | undefined
-    const authorDetails = msg.authorDetails as Record<string, unknown> | undefined
-    const type = snippet?.type as string | undefined
-
-    if (type === 'superChatEvent') {
-      const details = snippet?.superChatDetails as Record<string, string> | undefined
-      if (!details) return
-      await ytSuperChatEventsRepository.insert({
-        channelId,
-        eventId: msg.id as string,
-        userId: (authorDetails?.channelId as string) ?? null,
-        userDisplayName: (authorDetails?.displayName as string) ?? null,
-        amountMicros: parseInt(details.amountMicros ?? '0'),
-        currency: details.currency ?? 'USD',
-        message: details.userComment ?? null,
-        occurredAt: new Date(snippet!.publishedAt as string),
-      })
-    } else if (type === 'memberMilestoneChatEvent' || type === 'newSponsorEvent') {
-      const milestoneDetails = snippet?.memberMilestoneChatDetails as Record<string, unknown> | undefined
-      const memberMonths = type === 'memberMilestoneChatEvent' ? ((milestoneDetails?.memberMonth as number) ?? 1) : 1
-      await ytMemberEventsRepository.insert({
-        channelId,
-        eventId: msg.id as string,
-        userId: (authorDetails?.channelId as string) ?? null,
-        userDisplayName: (authorDetails?.displayName as string) ?? null,
-        memberMonths,
-        levelName: (milestoneDetails?.memberLevelName as string) ?? null,
-        occurredAt: new Date(snippet!.publishedAt as string),
-      })
-    } else if (type === 'textMessageEvent') {
-      const text = snippet?.displayMessage as string | undefined
-      if (!text) return
-      await chatMessagesRepository.insert({
-        platform: 'youtube',
-        channelId,
-        eventId: msg.id as string,
-        userId: (authorDetails?.channelId as string) ?? null,
-        userLogin: null,
-        userDisplayName: (authorDetails?.displayName as string) ?? null,
-        message: text,
-        occurredAt: new Date(snippet!.publishedAt as string),
-      })
-    }
   }
 
   private ytGet(path: string, accessToken: string): Promise<Response> {
