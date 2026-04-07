@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
+import { apiError } from "@/lib/api-response"
 
 import { linkedAccountsRepository } from "@/repositories"
 import { PLATFORM_TWITCH } from "@/types/platform"
@@ -14,9 +15,9 @@ export async function GET(): Promise<Response> {
 
   const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH)
   if (!twitchAccount?.accessToken)
-    return new Response("No Twitch account", { status: 404 })
+    return apiError(404, 'No Twitch account')
 
-  return Response.json({
+  return NextResponse.json({
     token: twitchAccount.accessToken,
     login: twitchAccount.login ?? twitchAccount.displayName ?? "",
   })

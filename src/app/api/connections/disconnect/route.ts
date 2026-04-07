@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
+import { apiError } from "@/lib/api-response"
 
 import { linkedAccountsRepository } from "@/repositories"
 import {PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
@@ -13,13 +14,13 @@ export async function POST(req: Request) {
 
   const { provider } = await req.json() as { provider: string }
   if (!provider || ![PLATFORM_YOUTUBE, PLATFORM_TWITCH, PLATFORM_SPOTIFY].includes(provider)) {
-    return new Response("Invalid provider", { status: 400 })
+    return apiError(400, 'Invalid provider')
   }
 
   // Prevent disconnecting the only linked account — user would be locked out
   const allAccounts: LinkedAccount[] = await linkedAccountsRepository.findByUserId(session.userId)
   if (allAccounts.length <= 1) {
-    return new Response("Cannot disconnect your only linked account", { status: 400 })
+    return apiError(400, 'Cannot disconnect your only linked account')
   }
 
   await linkedAccountsRepository.deleteByUserIdAndProvider(session.userId, provider)

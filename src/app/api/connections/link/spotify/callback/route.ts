@@ -1,23 +1,27 @@
-import { NextResponse } from "next/server"
-import { cookies } from "next/headers"
+import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 
-import { env } from "@/lib/env"
+import {
+  AccountConflictException,
+  SpotifyProfileFetchFailedException,
+  TokenExchangeFailedException,
+} from '@/lib/exceptions'
 
-import { linkedAccountsRepository } from "@/repositories"
+import { connectionsService } from '@/services'
 
-const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!.replace(/\/$/, "")
+const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!.replace(/\/$/, '')
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const code = searchParams.get("code")
-  const state = searchParams.get("state")
+  const code = searchParams.get('code')
+  const state = searchParams.get('state')
 
   if (!code || !state) {
     return NextResponse.redirect(`${BASE_URL}/connections?error=missing_params`)
   }
 
   const cookieStore = await cookies()
-  const linkStateCookie = cookieStore.get("spotify_link_state")
+  const linkStateCookie = cookieStore.get('spotify_link_state')
   if (!linkStateCookie) {
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
   }
@@ -29,53 +33,24 @@ export async function GET(req: Request) {
       return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
     }
     userId = parsed.userId
-  } catch {
+  } catch (err) {
+    console.error('[spotify/callback] Failed to parse state cookie:', err)
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
   }
 
-  // Exchange code for tokens
-  const credentials = Buffer.from(`${env.spotifyClientId}:${env.spotifyClientSecret}`).toString("base64")
-  const tokenRes = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Authorization: `Basic ${credentials}`,
-    },
-    body: new URLSearchParams({
-      code,
-      redirect_uri: `${BASE_URL}/api/connections/link/spotify/callback`,
-      grant_type: "authorization_code",
-    }),
-  })
-
-  const tokenData = await tokenRes.json()
-  if (!tokenData.access_token) {
-    return NextResponse.redirect(`${BASE_URL}/connections?error=token_exchange_failed`)
-  }
-
-  // Fetch Spotify user profile
-  const profileRes = await fetch("https://api.spotify.com/v1/me", {
-    headers: { Authorization: `Bearer ${tokenData.access_token}` },
-  })
-  const profile = await profileRes.json()
-  if (!profile.id) {
-    return NextResponse.redirect(`${BASE_URL}/connections?error=token_exchange_failed`)
-  }
+  const redirectUri = `${BASE_URL}/api/connections/link/spotify/callback`
 
   try {
-    await linkedAccountsRepository.upsertForUser(userId, {
-      provider: "spotify",
-      providerAccountId: profile.id,
-      login: profile.id,
-      displayName: profile.display_name ?? profile.id,
-      accessToken: tokenData.access_token,
-      refreshToken: tokenData.refresh_token ?? "",
-    })
-  } catch {
-    return NextResponse.redirect(`${BASE_URL}/connections?error=account_conflict`)
+    await connectionsService.linkSpotifyAccount(userId, code, redirectUri)
+  } catch (err) {
+    if (err instanceof TokenExchangeFailedException) return NextResponse.redirect(`${BASE_URL}/connections?error=token_exchange_failed`)
+    if (err instanceof SpotifyProfileFetchFailedException) return NextResponse.redirect(`${BASE_URL}/connections?error=token_exchange_failed`)
+    if (err instanceof AccountConflictException) return NextResponse.redirect(`${BASE_URL}/connections?error=account_conflict`)
+    console.error('[spotify/callback] Unexpected error linking account for userId', userId, err)
+    return NextResponse.redirect(`${BASE_URL}/connections?error=unknown`)
   }
 
   const response = NextResponse.redirect(`${BASE_URL}/connections?linked=spotify`)
-  response.cookies.delete("spotify_link_state")
+  response.cookies.delete('spotify_link_state')
   return response
 }

@@ -25,7 +25,7 @@ export async function GET() {
       "https://api.spotify.com/v1/me/player/queue",
     )
 
-    if (!res.ok) return Response.json([])
+    if (!res.ok) return NextResponse.json([])
 
     const data = await res.json()
     const queue: Record<string, unknown>[] = (data.queue as Record<string, unknown>[] | undefined) ?? []
@@ -38,6 +38,6 @@ export async function GET() {
       }))
     )
   } catch {
-    return Response.json([])
+    return NextResponse.json([])
   }
 }

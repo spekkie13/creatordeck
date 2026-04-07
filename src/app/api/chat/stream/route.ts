@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encode([...messages].reverse()))
           }
         } catch (err) {
-          console.error("Chat SSE poll error:", err)
+          console.error(`[chat/stream] SSE poll error (broadcaster=${broadcasterId}):`, err)
         }
       }
 

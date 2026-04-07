@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
             controller.enqueue(encode(events))
           }
         } catch (err) {
-          console.error("SSE poll error:", err)
+          console.error(`[events/stream] SSE poll error (broadcaster=${broadcasterId}, youtube=${youtubeChannelId ?? 'none'}):`, err)
         }
       }
 

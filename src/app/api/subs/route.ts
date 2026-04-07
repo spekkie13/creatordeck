@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
-import { linkedAccountsRepository, subEventsRepository } from "@/repositories"
-import { validateApiKey } from "@/lib/api-auth"
-import { PLATFORM_TWITCH } from "@/types/platform"
-import {LinkedAccount, SubEvent} from "@/types/entities"
+import { NextRequest, NextResponse } from 'next/server'
+
+import { validateApiKey } from '@/lib/api-auth'
+import { apiError } from '@/lib/api-response'
+import { SubsQuerySchema } from '@/lib/schemas/subs.schema'
+
+import { subsService } from '@/services'
 import {ApiAuthResult} from "@/types/session";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -10,18 +12,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   if (result instanceof NextResponse) return result
   const { user } = result
 
-  const since: string | null = req.nextUrl.searchParams.get("since")
+  const query = SubsQuerySchema.safeParse({ since: req.nextUrl.searchParams.get('since') ?? undefined })
+  if (!query.success) return apiError(400, query.error.issues[0].message)
 
-  const twitchAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(user.id, PLATFORM_TWITCH)
-  if (!twitchAccount)
-    return NextResponse.json({ events: [] })
-
-  const events: SubEvent[] = await subEventsRepository.findByBroadcasterId(
-      twitchAccount.providerAccountId,
-      since
-          ? new Date(since)
-          : undefined
-  )
-
+  const events = await subsService.getSubEvents(user.id, query.data.since ? new Date(query.data.since) : undefined)
   return NextResponse.json({ events })
 }

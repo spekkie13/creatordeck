@@ -25,13 +25,13 @@ export async function GET() {
       "https://api.spotify.com/v1/me/player/currently-playing",
     )
 
-    if (res.status === 204 || res.status === 401) return Response.json(null)
-    if (!res.ok) return Response.json(null)
+    if (res.status === 204 || res.status === 401) return NextResponse.json(null)
+    if (!res.ok) return NextResponse.json(null)
 
     const data = await res.json()
-    if (!data?.item) return Response.json(null)
+    if (!data?.item) return NextResponse.json(null)
 
-    return Response.json({
+    return NextResponse.json({
       isPlaying: data.is_playing as boolean,
       track: data.item.name as string,
       artist: (data.item.artists as { name: string }[]).map(a => a.name).join(", "),
@@ -40,6 +40,6 @@ export async function GET() {
       duration: data.item.duration_ms as number,
     })
   } catch {
-    return Response.json(null)
+    return NextResponse.json(null)
   }
 }

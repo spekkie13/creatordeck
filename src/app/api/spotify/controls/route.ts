@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
+import { apiError } from "@/lib/api-response"
+import { SpotifyControlsSchema } from "@/lib/schemas/spotify.schema"
 
 import { linkedAccountsRepository } from "@/repositories"
 import { PLATFORM_SPOTIFY } from "@/types/platform"
 import {spotifyService} from "@/services/spotify-service";
 
-type Action = "play" | "pause" | "skip" | "previous" | "volume"
-
-const ACTION_MAP: Record<Exclude<Action, "volume">, { method: string; url: string }> = {
+const ACTION_MAP: Record<string, { method: string; url: string }> = {
   play:     { method: "PUT",  url: "https://api.spotify.com/v1/me/player/play" },
   pause:    { method: "PUT",  url: "https://api.spotify.com/v1/me/player/pause" },
   skip:     { method: "POST", url: "https://api.spotify.com/v1/me/player/next" },
@@ -20,11 +20,13 @@ export async function POST(req: Request) {
   if (result instanceof NextResponse) return result
   const { session } = result
 
-  const body = await req.json() as { action: Action; volume?: number }
-  const { action, volume } = body
+  const parsed = SpotifyControlsSchema.safeParse(await req.json())
+  if (!parsed.success) return apiError(400, parsed.error.issues[0].message)
+
+  const { action, volume } = parsed.data
 
   const spotifyAccount = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_SPOTIFY)
-  if (!spotifyAccount?.accessToken) return new Response("Spotify not connected", { status: 400 })
+  if (!spotifyAccount?.accessToken) return apiError(400, 'Spotify not connected')
 
   const account = {
     providerAccountId: spotifyAccount.providerAccountId,
@@ -41,15 +43,16 @@ export async function POST(req: Request) {
       const { method, url } = ACTION_MAP[action]
       res = await spotifyService.spotifyFetch(account, url, { method })
     } else {
-      return new Response("Invalid action", { status: 400 })
+      return apiError(400, 'Invalid action')
     }
 
     // Spotify returns 204 on success, 403 if not Premium, 404 if no active device
     if (res.status === 204) return new Response(null, { status: 204 })
-    if (res.status === 403) return new Response("Spotify Premium required", { status: 403 })
-    if (res.status === 404) return new Response("No active Spotify device", { status: 404 })
-    return new Response(null, { status: res.status })
-  } catch {
-    return new Response("Internal error", { status: 500 })
+    if (res.status === 403) return apiError(403, 'Spotify Premium required')
+    if (res.status === 404) return apiError(404, 'No active Spotify device')
+    return apiError(res.status, 'Spotify error')
+  } catch (err) {
+    console.error('[spotify/controls] Unexpected error:', err)
+    return apiError(500, 'Internal error')
   }
 }

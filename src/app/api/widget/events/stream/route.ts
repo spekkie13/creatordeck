@@ -54,7 +54,7 @@ export async function GET(req: NextRequest): Promise<Response> {
             controller.enqueue(encode(all))
           }
         } catch (err) {
-          console.error("Widget SSE poll error:", err)
+          console.error(`[widget/events/stream] SSE poll error (userId=${user.id}):`, err)
         }
       }
 
