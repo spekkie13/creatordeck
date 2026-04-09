@@ -14,10 +14,7 @@ export const env = {
   spotifyClientId: requireEnv("SPOTIFY_CLIENT_ID"),
   spotifyClientSecret: requireEnv("SPOTIFY_CLIENT_SECRET"),
   cronSecret: requireEnv("CRON_SECRET"),
-  seClientId: requireEnv("STREAMELEMENTS_CLIENT_ID"),
-  seClientSecret: requireEnv("STREAMELEMENTS_CLIENT_SECRET"),
-  northflankApiUrl: requireEnv("NORTHFLANK_API_URL"),
-  northflankWebhookSecret: requireEnv("NORTHFLANK_WEBHOOK_SECRET"),
+  bridgeSecret: requireEnv("BRIDGE_SECRET"),
   stripeSecretKey: requireEnv("STRIPE_SECRET_KEY"),
   stripeWebhookSecret: requireEnv("STRIPE_WEBHOOK_SECRET"),
   stripePrices: {

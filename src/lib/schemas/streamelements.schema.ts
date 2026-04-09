@@ -1,16 +1,10 @@
 import { z } from 'zod'
 
-export const IncomingChatMessageSchema = z.object({
-  id: z.string(),
-  userDisplayName: z.string(),
+export const StreamElementsWebhookSchema = z.object({
+  channelId: z.string(),
+  eventId: z.string(),
+  userDisplayName: z.string().nullable(),
   userId: z.string().nullable(),
   message: z.string(),
   occurredAt: z.string(),
 })
-
-export const YoutubeChatIngestSchema = z.object({
-  channelId: z.string(),
-  messages: z.array(IncomingChatMessageSchema).min(1),
-})
-
-export type IncomingChatMessage = z.infer<typeof IncomingChatMessageSchema>

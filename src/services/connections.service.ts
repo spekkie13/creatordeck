@@ -117,11 +117,10 @@ class ConnectionsService {
 
   async linkStreamElementsAccount(
     userId: string,
-    accessToken: string,
-    refreshToken: string,
+    jwtToken: string,
   ): Promise<{ channelId: string }> {
     const profileRes = await fetch('https://api.streamelements.com/kappa/v2/channels/me', {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${jwtToken}` },
     })
     const profile = await profileRes.json()
     if (!profile._id) throw new StreamElementsTokenExchangeFailedException('Failed to fetch StreamElements channel')
@@ -135,8 +134,8 @@ class ConnectionsService {
         providerAccountId: channelId,
         login: profile.username ?? channelId,
         displayName,
-        accessToken,
-        refreshToken,
+        accessToken: jwtToken,
+        refreshToken: '',
       })
     } catch {
       throw new AccountConflictException(`StreamElements account ${channelId} is already linked to another account`)

@@ -7,7 +7,7 @@ import { linkedAccountsRepository } from '@/repositories'
 
 export async function GET(req: NextRequest) {
   const auth = req.headers.get('authorization')
-  if (auth !== `Bearer ${env.northflankWebhookSecret}`) {
+  if (auth !== `Bearer ${env.bridgeSecret}`) {
     return apiError(401, 'Unauthorized')
   }
 
@@ -16,8 +16,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     accounts: accounts.map(a => ({
       channelId: a.providerAccountId,
-      accessToken: a.accessToken,
-      refreshToken: a.refreshToken,
+      jwtToken: a.accessToken,
     })),
   })
 }
