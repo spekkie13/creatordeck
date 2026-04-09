@@ -1,7 +1,7 @@
 import { LINK_ERRORS } from '@/constants/errors'
 import { env } from '@/lib/env'
 import {
-AccountConflictException,``
+  AccountConflictException,
   NoYouTubeChannelException,
   SpotifyProfileFetchFailedException,
   StreamElementsTokenExchangeFailedException,
