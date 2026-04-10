@@ -9,6 +9,7 @@ const GOAL_TYPES = [
 ]
 
 const ALERT_WIDGET = { key: "alerts", label: "Alert Box" }
+const SPOTIFY_WIDGET = { key: "spotify", label: "Spotify Player" }
 
 export function WidgetTokenSection({ appUrl }: { appUrl: string }) {
   const [token, setToken] = useState<string | null>(null)
@@ -37,6 +38,10 @@ export function WidgetTokenSection({ appUrl }: { appUrl: string }) {
 
   function alertUrl() {
     return `${appUrl}/widget/alerts?token=${token}`
+  }
+
+  function spotifyUrl() {
+    return `${appUrl}/widget/spotify?token=${token}`
   }
 
   function copy(text: string, key: string) {
@@ -78,6 +83,21 @@ export function WidgetTokenSection({ appUrl }: { appUrl: string }) {
             className="shrink-0 text-xs text-teal-500 hover:text-teal-400 transition-colors disabled:opacity-40"
           >
             {copied === ALERT_WIDGET.key ? "Copied!" : "Copy"}
+          </button>
+        </div>
+
+        {/* Spotify player */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-zinc-600 dark:text-zinc-400 w-36 shrink-0">{SPOTIFY_WIDGET.label}</span>
+          <code className="flex-1 text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-2 py-1 rounded truncate">
+            {token ? spotifyUrl() : "—"}
+          </code>
+          <button
+            onClick={() => token && copy(spotifyUrl(), SPOTIFY_WIDGET.key)}
+            disabled={!token}
+            className="shrink-0 text-xs text-teal-500 hover:text-teal-400 transition-colors disabled:opacity-40"
+          >
+            {copied === SPOTIFY_WIDGET.key ? "Copied!" : "Copy"}
           </button>
         </div>
 
