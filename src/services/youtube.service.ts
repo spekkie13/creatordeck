@@ -126,6 +126,61 @@ class YoutubeService {
     }
   }
 
+  async pollChatWithId(liveChatId: string): Promise<{ inserted: number; nextPageToken: string | null }> {
+    const accounts = await linkedAccountsRepository.findAllByProvider('youtube')
+    const account = accounts[0]
+    if (!account) throw new Error('No YouTube account linked')
+
+    const fakeSession = { liveChatId, chatPageToken: null } as any
+    let inserted = 0
+    let nextPageToken: string | null = null
+
+    const origInsert = chatMessagesRepository.insert.bind(chatMessagesRepository)
+    // Patch to count inserts — run normally, just track count
+    const messages: any[] = []
+    const params = new URLSearchParams({
+      part: 'snippet,authorDetails',
+      liveChatId,
+      maxResults: '2000',
+    })
+
+    let accessToken = account.accessToken!
+    let res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+
+    if (res.status === 401 && account.refreshToken) {
+      const newToken = await this.refreshYouTubeToken(account.refreshToken)
+      if (!newToken) throw new Error('Token refresh failed')
+      await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
+      accessToken = newToken
+      res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+    }
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '(unreadable)')
+      throw new Error(`liveChatMessages ${res.status}: ${body}`)
+    }
+
+    const data = await res.json()
+    nextPageToken = data.nextPageToken ?? null
+    const items: any[] = (data.items ?? []).filter((i: any) => i.snippet?.type === 'textMessageEvent')
+
+    await Promise.all(
+      items.map((item: any) =>
+        chatMessagesRepository.insert({
+          platform: 'youtube',
+          channelId: account.providerAccountId,
+          eventId: item.id,
+          userId: item.snippet?.authorChannelId ?? null,
+          userDisplayName: item.authorDetails?.displayName ?? null,
+          message: item.snippet?.textMessageDetails?.messageText ?? '',
+          occurredAt: new Date(item.snippet.publishedAt),
+        })
+      )
+    )
+
+    return { inserted: items.length, nextPageToken }
+  }
+
   async pollChatForAllAccounts(): Promise<{ ok: boolean; errors: PollError[] }> {
     const sessions = await ytStreamSessionsRepository.findAllOpenWithChatId()
     if (sessions.length === 0) return { ok: true, errors: [] }
