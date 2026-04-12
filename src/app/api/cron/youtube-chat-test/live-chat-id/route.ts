@@ -20,7 +20,7 @@ export async function GET(req: Request) {
   let accessToken = account.accessToken!
 
   const fetchBroadcasts = (token: string) =>
-    fetch('https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastStatus=all&mine=true&maxResults=5', {
+    fetch('https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&broadcastStatus=all&maxResults=5', {
       headers: { Authorization: `Bearer ${token}` },
     })
 
