@@ -189,6 +189,8 @@ export const ytStreamSessions = pgTable("yt_stream_sessions", {
   channelId: text("channel_id").notNull(),
   broadcastId: text("broadcast_id").notNull(),
   title: text("title"),
+  liveChatId: text("live_chat_id"),
+  chatPageToken: text("chat_page_token"),
   startedAt: timestamp("started_at").notNull(),
   endedAt: timestamp("ended_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

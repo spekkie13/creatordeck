@@ -1,4 +1,4 @@
-import type { LinkedAccount } from '@/types/entities'
+import type { LinkedAccount, YtStreamSession } from '@/types/entities'
 
 import { env } from '@/lib/env'
 
@@ -121,6 +121,88 @@ class YoutubeService {
       actualStart ? new Date(actualStart) : new Date(),
     )
 
+    if (broadcast.snippet?.liveChatId) {
+      await ytStreamSessionsRepository.updateLiveChatId(account.providerAccountId, broadcast.snippet.liveChatId)
+    }
+  }
+
+  async pollChatForAllAccounts(): Promise<{ ok: boolean; errors: PollError[] }> {
+    const sessions = await ytStreamSessionsRepository.findAllOpenWithChatId()
+    if (sessions.length === 0) return { ok: true, errors: [] }
+
+    const accounts = await linkedAccountsRepository.findAllByProvider('youtube')
+    const accountMap = new Map(accounts.map(a => [a.providerAccountId, a]))
+
+    const results = await Promise.allSettled(
+      sessions.map(session => {
+        const account = accountMap.get(session.channelId)
+        if (!account) return Promise.resolve()
+        return this.pollChatForSession(account, session)
+      })
+    )
+
+    const errors: PollError[] = results
+      .map((r, i) => r.status === 'rejected' ? { account: sessions[i].channelId, error: String(r.reason) } : null)
+      .filter((e): e is PollError => e !== null)
+
+    if (errors.length > 0) {
+      console.error(`[yt-chat] ${errors.length} session(s) failed:`, errors)
+    }
+
+    return { ok: errors.length === 0, errors }
+  }
+
+  private async pollChatForSession(account: LinkedAccount, session: YtStreamSession): Promise<void> {
+    let accessToken = account.accessToken!
+
+    const params = new URLSearchParams({
+      part: 'snippet,authorDetails',
+      liveChatId: session.liveChatId!,
+      maxResults: '2000',
+    })
+    if (session.chatPageToken) params.set('pageToken', session.chatPageToken)
+
+    let res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+
+    if (res.status === 401 && account.refreshToken) {
+      const newToken = await this.refreshYouTubeToken(account.refreshToken)
+      if (!newToken) return
+      await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
+      accessToken = newToken
+      res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+    }
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '(unreadable)')
+      console.warn(`[yt-chat] ${account.providerAccountId}: liveChatMessages failed ${res.status}: ${body}`)
+      return
+    }
+
+    const data = await res.json()
+    const nextPageToken: string | undefined = data.nextPageToken
+    const items: any[] = data.items ?? []
+
+    console.log(`[yt-chat] ${account.providerAccountId}: ${items.length} message(s), nextPageToken=${nextPageToken ?? 'none'}`)
+
+    const textMessages = items.filter((item: any) => item.snippet?.type === 'textMessageEvent')
+
+    await Promise.all(
+      textMessages.map((item: any) =>
+        chatMessagesRepository.insert({
+          platform: 'youtube',
+          channelId: account.providerAccountId,
+          eventId: item.id,
+          userId: item.snippet?.authorChannelId ?? null,
+          userDisplayName: item.authorDetails?.displayName ?? null,
+          message: item.snippet?.textMessageDetails?.messageText ?? '',
+          occurredAt: new Date(item.snippet.publishedAt),
+        })
+      )
+    )
+
+    if (nextPageToken) {
+      await ytStreamSessionsRepository.updateChatState(account.providerAccountId, session.liveChatId!, nextPageToken)
+    }
   }
 
   private ytGet(path: string, accessToken: string): Promise<Response> {

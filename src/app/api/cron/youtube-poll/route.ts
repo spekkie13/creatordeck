@@ -14,11 +14,14 @@ export async function GET(req: Request) {
     return apiError(401, 'Unauthorized')
   }
 
-  const result = await youtubeService.pollAllAccounts()
+  const [broadcastResult, chatResult] = await Promise.all([
+    youtubeService.pollAllAccounts(),
+    youtubeService.pollChatForAllAccounts(),
+  ])
 
-  if (!result.ok) {
-    return NextResponse.json({ ok: false, accounts: result.accounts, errors: result.errors }, { status: 500 })
+  if (!broadcastResult.ok) {
+    return NextResponse.json({ ok: false, accounts: broadcastResult.accounts, errors: broadcastResult.errors }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, accounts: result.accounts })
+  return NextResponse.json({ ok: true, accounts: broadcastResult.accounts, chatErrors: chatResult.errors })
 }
