@@ -131,28 +131,16 @@ class YoutubeService {
     const account = accounts[0]
     if (!account) throw new Error('No YouTube account linked')
 
-    const fakeSession = { liveChatId, chatPageToken: null } as any
-    let inserted = 0
-    let nextPageToken: string | null = null
-
-    const origInsert = chatMessagesRepository.insert.bind(chatMessagesRepository)
-    // Patch to count inserts — run normally, just track count
-    const messages: any[] = []
-    const params = new URLSearchParams({
-      part: 'snippet,authorDetails',
-      liveChatId,
-      maxResults: '2000',
-    })
-
     let accessToken = account.accessToken!
-    let res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+    const url = `liveChatMessages?part=snippet,authorDetails&liveChatId=${encodeURIComponent(liveChatId)}&maxResults=2000`
+    let res = await this.ytGet(url, accessToken)
 
     if (res.status === 401 && account.refreshToken) {
       const newToken = await this.refreshYouTubeToken(account.refreshToken)
       if (!newToken) throw new Error('Token refresh failed')
       await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
       accessToken = newToken
-      res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+      res = await this.ytGet(url, accessToken)
     }
 
     if (!res.ok) {
@@ -161,7 +149,7 @@ class YoutubeService {
     }
 
     const data = await res.json()
-    nextPageToken = data.nextPageToken ?? null
+    const nextPageToken: string | null = data.nextPageToken ?? null
     const items: any[] = (data.items ?? []).filter((i: any) => i.snippet?.type === 'textMessageEvent')
 
     await Promise.all(
@@ -210,21 +198,17 @@ class YoutubeService {
   private async pollChatForSession(account: LinkedAccount, session: YtStreamSession): Promise<void> {
     let accessToken = account.accessToken!
 
-    const params = new URLSearchParams({
-      part: 'snippet,authorDetails',
-      liveChatId: session.liveChatId!,
-      maxResults: '2000',
-    })
-    if (session.chatPageToken) params.set('pageToken', session.chatPageToken)
+    const pageTokenParam = session.chatPageToken ? `&pageToken=${encodeURIComponent(session.chatPageToken)}` : ''
+    const url = `liveChatMessages?part=snippet,authorDetails&liveChatId=${encodeURIComponent(session.liveChatId!)}&maxResults=2000${pageTokenParam}`
 
-    let res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+    let res = await this.ytGet(url, accessToken)
 
     if (res.status === 401 && account.refreshToken) {
       const newToken = await this.refreshYouTubeToken(account.refreshToken)
       if (!newToken) return
       await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
       accessToken = newToken
-      res = await this.ytGet(`liveChatMessages?${params}`, accessToken)
+      res = await this.ytGet(url, accessToken)
     }
 
     if (!res.ok) {
