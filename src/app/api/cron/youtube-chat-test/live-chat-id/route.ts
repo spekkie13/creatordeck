@@ -1,21 +1,22 @@
 import { NextResponse } from 'next/server'
 
-import { env } from '@/lib/env'
 import { apiError } from '@/lib/api-response'
+import { requireSession } from '@/lib/session-auth'
 import { linkedAccountsRepository } from '@/repositories'
 import { youtubeService } from '@/services'
+import { PLATFORM_YOUTUBE } from '@/types/platform'
 
 export const runtime = 'nodejs'
 
-export async function GET(req: Request) {
-  const auth = req.headers.get('authorization')
-  if (auth !== `Bearer ${env.cronSecret}`) {
-    return apiError(401, 'Unauthorized')
-  }
+export async function GET() {
+  const result = await requireSession()
+  if (result instanceof NextResponse) return result
+  const { session } = result
 
-  const accounts = await linkedAccountsRepository.findAllByProvider('youtube')
-  const account = accounts[0]
-  if (!account) return apiError(404, 'No YouTube account linked')
+  if (!session.youtubeChannelId) return apiError(403, 'No YouTube account linked')
+
+  const account = await linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_YOUTUBE)
+  if (!account) return apiError(404, 'YouTube account not found')
 
   let accessToken = account.accessToken!
 
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
   if (res.status === 401 && account.refreshToken) {
     const newToken = await youtubeService.refreshYouTubeToken(account.refreshToken)
     if (!newToken) return apiError(500, 'Token refresh failed')
-    await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
+    await linkedAccountsRepository.updateAccessToken(PLATFORM_YOUTUBE, account.providerAccountId, newToken)
     res = await fetchBroadcasts(newToken)
   }
 
