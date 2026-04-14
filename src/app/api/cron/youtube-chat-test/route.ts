@@ -43,11 +43,18 @@ export async function GET(req: NextRequest) {
 
   const body = await res.json().catch(() => null)
 
+  // Sanity check: verify the token works for a basic YouTube call
+  const channelsRes = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  const channelsBody = await channelsRes.json().catch(() => null)
+
   return NextResponse.json({
     status: res.status,
     url: ytUrl,
     account: account.providerAccountId,
     tokenPrefix: accessToken.slice(0, 10) + '...',
     body,
+    channelsSanityCheck: { status: channelsRes.status, body: channelsBody },
   })
 }
