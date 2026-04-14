@@ -21,7 +21,7 @@ export async function GET() {
     client_id: env.googleClientId,
     redirect_uri: `${APP_URL}/api/connections/link/google/callback`,
     response_type: "code",
-    scope: "openid email profile https://www.googleapis.com/auth/youtube.force-ssl",
+    scope: "openid email profile https://www.googleapis.com/auth/youtube.readonly",
     access_type: "offline",
     prompt: "consent",
     state,
