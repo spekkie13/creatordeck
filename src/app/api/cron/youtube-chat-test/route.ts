@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { apiError } from '@/lib/api-response'
 import { requireSession } from '@/lib/session-auth'
-
+import { linkedAccountsRepository } from '@/repositories'
 import { youtubeService } from '@/services'
 
 export const runtime = 'nodejs'
@@ -19,6 +19,32 @@ export async function GET(req: NextRequest) {
     return apiError(400, 'Missing liveChatId query param')
   }
 
-  const data = await youtubeService.pollChatWithId(liveChatId)
-  return NextResponse.json({ ok: true, ...data })
+  const account = await linkedAccountsRepository.findByProvider('youtube', session.youtubeChannelId)
+  if (!account) return apiError(404, 'No YouTube account linked')
+
+  let accessToken = account.accessToken!
+
+  const doFetch = (token: string) =>
+    fetch(`https://www.googleapis.com/youtube/v3/liveChatMessages?part=snippet,authorDetails&liveChatId=${encodeURIComponent(liveChatId)}&maxResults=2000`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+
+  let res = await doFetch(accessToken)
+
+  if (res.status === 401 && account.refreshToken) {
+    const newToken = await youtubeService.refreshYouTubeToken(account.refreshToken)
+    if (!newToken) return apiError(500, 'Token refresh failed')
+    await linkedAccountsRepository.updateAccessToken('youtube', account.providerAccountId, newToken)
+    accessToken = newToken
+    res = await doFetch(accessToken)
+  }
+
+  const body = await res.json().catch(() => null)
+
+  return NextResponse.json({
+    status: res.status,
+    account: account.providerAccountId,
+    tokenPrefix: accessToken.slice(0, 10) + '...',
+    body,
+  })
 }
