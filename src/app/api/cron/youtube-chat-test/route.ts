@@ -24,8 +24,10 @@ export async function GET(req: NextRequest) {
 
   let accessToken = account.accessToken!
 
+  const ytUrl = `https://www.googleapis.com/youtube/v3/liveChatMessages?part=snippet,authorDetails&liveChatId=${encodeURIComponent(liveChatId)}&maxResults=2000`
+
   const doFetch = (token: string) =>
-    fetch(`https://www.googleapis.com/youtube/v3/liveChatMessages?part=snippet,authorDetails&liveChatId=${encodeURIComponent(liveChatId)}&maxResults=2000`, {
+    fetch(ytUrl, {
       headers: { Authorization: `Bearer ${token}` },
     })
 
@@ -43,6 +45,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     status: res.status,
+    url: ytUrl,
     account: account.providerAccountId,
     tokenPrefix: accessToken.slice(0, 10) + '...',
     body,
