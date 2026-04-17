@@ -4,9 +4,9 @@ import { requireSession } from "@/lib/session-auth"
 import { apiError } from "@/lib/api-response"
 
 import { linkedAccountsRepository } from "@/repositories"
-import { PLATFORM_SPOTIFY, PLATFORM_STREAMELEMENTS, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
+import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
 import { LinkedAccount } from "@/types/entities"
-const ALLOWED_PROVIDERS = [PLATFORM_YOUTUBE, PLATFORM_TWITCH, PLATFORM_SPOTIFY, PLATFORM_STREAMELEMENTS]
+const ALLOWED_PROVIDERS = [PLATFORM_YOUTUBE, PLATFORM_TWITCH, PLATFORM_SPOTIFY]
 
 export async function POST(req: Request) {
   const result = await requireSession()

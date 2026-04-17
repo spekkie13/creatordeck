@@ -25,12 +25,6 @@ class ChatMessagesRepository {
       .limit(limit)
   }
 
-  async getRecent(channelId: string, limit = 50) {
-    return db.select().from(chatMessages)
-      .where(eq(chatMessages.channelId, channelId))
-      .orderBy(desc(chatMessages.occurredAt))
-      .limit(limit)
-  }
 }
 
 export const chatMessagesRepository = new ChatMessagesRepository()

@@ -14,7 +14,3 @@ export class AccountConflictException extends AppException {}
 // Billing
 export class UnknownStripePriceException extends AppException {}
 export class NoStripeCustomerFoundException extends AppException {}
-
-// StreamElements
-export class StreamElementsTokenExchangeFailedException extends AppException {}
-export class StreamElementsProfileFetchFailedException extends AppException {}
