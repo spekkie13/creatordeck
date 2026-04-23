@@ -71,9 +71,7 @@ export function AnalyticsClient({
       )}
 
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-6">
-
-        {/* Header + range selector */}
-        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold tracking-tight">Analytics</h1>
           <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/60 rounded-lg p-1">
             {(["7d", "30d", "90d"] as Range[]).map(r => {
@@ -100,12 +98,10 @@ export function AnalyticsClient({
           </div>
         </div>
 
-        {/* Totals */}
         <div className={loading ? "opacity-50 pointer-events-none transition-opacity" : "transition-opacity"}>
           <TotalsGrid totals={data.totals} hasYouTube={hasYouTube} selectedTypes={selectedTypes} onToggle={toggleType} />
         </div>
 
-        {/* Chart */}
         <div className={`bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden ${loading ? "opacity-50 pointer-events-none" : ""}`}>
           <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -135,7 +131,6 @@ export function AnalyticsClient({
           </div>
         </div>
 
-        {/* Sessions */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
             <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Stream Sessions</h2>

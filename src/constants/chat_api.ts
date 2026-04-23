@@ -1,5 +1,4 @@
 export const TWITCH_CHAT_POLL_MS = 2000
 export const EVENT_STREAM_POLL_MS = 3000
 export const WIDGET_STREAM_POLL_MS = 3000
-export const YOUTUBE_CHAT_POLL_MS = 5000
 export const SSE_INITIAL_LOOKBACK_MS = 5 * 60 * 1000

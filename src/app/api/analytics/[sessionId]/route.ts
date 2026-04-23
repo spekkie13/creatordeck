@@ -4,13 +4,14 @@ import { requireSession } from "@/lib/session-auth"
 
 import { analyticsService } from "@/services"
 import type { SessionDetail } from "@/services/analytics.types"
+import {SessionResult} from "@/types/session";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ sessionId: string }> },
 ) {
   const { sessionId } = await params
-  const result = await requireSession()
+  const result: SessionResult = await requireSession()
   if (result instanceof NextResponse) return result
   const { session } = result
 

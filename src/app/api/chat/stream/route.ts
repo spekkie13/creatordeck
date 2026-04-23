@@ -4,9 +4,10 @@ import { TWITCH_CHAT_POLL_MS, SSE_INITIAL_LOOKBACK_MS } from "@/constants/chat_a
 import { requireTwitchSession } from "@/lib/session-auth"
 
 import { chatMessagesRepository } from "@/repositories"
+import {TwitchSessionResult} from "@/types/session";
 
 export async function GET(req: NextRequest) {
-  const result = await requireTwitchSession()
+  const result: TwitchSessionResult = await requireTwitchSession()
   if (result instanceof NextResponse) return result
   const { session } = result
 

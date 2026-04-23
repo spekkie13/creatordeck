@@ -34,12 +34,10 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
 
       <main className="max-w-5xl mx-auto px-6 py-10 space-y-6">
 
-        {/* Back link */}
         <Link href="/analytics" className="inline-block text-xs text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
           ← Back to Analytics
         </Link>
 
-        {/* Session header card */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-6 py-5">
           <h1 className="text-lg font-semibold tracking-tight">
             {startDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
@@ -57,10 +55,8 @@ export default async function SessionDetailPage({ params }: { params: { sessionI
           </p>
         </div>
 
-        {/* Totals */}
         <TotalsRow totals={totals} />
 
-        {/* Event timeline */}
         <SessionTimeline events={events} sessionStart={s.startedAt} presentTypes={presentTypes} />
 
       </main>
