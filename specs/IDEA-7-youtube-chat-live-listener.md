@@ -8,9 +8,9 @@
 
 Replace the deleted cron-based YouTube chat polling with a connection-driven listener using the `youtube-chat` npm package. The SSE connection is already opened automatically when the user navigates to `/live` via the existing `useYouTubeChat` hook — no new client-side wiring is needed. When that connection is established, the server starts a `LiveChat` listener for their YouTube channel, pipes incoming messages into the `chatMessages` DB table (and optionally `ytMemberEvents` / `ytSuperChatEvents`), and emits them directly over the SSE stream. The listener stops when the user leaves the page and the connection closes.
 
-This fits Vercel's serverless model — the SSE connection keeps the function alive for its duration with no background process required.
+This fits Vercel's serverless model — the SSE connection keeps the function alive for its duration with no background process required. On the Hobby plan the maximum streaming-function duration is 60 seconds, so connections cycle frequently; the reconnect + DB replay mechanism (see §4) handles this transparently.
 
-**Key tradeoff:** Messages that arrive while no client has `/live` open will be missed. This is acceptable — the platform only needs chat ingestion while a user is actively viewing. Short disconnects (network blips, tab refreshes) are mitigated by an SSE reconnect + DB replay mechanism (see §4). Native `EventSource` handles reconnection automatically and sends `Last-Event-ID` without any manual hook logic.
+**Key tradeoff:** Messages that arrive while no client has `/live` open will be missed. This is acceptable — the platform only needs chat ingestion while a user is actively viewing. Short disconnects (network blips, tab refreshes, and the 60 s Hobby timeout) are mitigated by the SSE reconnect + DB replay mechanism (see §4). Native `EventSource` handles reconnection automatically and sends `Last-Event-ID` without any manual hook logic.
 
 ---
 
@@ -25,7 +25,7 @@ This fits Vercel's serverless model — the SSE connection keeps the function al
 - Graceful close with a typed error event if the channel is not live at connect time
 - **Bonus:** detect superchats and memberships from `ChatItem` flags, insert into `ytSuperChatEvents` / `ytMemberEvents`, and emit over SSE
 - Multiple simultaneous users: each SSE connection runs its own `LiveChat` instance; duplicate inserts are harmless due to `onConflictDoNothing()` on `eventId`
-- Set `maxDuration = 800` on the route (Vercel Pro streaming limit)
+- Set `maxDuration = 60` on the route (Vercel Hobby streaming limit); the reconnect + replay mechanism handles the resulting periodic reconnects
 - Update `useYouTubeChat` hook to parse the new typed event format (currently expects arrays of DB rows)
 
 ### Out of scope
@@ -57,7 +57,7 @@ No schema changes. Existing tables used as-is:
 
 **Auth:** session required; `session.youtubeChannelId` must be present  
 **Runtime:** `nodejs`  
-**Max duration:** `800` (Vercel Pro)  
+**Max duration:** `60` (Vercel Hobby streaming limit)  
 **Response:** `Content-Type: text/event-stream`
 
 #### SSE framing
@@ -111,7 +111,7 @@ The `/live` page and `LiveClient` component require no changes — `useYouTubeCh
 | `chatMessagesRepository.getSince()` | Exists, used for reconnect catch-up |
 | `ytMemberEventsRepository.insert()` | Exists, used for bonus membership path |
 | `ytSuperChatEventsRepository.insert()` | Exists, used for bonus superchat path |
-| `maxDuration = 800` | Vercel Pro streaming function limit |
+| `maxDuration = 60` | Vercel Hobby streaming function limit; reconnect + replay handles periodic cycling |
 
 No new environment variables required.
 
