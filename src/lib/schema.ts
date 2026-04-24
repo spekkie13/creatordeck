@@ -8,6 +8,7 @@ export const users = pgTable("users", {
   widgetToken: text("widget_token").unique(),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   tier: subscriptionTier("tier").notNull().default("free"),
+  isAdmin: boolean("is_admin").notNull().default(false),
   stripeCustomerId: text("stripe_customer_id").unique(),
   stripeSubscriptionId: text("stripe_subscription_id").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -194,4 +195,34 @@ export const ytStreamSessions = pgTable("yt_stream_sessions", {
   startedAt: timestamp("started_at").notNull(),
   endedAt: timestamp("ended_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+})
+
+export const featureFlags = pgTable("feature_flags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").unique().notNull(),
+  description: text("description"),
+  enabled: boolean("enabled").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+})
+
+export const featureFlagOverrides = pgTable("feature_flag_overrides", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  flagId: uuid("flag_id").notNull().references(() => featureFlags.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  enabled: boolean("enabled").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  flagUserUnique: unique().on(t.flagId, t.userId),
+}))
+
+export const featureFlagAuditLog = pgTable("feature_flag_audit_log", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  flagName: text("flag_name").notNull(),
+  actorId: uuid("actor_id").notNull(),
+  changeType: text("change_type").notNull(), // "created" | "updated" | "deleted" | "override_set" | "override_removed"
+  previousValue: boolean("previous_value"),
+  newValue: boolean("new_value"),
+  targetUserId: uuid("target_user_id"),
+  occurredAt: timestamp("occurred_at").defaultNow().notNull(),
 })

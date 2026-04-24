@@ -1,10 +1,6 @@
-﻿export function StatCard({ label, primary, secondary, color, isActive }: {
-    label: string
-    primary: string
-    secondary?: string
-    isActive?: boolean
-    color: string
-}) {
+﻿import {StatCardProps} from "@/props/stat-card.props";
+
+export function StatCard({ label, primary, secondary, color }: StatCardProps) {
     return (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-5 py-4 flex flex-col justify-between gap-3">
             <div className="flex items-center gap-2">

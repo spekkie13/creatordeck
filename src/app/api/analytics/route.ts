@@ -8,11 +8,12 @@ import { ONE_DAY_MS } from "@/constants/analytics"
 
 import { analyticsService } from "@/services"
 import type { AnalyticsOverview } from "@/services/analytics.types"
+import {SessionResult} from "@/types/session";
 
 const RANGES = { "7d": 7, "30d": 30, "90d": 90 } as const
 
 export async function GET(req: NextRequest) {
-  const result = await requireSession()
+  const result: SessionResult = await requireSession()
   if (result instanceof NextResponse) return result
   const { session } = result
 

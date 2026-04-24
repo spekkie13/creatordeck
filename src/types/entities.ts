@@ -12,6 +12,9 @@ import type {
   ytSuperChatEvents,
   ytMemberEvents,
   ytStreamSessions,
+  featureFlags,
+  featureFlagOverrides,
+  featureFlagAuditLog,
 } from "@/lib/schema"
 
 export type User = typeof users.$inferSelect
@@ -52,3 +55,12 @@ export type InsertYtMemberEvent = typeof ytMemberEvents.$inferInsert
 
 export type YtStreamSession = typeof ytStreamSessions.$inferSelect
 export type InsertYtStreamSession = typeof ytStreamSessions.$inferInsert
+
+export type FeatureFlag = typeof featureFlags.$inferSelect
+export type InsertFeatureFlag = typeof featureFlags.$inferInsert
+
+export type FeatureFlagOverride = typeof featureFlagOverrides.$inferSelect
+export type InsertFeatureFlagOverride = typeof featureFlagOverrides.$inferInsert
+
+export type FeatureFlagAuditLog = typeof featureFlagAuditLog.$inferSelect
+export type InsertFeatureFlagAuditLog = typeof featureFlagAuditLog.$inferInsert

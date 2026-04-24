@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { PLATFORM_YOUTUBE } from "@/types/platform"
-import { ChatMessage } from "@/types/chat";
+import type { ChatMessage } from "@/types/chat"
+import type { YouTubeSseEvent } from "@/lib/youtube-chat-mapper"
 
 const MAX_MESSAGES = 200
 
@@ -16,20 +17,22 @@ export function useYouTubeChat(enabled: boolean): ChatMessage[] {
 
     es.onmessage = (event: MessageEvent<string>) => {
       try {
-        const rows = JSON.parse(event.data) as Array<{
-          id: string
-          userDisplayName: string | null
-          message: string
-          occurredAt: string
-        }>
-        const incoming: ChatMessage[] = rows.map(r => ({
-          id: r.id,
-          platform: PLATFORM_YOUTUBE,
-          userDisplayName: r.userDisplayName ?? "Unknown",
-          message: r.message,
-          occurredAt: r.occurredAt,
-        }))
-        setMessages(prev => [...prev, ...incoming].slice(-MAX_MESSAGES))
+        const payload = JSON.parse(event.data) as YouTubeSseEvent
+
+        if (payload.type === "chat") {
+          const msg: ChatMessage = {
+            id: payload.id,
+            platform: PLATFORM_YOUTUBE,
+            userDisplayName: payload.userDisplayName ?? "Unknown",
+            message: payload.message,
+            occurredAt: payload.occurredAt,
+          }
+          setMessages(prev => [...prev, msg].slice(-MAX_MESSAGES))
+        } else if (payload.type === "error") {
+          console.error("[YouTubeChat] server error", payload.reason, payload.detail)
+          if (payload.reason === "not_live") es.close()
+        }
+        // superchat / member events are received but not surfaced in chat list
       } catch (err) {
         console.error("[YouTubeChat] parse error", err)
       }

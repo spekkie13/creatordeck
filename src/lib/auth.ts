@@ -48,14 +48,15 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, account, profile, trigger }) {
       if (trigger === "update" && token.userId) {
-        const [ytAccount, twitchAccount, tier] = await Promise.all([
+        const [ytAccount, twitchAccount, user] = await Promise.all([
           linkedAccountsRepository.findByUserIdAndProvider(token.userId as string, PLATFORM_YOUTUBE),
           linkedAccountsRepository.findByUserIdAndProvider(token.userId as string, PLATFORM_TWITCH),
-          userRepository.getTier(token.userId as string),
+          userRepository.findById(token.userId as string),
         ])
         token.youtubeChannelId = ytAccount?.providerAccountId ?? null
         token.twitchId = twitchAccount?.providerAccountId ?? null
-        token.tier = tier as SubscriptionTier
+        token.tier = (user?.tier ?? "free") as SubscriptionTier
+        token.isAdmin = user?.isAdmin ?? false
         delete token.linkingError
         return token
       }
@@ -89,13 +90,17 @@ export const authOptions: NextAuthOptions = {
               accessToken: account.access_token ?? "",
               refreshToken: account.refresh_token ?? "",
             })
-            const ytAccount: LinkedAccount | null = await linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_YOUTUBE)
+            const [ytAccount, user] = await Promise.all([
+              linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_YOUTUBE),
+              userRepository.findById(userId),
+            ])
             token.userId = userId
             token.twitchId = p.sub
             token.youtubeChannelId = ytAccount?.providerAccountId ?? null
             token.displayName = p.preferred_username
             token.apiKey = apiKey
             token.tier = tier as SubscriptionTier
+            token.isAdmin = user?.isAdmin ?? false
           }
 
         } else if (account.provider === "google") {
@@ -129,13 +134,17 @@ export const authOptions: NextAuthOptions = {
               accessToken: account.access_token ?? "",
               refreshToken: account.refresh_token ?? "",
             })
-            const twitchAccount = await linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_TWITCH)
+            const [twitchAccount, user] = await Promise.all([
+              linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_TWITCH),
+              userRepository.findById(userId),
+            ])
             token.userId = userId
             token.twitchId = twitchAccount?.providerAccountId ?? null
             token.youtubeChannelId = channelId
             token.displayName = twitchAccount?.displayName ?? p.name ?? channelId
             token.apiKey = apiKey
             token.tier = tier as SubscriptionTier
+            token.isAdmin = user?.isAdmin ?? false
           }
         }
       }
@@ -148,6 +157,7 @@ export const authOptions: NextAuthOptions = {
       session.displayName = token.displayName as string
       session.apiKey = token.apiKey as string
       session.tier = (token.tier ?? "free") as SubscriptionTier
+      session.isAdmin = (token.isAdmin as boolean) ?? false
       if (token.linkingError) session.linkingError = token.linkingError
       return session
     },

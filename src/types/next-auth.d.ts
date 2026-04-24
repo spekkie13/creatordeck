@@ -9,6 +9,7 @@ declare module "next-auth" {
     displayName: string
     apiKey: string
     tier: SubscriptionTier
+    isAdmin: boolean
     linkingError?: "account_conflict" | "no_youtube_channel"
   }
 }
@@ -21,6 +22,7 @@ declare module "next-auth/jwt" {
     displayName: string
     apiKey: string
     tier: SubscriptionTier
+    isAdmin: boolean
     linkingError?: "account_conflict" | "no_youtube_channel"
   }
 }
