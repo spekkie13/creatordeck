@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
 
 import { CreatorDeckLogo } from "@/components/creator-deck-logo"
+import { FeatureFlag } from "@/components/feature-flag"
 import { ScreenshotCarousel } from "@/components/screenshot-carousel"
 
 import { SignInButton } from "./sign-in-button"
@@ -43,7 +44,9 @@ export default async function LandingPage() {
       <nav className="sticky top-0 z-30 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-100 dark:border-zinc-900">
         <div className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
           <CreatorDeckLogo size="sm" />
-          <SignInButton variant="ghost" />
+          <FeatureFlag name="login-button-enabled">
+            <SignInButton variant="ghost" />
+          </FeatureFlag>
         </div>
       </nav>
 
@@ -67,9 +70,11 @@ export default async function LandingPage() {
             One dashboard for your stream events, goals, and analytics — across Twitch, YouTube, and more.
           </p>
 
-          {/* <div className="pt-2">
-            <SignInButton />
-          </div> */}
+          <div className="pt-2">
+            <FeatureFlag name="login-button-enabled">
+              <SignInButton />
+            </FeatureFlag>
+          </div>
         </div>
       </section>
 
