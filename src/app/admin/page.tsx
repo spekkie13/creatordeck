@@ -9,7 +9,7 @@ export default async function AdminPage() {
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-semibold mb-8">Feature Flags</h1>
+      <h1 className="text-2xl font-semibold underline mb-8">Feature Flags</h1>
       <AdminFlagsClient flags={flags} actorId={session!.userId} />
     </main>
   )
