@@ -9,8 +9,8 @@ export const users = pgTable("users", {
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   tier: subscriptionTier("tier").notNull().default("free"),
   isAdmin: boolean("is_admin").notNull().default(false),
-  stripeCustomerId: text("stripe_customer_id").unique(),
-  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  LsCustomerId: text("lemon_squeezy_customer_id").unique(),
+  LsSubscriptionId: text("lemon_squeezy_subscription_id").unique(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 })
 

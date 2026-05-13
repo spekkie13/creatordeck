@@ -12,7 +12,7 @@ import { Feature } from "@/app/billing/feature"
 import { CurrentPlanBadge } from "@/app/billing/current-plan-badge"
 import {PaidSubscriptionTier, SubscriptionTier, Tier} from "@/types/tier";
 
-export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitchLogin, prices }: PricingCardProps) {
+export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitchLogin, variants }: PricingCardProps) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly")
   const [loading, setLoading] = useState<string | null>(null)
   const [waitlistTier, setWaitlistTier] = useState<Tier | null>(null)
@@ -23,13 +23,13 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
       return
     }
 
-    const priceId: string = prices[tier.id as PaidSubscriptionTier][cycle]
+    const variantId: string = variants[tier.id as PaidSubscriptionTier][cycle]
     setLoading(tier.label)
     try {
-      const res: Response = await fetch("/api/stripe/checkout", {
+      const res: Response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId }),
+        body: JSON.stringify({ variantId }),
       })
       const { url } = await res.json()
       if (url) window.location.href = url
@@ -41,7 +41,7 @@ export function PricingCards({ currentTier, hasSubscription, waitlistMode, twitc
   async function handleManage() {
     setLoading("portal")
     try {
-      const res = await fetch("/api/stripe/portal", { method: "POST" })
+      const res = await fetch("/api/billing/portal", { method: "POST" })
       const { url } = await res.json()
       if (url) window.location.href = url
     } finally {

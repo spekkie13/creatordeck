@@ -1,22 +1,22 @@
 import {PaidSubscriptionTier, SubscriptionTier, Tier} from "@/types/tier";
 
 /**
- * Maps Stripe price IDs to their subscription tier.
+ * Maps Lemon Squeezy Variant IDs to their subscription tier.
  * Populated at runtime from env vars — used in webhook handler.
  */
-export function buildPriceTierMap(prices: {
-  tier1: { monthly: string; annual: string }
-  tier2: { monthly: string; annual: string }
-  tier3: { monthly: string; annual: string }
+export function buildVariantTierMap(variants: {
+    tier1: { monthly: string; annual: string }
+    tier2: { monthly: string; annual: string }
+    tier3: { monthly: string; annual: string }
 }): Record<string, PaidSubscriptionTier> {
-  return {
-    [prices.tier1.monthly]: "tier1",
-    [prices.tier1.annual]:  "tier1",
-    [prices.tier2.monthly]: "tier2",
-    [prices.tier2.annual]:  "tier2",
-    [prices.tier3.monthly]: "tier3",
-    [prices.tier3.annual]:  "tier3",
-  }
+    return {
+        [variants.tier1.monthly]: "tier1",
+        [variants.tier1.annual]:  "tier1",
+        [variants.tier2.monthly]: "tier2",
+        [variants.tier2.annual]:  "tier2",
+        [variants.tier3.monthly]: "tier3",
+        [variants.tier3.annual]:  "tier3",
+    }
 }
 
 /** Returns true if userTier meets or exceeds the requiredTier. */

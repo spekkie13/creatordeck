@@ -13,7 +13,7 @@ Business logic is embedded directly in route handlers across many files:
 | File | Issue |
 |---|---|
 | `app/api/webhook/route.ts` | Large switch statement (~40 lines) with direct repository calls inside the route handler |
-| `app/api/stripe/webhook/route.ts` | Database writes, subscription state transitions inside the handler |
+| `app/api/lemonSqueezy/webhook/route.ts` | Database writes, subscription state transitions inside the handler |
 | `app/api/cron/youtube-poll/route.ts` | `pollAccount` function (~105 lines) defined and called inside the route module |
 | `app/api/dev/seed-full/route.ts` | ~327-line POST handler containing all seeding logic |
 | `app/api/connections/link/google/callback/route.ts` | OAuth token exchange, DB writes, redirect logic all in one handler (~82 lines) |
@@ -35,7 +35,7 @@ Multiple catch blocks only call `console.error` and either continue, return a mi
 | File | Line(s) | Problem |
 |---|---|---|
 | `app/api/webhook/route.ts` | ~87–89 | Catches error, logs it, then still returns 200 |
-| `app/api/stripe/webhook/route.ts` | ~87–89 | Same pattern — handler failure returns success |
+| `app/api/lemonSqueezy/webhook/route.ts` | ~87–89 | Same pattern — handler failure returns success |
 | `app/api/cron/youtube-poll/route.ts` | ~81 | `.catch(() => "(unreadable)")` silently discards parse errors |
 | `app/api/dev/seed-full/route.ts` | ~85–87, ~123–125, ~181–183 | Multiple catch blocks that only add to result object, never fail the request |
 | `app/api/connections/link/google/callback/route.ts` | ~83–85 | Catch only redirects, error not logged |
@@ -63,7 +63,7 @@ Request bodies and query params are destructured or cast without schema validati
 | `app/api/subs/route.ts` | Multiple `??` fallbacks without a clear validation failure path |
 | `app/api/spotify/controls/route.ts` | Cast to `{ action: Action; volume?: number }` with no schema check |
 | `app/api/analytics/route.ts` | `range` query param cast and used without validation against allowed values |
-| `app/api/stripe/webhook/route.ts` | `subscriptionId` and `customerId` cast to `string` without existence checks |
+| `app/api/lemonSqueezy/webhook/route.ts` | `subscriptionId` and `customerId` cast to `string` without existence checks |
 | `app/api/connections/link/google/callback/route.ts` | State comparison done before userId is verified |
 
 **Fix:** Use zod (already available in the project) to parse and validate all request input before any business logic runs.
@@ -81,7 +81,7 @@ Request bodies and query params are destructured or cast without schema validati
 | `app/api/connections/link/google/callback/route.ts` | `GET` handler | ~82 |
 | `app/api/connections/link/spotify/callback/route.ts` | `GET` handler | ~72 |
 | `app/api/webhook/route.ts` | `POST` handler | ~80+ |
-| `app/api/stripe/webhook/route.ts` | `POST` handler | ~90+ |
+| `app/api/lemonSqueezy/webhook/route.ts` | `POST` handler | ~90+ |
 
 **Fix:** Extract cohesive blocks into named functions or services. If a function needs "and" to describe it, split it.
 
@@ -96,7 +96,7 @@ Request bodies and query params are destructured or cast without schema validati
 | `app/api/events/stream/route.ts` | `ReadableStream` start callback | 3+ levels: stream → try → if → repository call |
 | `app/api/events/youtube-chat/route.ts` | Same pattern | 3+ levels |
 | `app/api/cron/youtube-poll/route.ts` | Message processing loop | Triple-nested if-else for message type dispatch |
-| `app/api/stripe/webhook/route.ts` | Switch statement cases | Switch → case → try → if → DB call |
+| `app/api/lemonSqueezy/webhook/route.ts` | Switch statement cases | Switch → case → try → if → DB call |
 | `app/api/webhook/route.ts` | Main switch block | Switch → case → multiple nested conditions |
 | `app/api/connections/link/google/callback/route.ts` | OAuth callback | Nested try-catch + conditionals |
 

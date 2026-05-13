@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 
 import type { User } from "@/types/entities"
-import type { StripeInfo } from "@/types/stripeInfo"
+import type { BillingInfo } from "@/types/billing-info"
 
 import { db } from "@/lib/db"
 import { users } from "@/lib/schema"
@@ -61,40 +61,40 @@ class UserRepository {
         .where(eq(users.id, userId))
   }
 
-  async setStripeCustomer(userId: string, customerId: string, subscriptionId: string): Promise<void> {
+  async setCustomer(userId: string, customerId: string, subscriptionId: string): Promise<void> {
     await db
         .update(users)
-        .set({ stripeCustomerId: customerId, stripeSubscriptionId: subscriptionId })
+        .set({ LsCustomerId: customerId, LsSubscriptionId: subscriptionId })
         .where(eq(users.id, userId))
   }
 
-  async clearStripeSubscription(userId: string): Promise<void> {
+  async clearSubscription(userId: string): Promise<void> {
     await db
         .update(users)
-        .set({ stripeSubscriptionId: null })
+        .set({ LsSubscriptionId: null })
         .where(eq(users.id, userId))
   }
 
-  async findByStripeCustomerId(customerId: string): Promise<{ id: string; tier: string } | null> {
+  async findByCustomerId(customerId: string): Promise<{ id: string; tier: string } | null> {
     const rows =
         await db
             .select({ id: users.id, tier: users.tier })
             .from(users)
             .where(
-                eq(users.stripeCustomerId, customerId)
+                eq(users.LsCustomerId, customerId)
             )
             .limit(1)
 
     return rows[0] ?? null
   }
 
-  async getStripeInfo(userId: string): Promise<StripeInfo> {
-    const rows: StripeInfo[] = await db.select({
-      stripeCustomerId: users.stripeCustomerId,
-      stripeSubscriptionId: users.stripeSubscriptionId,
+  async getCustomerInfo(userId: string): Promise<BillingInfo> {
+    const rows: BillingInfo[] = await db.select({
+      customerId: users.LsCustomerId,
+      subscriptionId: users.LsSubscriptionId,
       tier: users.tier,
     }).from(users).where(eq(users.id, userId)).limit(1)
-    return rows[0] ?? { stripeCustomerId: null, stripeSubscriptionId: null, tier: "free" }
+    return rows[0] ?? { customerId: null, subscriptionId: null, tier: "free" }
   }
 }
 

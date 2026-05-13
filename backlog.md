@@ -74,7 +74,7 @@ C# Desktop app (lokaal)
 ### ✅ Code kwaliteit — shortcomings review (branch: fix-violations)
 ```
 ✅  Cat 1  — API response helpers (apiError / apiSuccess) toegevoegd
-✅  Cat 2  — Stille errors gesurface'd (webhooks, Stripe, SSE)
+✅  Cat 2  — Stille errors gesurface'd (webhooks, Lemon Squeezy, SSE)
 ✅  Cat 3  — Zod input validatie op alle API boundaries
 ✅  Cat 4  — Business logic uit route handlers gehaald → services
 ✅  Cat 5  — Diepe nesting opgelost (downstream effect van Cat 4)
@@ -107,14 +107,14 @@ C# Desktop app (lokaal)
 5.  [IDEA-4] — Alert overlay widget (/widget/alerts) — Tier 2 feature  ✅ Spec gereed (specs/IDEA-4-alert-config.md) — pre-req: rebase feature/alerts-engine op main
 ```
 
-### 🔨 Fase 4 — Analytics + Stripe (Tier 1 activeren)
-> Analytics is de eerste upgrade trigger: gebruiker ziet "7 dagen" en wil meer. Stripe maakt monetisatie mogelijk.
+### 🔨 Fase 4 — Analytics + Lemon Squeezy (Tier 1 activeren)
+> Analytics is de eerste upgrade trigger: gebruiker ziet "7 dagen" en wil meer. Lemon Squeezy maakt monetisatie mogelijk.
 ```
 6.  [4.1]   — Analytics API route (totalen per dag, per sessie)          ✅ gereed
 7.  [4.2]   — Analytics pagina (grafiek, sessietabel)                    ✅ gereed
 8.  [4.3]   — Sessie detailpagina                                        ✅ gereed
 9.  [4.4]   — 7-dagen limiet op gratis tier (upgrade prompt na 7d)          ✅ gereed
-10. [5.1]   — Stripe abonnement
+10. [5.1]   — Lemon Squeezy abonnement
 11. [5.2]   — Feature gates per tier
 12. [5.3]   — Billing pagina
     ↑ SHIP: begin marketing hier — product is verkoopbaar
@@ -185,7 +185,7 @@ Visuele alerts tonen wanneer er een event binnenkomt (follow, sub, bits, raid, s
 Bouwt voort op [8.1] widget-authenticatie en de bestaande SSE event feed.
 
 > **Waarom deze volgorde?**
-> YouTube is al half-gebouwd — 6.5 sluit de integratie af met minimale inspanning. OBS widgets zijn een concrete, visuele USP die makkelijk te demonstreren zijn in marketing materiaal. Analytics + Stripe maken monetisatie mogelijk. Unified chat is complex maar de sterkste differentiator — die bouwt de grootste marketingboodschap op.
+> YouTube is al half-gebouwd — 6.5 sluit de integratie af met minimale inspanning. OBS widgets zijn een concrete, visuele USP die makkelijk te demonstreren zijn in marketing materiaal. Analytics + Lemon Squeezy maken monetisatie mogelijk. Unified chat is complex maar de sterkste differentiator — die bouwt de grootste marketingboodschap op.
 
 ---
 
@@ -381,9 +381,9 @@ Fetch data server-side using Drizzle. Use Tailwind CSS, dark theme.
 
 ---
 
-### [5.1] Stripe abonnement integreren
+### [5.1] Lemon Squeezy abonnement integreren
 
-**Doel:** Gebruikers kunnen een maandelijks abonnement afsluiten via Stripe Checkout.
+**Doel:** Gebruikers kunnen een maandelijks abonnement afsluiten via Lemon Squeezy Checkout.
 
 **Claude Code prompt:**
 ```
@@ -391,15 +391,15 @@ I have a Next.js app with NextAuth (Twitch OAuth) and a users table in Neon (Dri
 The users table is in src/lib/schema.ts and has id (uuid), twitchId (text, nullable), twitchLogin (text), twitchDisplayName (text), apiKey (text), createdAt (timestamp).
 (twitchId may be nullable by this point if YouTube-only users exist — handle lookups accordingly.)
 
-Integrate Stripe for a monthly subscription:
-1. Add subscriptionStatus (text, default "free") and stripeCustomerId (text, nullable) to the users table in schema.ts
-2. Build an API route POST /api/billing/checkout that creates a Stripe Checkout session and redirects the user
-3. Build an API route POST /api/billing/webhook that handles Stripe webhooks:
+Integrate Lemon Squeezy for a monthly subscription:
+1. Add subscriptionStatus (text, default "free") and LsCustomerId (text, nullable) to the users table in schema.ts
+2. Build an API route POST /api/billing/checkout that creates a Lemon Squeezy Checkout session and redirects the user
+3. Build an API route POST /api/billing/webhook that handles Lemon Squeezy webhooks:
    - checkout.session.completed → set subscriptionStatus to "pro"
    - customer.subscription.deleted → set subscriptionStatus back to "free"
-4. Show the required environment variables and Stripe dashboard setup steps
+4. Show the required environment variables and Lemon Squeezy dashboard setup steps
 
-Use the official Stripe Node.js SDK. Use Drizzle for all DB updates. Run: npx drizzle-kit push
+Use the official Lemon Squeezy Node.js SDK. Use Drizzle for all DB updates. Run: npx drizzle-kit push
 ```
 
 ---
@@ -433,11 +433,11 @@ Show the middleware or page-level checks needed for Next.js App Router.
 
 **Claude Code prompt:**
 ```
-I have a Next.js app with Stripe integration. Users have a subscriptionStatus ("free" | "pro") and stripeCustomerId in the Drizzle users table.
+I have a Next.js app with Lemon Squeezy integration. Users have a subscriptionStatus ("free" | "pro") and Lemon SqueezyCustomerId in the Drizzle users table.
 Build a /billing page that shows:
 1. Current plan (Free or Pro) with a description of what's included
-2. For Pro users: next billing date (fetched from Stripe API) and a "Manage subscription" button that opens Stripe Customer Portal
-3. For Free users: a pricing card with a "Upgrade to Pro — €10/month" button that triggers the Stripe Checkout flow
+2. For Pro users: next billing date (fetched from Lemon Squeezy API) and a "Manage subscription" button that opens Lemon Squeezy Customer Portal
+3. For Free users: a pricing card with a "Upgrade to Pro — €10/month" button that triggers the Lemon Squeezy Checkout flow
 
 Use Tailwind CSS, dark theme.
 ```
