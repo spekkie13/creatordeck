@@ -30,3 +30,24 @@ jobs:
         run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
+          DATABASE_URL: postgresql://user:password@localhost/db
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: dummy
+          TWITCH_CLIENT_ID: dummy
+          TWITCH_CLIENT_SECRET: dummy
+          TWITCH_WEBHOOK_SECRET: dummy
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          GOOGLE_CLIENT_ID: dummy
+          GOOGLE_CLIENT_SECRET: dummy
+          SPOTIFY_CLIENT_ID: dummy
+          SPOTIFY_CLIENT_SECRET: dummy
+          CRON_SECRET: dummy
+          LEMONSQUEEZY_API_KEY: dummy
+          LEMONSQUEEZY_WEBHOOK_SECRET: dummy
+          LEMONSQUEEZY_STORE_ID: dummy
+          LEMONSQUEEZY_VARIANT_TIER1_MONTHLY: dummy
+          LEMONSQUEEZY_VARIANT_TIER1_ANNUAL: dummy
+          LEMONSQUEEZY_VARIANT_TIER2_MONTHLY: dummy
+          LEMONSQUEEZY_VARIANT_TIER2_ANNUAL: dummy
+          LEMONSQUEEZY_VARIANT_TIER3_MONTHLY: dummy
+          LEMONSQUEEZY_VARIANT_TIER3_ANNUAL: dummy
