@@ -135,7 +135,7 @@ Legend: **(a)** removed outright · **(b)** refactored to fit the spec · **(c)*
 
 ### Phase 1 — Foundation (spec §6 Phase 1)
 
-**Polar side (manual, owner + Claude Code together):** sandbox org; products `pro-monthly` (€7.99/mo) and `pro-yearly` (€59/yr) — placeholder prices pending owner confirmation — both carrying benefit "CreatorDeck Pro"; webhook endpoint pointed at the deployed `/api/webhooks/polar`; verify at Gate 1 whether no-card trials are configurable (spec risk item).
+**Polar side (manual, owner + Claude Code together):** sandbox org; products `pro-monthly` (€7.99/mo) and `pro-yearly` (€59/yr) — prices confirmed at Gate 0 (§4 D1) — both carrying benefit "CreatorDeck Pro"; webhook endpoint pointed at the deployed `/api/webhooks/polar`; verify at Gate 1 whether no-card trials are configurable (spec risk item).
 
 **Schema (`src/lib/schema.ts`, same migration 0001):**
 ```ts
@@ -174,7 +174,7 @@ export const polarWebhookEvents = pgTable("polar_webhook_events", {
 - `src/app/api/me/entitlement/route.ts` — `GET`; auth = session **or** `x-api-key`; returns `{ plan, status, effectiveStatus, hasPro, trialEndsAt, currentPeriodEnd, graceEndsAt }`. This is both the success-page poll target and the desktop app's runtime entitlement signal (§1.5).
 - `src/hooks/use-entitlement.ts` — SWR hook on `/api/me/entitlement` (repo already uses SWR) for all client-side gating.
 
-**Trial + owner wiring:** `linkedAccountsRepository.upsertWithUser` calls `entitlementsRepository.createTrial(newUserId)` inside the same flow; owner flips `is_owner` via one-off SQL. Existing users: covered lazily by `getOrCreate` (default `plan=free,status=none`, no trial) — whether legacy users get a courtesy trial is an owner question (§ Open questions).
+**Trial + owner wiring:** `linkedAccountsRepository.upsertWithUser` calls `entitlementsRepository.createTrial(newUserId)` inside the same flow; owner flips `is_owner` via one-off SQL. Existing users: none exist pre-launch (owner-confirmed at Gate 0, §4 D2) — no backfill task; `createTrial` at signup covers all accounts, with `getOrCreate` as the lazy safety net.
 
 **Env (`src/lib/env.ts` + `.env.example` + Vercel):** `POLAR_ACCESS_TOKEN`, `POLAR_WEBHOOK_SECRET`, `POLAR_PRODUCT_PRO_MONTHLY`, `POLAR_PRODUCT_PRO_YEARLY`, `POLAR_SERVER` (`sandbox`|`production`).
 
@@ -221,11 +221,13 @@ export const polarWebhookEvents = pgTable("polar_webhook_events", {
 
 ---
 
-## 4. Open questions for the owner
+## 4. Gate 0 decisions (2026-07-03)
 
-1. **Pricing confirmation (spec §2 requires this at Gate 0):** Pro Monthly €7.99 / Pro Yearly €59 — confirm or adjust before sandbox products are created.
-2. **Legacy users' trial:** users who signed up before this ships have no `trialEndsAt`. Grant everyone a 14-day trial starting at deploy (generous, one SQL backfill), or no trial for existing accounts (they're all effectively free/waitlist today)? Default in plan: lazy `plan=free,status=none` without trial unless you say otherwise.
-3. **Trial without card:** if Polar sandbox shows no-card trials aren't supported (Gate 1 check), pick the fallback: card-required trial vs "Pro locked until first checkout". Spec leaves this to Gate 1; flagging early.
-4. **Waitlist `interested_tier` data:** column retains historical tier1/2/3 interest signups; fine to keep as-is (read-only history), or export/purge?
-5. **Test tooling:** plan adds `vitest` as a devDependency to mechanically verify criteria 2 and 5. Veto if you want the repo dependency-minimal; fallback is scripted manual verification.
-6. **Desktop-app entitlement contract (§1.5):** confirm the C# app can poll `GET /api/me/entitlement` with its API key and enforce skip-but-preserve locally; this plan makes the webapp the authority but cannot implement the desktop side.
+*Confirmed by the owner in the 2026-07-03 interactive Gate 0 review.*
+
+1. **Pricing (spec §2 Gate 0 requirement)** — **Confirmed: Pro Monthly €7.99 / Pro Yearly €59.** Sits between Lumia (~$10/mo) and Streamlabs Ultra (~$19/mo) with YouTube unified chat as the headline justification; Polar catalog changes stay cheap, so this anchors launch without locking it.
+2. **Legacy users' trial** — **Moot: no pre-launch accounts exist** (owner-confirmed). No backfill task; `createTrial` at signup covers every account from day one, and `getOrCreate` remains the lazy safety net for any anomalous row.
+3. **Trial without card** — **Local no-card trial, as architected:** `trialEndsAt` is set in our DB at signup and `hasPro` honors it; Polar enters only at first checkout. This makes the spec's card-required fallback moot and closes the "trial-without-card not supported" risk row regardless of what Polar's trial options turn out to be.
+4. **Waitlist `interested_tier` data** — **Keep as read-only history.** Harmless market signal about willingness to pay; the column simply stops being written.
+5. **Test tooling** — **Add `vitest` (devDependency).** Webhook idempotency, out-of-order application, and the single-predicate rule are exactly the logic that regresses silently; the repo's first tests land at its most safety-critical seam.
+6. **Desktop-app entitlement contract (§1.5)** — **Contract confirmed as designed:** the C# app polls `GET /api/me/entitlement` with `x-api-key`, caches for minutes (not hours), and skips-but-preserves Pro-only actions when `hasPro` is false. The webapp side ships regardless; the desktop implementation remains that repo's workstream and nothing here blocks on it.
