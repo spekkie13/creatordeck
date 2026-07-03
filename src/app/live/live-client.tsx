@@ -30,9 +30,18 @@ export function LiveClient({
   const streamInfo: StreamInfo = useStreamInfo(initialStreamInfo)
 
   const twitchMessages: ChatMessage[] = useTwitchChat(twitchLogin)
-  const youtubeMessages: ChatMessage[] = useYouTubeChat(hasYouTube)
+  const { messages: youtubeMessages, status: youtubeStatus } = useYouTubeChat(hasYouTube)
   const chatMessages: ChatMessage[] = [...twitchMessages, ...youtubeMessages]
     .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
+
+  const youtubeChip: { label: string; className: string } = {
+    live: { label: "YouTube: live", className: "bg-green-500/15 text-green-400" },
+    quota: { label: "YouTube: quota-limited", className: "bg-amber-500/15 text-amber-400" },
+    reconnect_required: { label: "YouTube: reconnect", className: "bg-amber-500/15 text-amber-400" },
+    ended: { label: "YouTube: not live", className: "bg-red-500/15 text-red-400" },
+    not_live: { label: "YouTube: not live", className: "bg-red-500/15 text-red-400" },
+    idle: { label: "YouTube", className: "bg-red-500/15 text-red-400" },
+  }[youtubeStatus]
 
   return (
     <div className="fixed inset-0 bg-zinc-50 dark:bg-zinc-950 flex flex-col">
@@ -72,7 +81,11 @@ export function LiveClient({
             </h2>
             <div className="flex items-center gap-1.5 ml-1">
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 font-medium">Twitch</span>
-              {hasYouTube && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/15 text-red-400 font-medium">YouTube</span>}
+              {hasYouTube && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${youtubeChip.className}`}>
+                  {youtubeChip.label}
+                </span>
+              )}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import { env } from '@/lib/env'
 import { PLATFORM_YOUTUBE } from '@/types/platform'
+import type { YouTubeLiveChatItem } from '@/lib/youtube-api-mapper'
 
 import {
   linkedAccountsRepository,
@@ -9,6 +10,30 @@ import {
 // Refresh a little before the token actually expires so an in-flight request
 // never races the boundary.
 const REFRESH_SKEW_MS = 60_000
+
+/**
+ * Placeholder quota cost of one `liveChatMessages.list` call. Google does not
+ * publish this (community range 1–5 units); we seed the pessimistic end and will
+ * replace it with the Gate 1 spike / Google Cloud console per-method measurement
+ * (plan §3.6, Phase 3). Instrumentation must MEASURE, never assume — this is the
+ * best available estimate until then.
+ */
+export const YT_LIST_UNITS_ESTIMATE = 5
+
+export type ActiveBroadcast = {
+  id: string
+  title: string | null
+  liveChatId: string | null
+}
+
+export type LiveChatFetchResult =
+  | {
+      ok: true
+      items: YouTubeLiveChatItem[]
+      nextPageToken: string | null
+      pollingIntervalMillis: number
+    }
+  | { ok: false; error: 'quota' | 'ended' | 'unknown'; retryAfterMillis?: number }
 
 class YoutubeService {
   /**
@@ -101,6 +126,81 @@ class YoutubeService {
       return raw !== undefined ? parseInt(raw) : null
     } catch {
       return null
+    }
+  }
+
+  /**
+   * Detects the user's currently-active live broadcast. Uses ONLY
+   * `liveBroadcasts.list?mine=true` (1-unit class) — `search.list` is forbidden
+   * for liveness (100 units/call, 100/day hard cap; spec §3.6). Returns the
+   * active broadcast (with its live chat id) or null when not live.
+   */
+  async getActiveBroadcast(accessToken: string): Promise<ActiveBroadcast | null> {
+    try {
+      const res = await fetch(
+        'https://www.googleapis.com/youtube/v3/liveBroadcasts' +
+          '?part=snippet,status&broadcastStatus=active&broadcastType=all&mine=true',
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      )
+      if (!res.ok) return null
+      const data = await res.json()
+      const item = data.items?.[0]
+      if (!item) return null
+      return {
+        id: item.id,
+        title: item.snippet?.title ?? null,
+        liveChatId: item.snippet?.liveChatId ?? null,
+      }
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * One `liveChatMessages.list` tick. Returns new messages plus the resume
+   * `nextPageToken` and YouTube's demanded `pollingIntervalMillis` (the client
+   * MUST honor it, never a hardcoded interval). Maps quota/ended conditions to a
+   * typed result so the route can degrade gracefully.
+   */
+  async fetchLiveChatMessages(
+    accessToken: string,
+    liveChatId: string,
+    pageToken: string | null,
+  ): Promise<LiveChatFetchResult> {
+    try {
+      const params = new URLSearchParams({
+        liveChatId,
+        part: 'snippet,authorDetails',
+      })
+      if (pageToken) params.set('pageToken', pageToken)
+
+      const res = await fetch(
+        `https://www.googleapis.com/youtube/v3/liveChat/messages?${params}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      )
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        const reason: string | undefined = body?.error?.errors?.[0]?.reason
+        if (reason === 'quotaExceeded' || reason === 'rateLimitExceeded' || res.status === 429) {
+          return { ok: false, error: 'quota', retryAfterMillis: 60_000 }
+        }
+        if (reason === 'liveChatEnded' || reason === 'liveChatNotFound' || res.status === 404) {
+          return { ok: false, error: 'ended' }
+        }
+        return { ok: false, error: 'unknown' }
+      }
+
+      const data = await res.json()
+      return {
+        ok: true,
+        items: (data.items ?? []) as YouTubeLiveChatItem[],
+        nextPageToken: data.nextPageToken ?? null,
+        pollingIntervalMillis:
+          typeof data.pollingIntervalMillis === 'number' ? data.pollingIntervalMillis : 5000,
+      }
+    } catch {
+      return { ok: false, error: 'unknown' }
     }
   }
 

@@ -1,7 +1,7 @@
 export { twitchEventSubService } from "./twitch-eventsub.service"
 export { twitchWebhookService } from "./twitch-webhook.service"
 export { twitchService } from "./twitch.service"
-export { youtubeService } from "./youtube.service"
+export { youtubeService, YT_LIST_UNITS_ESTIMATE } from "./youtube.service"
 export { streamSessionService } from "./stream-session.service"
 export { liveEventFeedService } from "./live-event-feed.service"
 export { widgetGoalService } from "./widget-goal.service"
