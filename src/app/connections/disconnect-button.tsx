@@ -14,6 +14,12 @@ export function DisconnectButton({ provider }: DisconnectButtonProps) {
   const [error, setError] = useState<string | null>(null)
 
   async function disconnect() {
+    if (provider === "youtube") {
+      const confirmed = window.confirm(
+        "Disconnect YouTube? This revokes CreatorDeck's access to your Google account and removes the connection. You can reconnect at any time.",
+      )
+      if (!confirmed) return
+    }
     setLoading(true)
     setError(null)
     const res = await fetch("/api/connections/disconnect", {

@@ -24,6 +24,9 @@ export const linkedAccounts = pgTable("linked_accounts", {
   displayName: text("display_name"),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
+  tokenExpiresAt: timestamp("token_expires_at"),
+  scopes: text("scopes"),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => ({
   providerAccountUnique: unique().on(t.provider, t.providerAccountId),

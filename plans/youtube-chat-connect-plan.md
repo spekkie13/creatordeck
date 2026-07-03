@@ -179,3 +179,39 @@ Gate 1 additionally requires (spec §6, revised): **the §3.1 ingestion-mode dec
 2. **Google as a login method** — **Keep Google login, scope reduced to `youtube.readonly`** (the §1.3 decision stands). Google verification is per-project, so dropping the login flow wouldn't shrink the scope set to justify — and removing a live login method orphans Google-keyed accounts. Revisit only if verification stalls specifically on the login surface.
 3. **Encrypt Twitch/Spotify tokens too** — **Yes: the helper applies to all providers on write** (Phase 1 item 3 already written this way). Uniform security posture for roughly one branch of extra scope; the `enc:v1:` prefix makes migration incremental with no backfill task.
 4. **Channel avatar on Connections page** — **Ship it in v1** *(overrides the plan's earlier name-only assumption — spec §4's letter says name/avatar)*. Near-zero cost: the connect flow's `channels.list` response already carries `snippet.thumbnails`, so it's the `avatarUrl` column on migration #1 plus one mapped field (Phase 1 items 2/4/7 updated).
+
+---
+
+## 5. Implementation log
+
+### Phase 0 — Teardown ✅ (2026-07-03, build green)
+- Removed deps `youtube-chat`, `ws`, `@types/ws` (`package.json` / lockfile).
+- Deleted `src/app/api/events/youtube-chat/route.ts` and `src/lib/youtube-chat-mapper.ts`.
+- `src/hooks/use-youtube-chat.ts` reduced to an inert stub returning `ChatMessage[]` (`live-client.tsx` unchanged, Twitch-only chat works).
+- `src/lib/auth.ts` GoogleProvider scope dropped `youtube.force-ssl` → `youtube.readonly`.
+
+### Phase 1 — Foundation (repo code) ✅ (2026-07-03, build green; crypto round-trip/tamper/wrong-key verified)
+- **`src/lib/token-crypto.ts`** — AES-256-GCM, `enc:v1:<iv>:<tag>:<ciphertext>` (base64url), `isEncrypted`/`encrypt`/`decrypt`/`ensureEncrypted`. Key from new env `TOKEN_ENCRYPTION_KEY` (added to `src/lib/env.ts`).
+- **Migration #1** — `linked_accounts` gains `token_expires_at`, `scopes`, `avatar_url` in `src/lib/schema.ts`. *(See deviation D-B below — `drizzle/` is gitignored; apply is `db:push:all`, owner-run.)*
+- **`linked-accounts.repository.ts`** — encrypt on write (`upsertForUser`/`upsertWithUser`/`updateAccessToken`, all extended for the new columns) + **decrypt centrally in every finder** so all callers keep getting plaintext; added narrow `getDecryptedTokens(userId, provider)`.
+- **`connections.service.linkGoogleAccount`** — persists `tokenExpiresAt` (`now + expires_in`), granted `scope`, and `avatarUrl` from `channels.list` thumbnails.
+- **`youtube.service.ts`** — rewritten: `getValidAccessToken(userId)` (proactive refresh w/ 60 s skew, encrypted persist, null on `invalid_grant`), `revokeAccess(userId)` (best-effort), `fetchYouTubeSubCount(userId)` now token-agnostic. Dashboard call site updated.
+- **`disconnect/route.ts`** — revokes the Google grant for provider `youtube` before deleting the row; `DisconnectButton` shows a YouTube confirm mentioning revocation.
+- **Connections UI** — `YouTubeManage` shows channel avatar, "YouTube chat is live while CreatorDeck is open" copy, and a reconnect-required state; page computes `needsReconnect` from `getValidAccessToken` returning null.
+
+### Interim gating ✅ (2026-07-03, build green) — owner-only via `isAdmin`
+- **`src/lib/youtube-gate.ts`** — single `hasYouTubeAccess(session)` swap point (returns `session.isAdmin` for now; becomes `hasPro(session)` when billing lands — no call-site changes). Gates the YouTube *feature*, not the Google *login* identity method (Gate 0 D2).
+- **`/api/connections/link/google/start`** — redirects non-admins to `/connections` (server-side boundary).
+- **Connections page** — YouTube row rendered visible-but-locked for non-admins (🔒 Pro chip, no manage panel, no Connect/Disconnect); `getValidAccessToken` skipped when locked so non-Pro users trigger zero Google calls.
+- When billing ships, replace the body of `hasYouTubeAccess` and extend gating to the Phase 2 routes (`/api/youtube/broadcast`, chat-ingestion) — they should import the same helper.
+
+### Deviations from the plan/spec (surfaced for owner review)
+- **D-A — Token encryption uses decrypt-in-finders, not the "narrow accessor only" read model.** Gate 0 D3 mandated encrypting *all* providers. The plan's read model ("raw rows never carry plaintext", via a narrow accessor) would require migrating ~12 Twitch/Spotify read sites (`dashboard`, `spotify-service`, spotify routes/widgets, `stream-info`, `chat-auth`, `onboarding/backfill`, `live/page`) that read `account.accessToken` directly — outside this workstream and unverifiable headless. Encrypting writes without that migration would feed `enc:v1:…` to Twitch/Spotify APIs and break them. Chosen: encrypt on write + **decrypt transparently in the repository finders**, achieving D3's core at-rest goal with zero blast radius. Follow-up (defense-in-depth): migrate token consumers to `getDecryptedTokens` so page-level rows stop carrying plaintext in server memory.
+- **D-B — Migrations apply via `db:push`, not committed migration files.** The plan assumed a tracked squashed `0000_abandoned_sprite.sql` and an incremental `0001`. In fact `drizzle/` is **gitignored**; the deploy path is `drizzle-kit push` (schema-diff). `schema.ts` is the source of truth; `db:generate` output is local/ephemeral. **The column additions are NOT yet applied to any DB** — owner runs `npm run db:push:all` (per the DB-migrations decision: I generated only, did not touch prod; local DB URL is a dummy).
+
+### Owner / blocked items (not code)
+1. **Set `TOKEN_ENCRYPTION_KEY` as a Vercel secret** (32-byte base64). A local dummy key was generated into gitignored `.env.local` for build verification only.
+2. **Apply migration #1**: `npm run db:push:all` (adds 3 nullable columns — additive, safe).
+3. **Google Cloud (Phase 1 owner tasks)**: consent screen, test-user allowlist, redirect URIs, start `youtube.readonly` sensitive-scope verification.
+4. **Gate 1 ingestion-mode spike (Mode A vs B)** — requires a live channel on the dev Google project; blocks Phase 2's route/hook shape. Plan default is Mode A.
+5. **Billing dependency** — Pro gating (`requirePro`/`hasPro`) is Phase 3 and depends on the billing workstream. Interim `isAdmin` gate **is now wired** (see Interim gating above); swap `hasYouTubeAccess`'s body for `hasPro` when billing lands.
