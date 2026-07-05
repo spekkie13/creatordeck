@@ -135,6 +135,52 @@ export default function PrivacyPolicyPage() {
             </li>
           </ul>
           <p>
+            CreatorDeck uses YouTube API Services. By connecting your YouTube account, you also agree to the{" "}
+            <a
+              href="https://www.youtube.com/t/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              YouTube Terms of Service
+            </a>
+            , and your data is handled in accordance with the{" "}
+            <a
+              href="https://www.google.com/policies/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google Privacy Policy
+            </a>
+            .
+          </p>
+          <p>
+            <strong className="text-zinc-800 dark:text-zinc-200">What we access from YouTube.</strong> Using
+            read-only access to your own YouTube account, we read your channel and live broadcast metadata and your
+            live chat — including chat messages and Super Chats — while you are streaming. We display this activity
+            back to you in real time on your dashboard and event feed. Chat messages are relayed to your dashboard
+            in real time and are <strong className="text-zinc-800 dark:text-zinc-200">not stored on our servers</strong>.
+            Super Chat events are saved to power your event feed and revenue analytics; the broadcast session
+            details we use to follow your live chat are kept only while you are live and deleted when your stream
+            ends (see &ldquo;Data retention&rdquo; below). OAuth tokens are encrypted at rest. We do not use your
+            YouTube data for advertising and we do not share it except with the sub-processors listed below.
+          </p>
+          <p>
+            <strong className="text-zinc-800 dark:text-zinc-200">Revoking YouTube access.</strong> You can revoke
+            CreatorDeck&rsquo;s access to your Google/YouTube account at any time from your{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google security settings
+            </a>
+            , or by disconnecting YouTube from your CreatorDeck connections settings. Either action stops further
+            data collection and deletes the YouTube data we have stored for your account.
+          </p>
+          <p>
             CreatorDeck&rsquo;s use of information received from Google APIs adheres to the{" "}
             <a
               href="https://developers.google.com/terms/api-services-user-data-policy"
@@ -196,9 +242,22 @@ export default function PrivacyPolicyPage() {
 
         <Section title="Data retention">
           <p>
-            We retain your account and activity data for as long as your account is active or as needed to provide
-            the service. When you delete your account or disconnect a platform, we delete or de-identify the
-            associated data, except where we must retain it to comply with legal obligations.
+            CreatorDeck account data (email address, dashboard settings, platform connections) is retained for as
+            long as your account is active. Your YouTube live chat messages are processed in real time and are not
+            stored on our servers. Super Chat events retrieved from YouTube API Services are stored for a maximum of
+            30 days, after which they are automatically deleted. Broadcast session information is kept only while you
+            are live and is deleted when your stream ends. Aggregated, non-identifying statistics may be retained
+            beyond this period. Google OAuth tokens are stored for as long as your Google account remains connected.
+            When you disconnect your Google account or revoke access via your{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google security settings
+            </a>
+            , stored YouTube data associated with your account is deleted.
           </p>
         </Section>
 

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm"
+import { and, desc, eq, gt, gte, lt, lte, sql } from "drizzle-orm"
 
 import type { YtMemberEvent, InsertYtMemberEvent } from "@/types/entities"
 
@@ -31,6 +31,14 @@ class YtMemberEventsRepository {
 
   async deleteByChannelId(channelId: string): Promise<void> {
     await db.delete(ytMemberEvents).where(eq(ytMemberEvents.channelId, channelId))
+  }
+
+  /** Retention purge: erase membership events older than the cutoff. Returns rows deleted. */
+  async deleteOlderThan(cutoff: Date): Promise<number> {
+    const deleted = await db.delete(ytMemberEvents)
+      .where(lt(ytMemberEvents.occurredAt, cutoff))
+      .returning({ id: ytMemberEvents.id })
+    return deleted.length
   }
 }
 

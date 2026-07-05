@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, gte, lte } from "drizzle-orm"
+import { and, desc, eq, gt, gte, lt, lte } from "drizzle-orm"
 
 import type { YtSuperChatEvent, InsertYtSuperChatEvent } from "@/types/entities"
 
@@ -24,6 +24,14 @@ class YtSuperChatEventsRepository {
 
   async deleteByChannelId(channelId: string): Promise<void> {
     await db.delete(ytSuperChatEvents).where(eq(ytSuperChatEvents.channelId, channelId))
+  }
+
+  /** Retention purge: erase Super Chat events older than the cutoff. Returns rows deleted. */
+  async deleteOlderThan(cutoff: Date): Promise<number> {
+    const deleted = await db.delete(ytSuperChatEvents)
+      .where(lt(ytSuperChatEvents.occurredAt, cutoff))
+      .returning({ id: ytSuperChatEvents.id })
+    return deleted.length
   }
 }
 

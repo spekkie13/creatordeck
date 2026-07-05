@@ -209,19 +209,6 @@ export const eventReplays = pgTable("event_replays", {
   processedAt: timestamp("processed_at"),
 })
 
-export const chatMessages = pgTable("chat_messages", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  platform: text("platform").notNull(),
-  channelId: text("channel_id").notNull(), // broadcasterId (Twitch) or channelId (YouTube)
-  eventId: text("event_id").unique().notNull(), // dedup key
-  userId: text("user_id"),
-  userLogin: text("user_login"),
-  userDisplayName: text("user_display_name"),
-  message: text("message").notNull(),
-  occurredAt: timestamp("occurred_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-})
-
 export const ytStreamSessions = pgTable("yt_stream_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
   channelId: text("channel_id").notNull(),

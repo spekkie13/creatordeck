@@ -2,10 +2,7 @@ import { env } from '@/lib/env'
 import { PLATFORM_YOUTUBE } from '@/types/platform'
 import type { YouTubeLiveChatItem } from '@/lib/youtube-api-mapper'
 
-import {
-  linkedAccountsRepository,
-  chatMessagesRepository,
-} from '@/repositories'
+import { linkedAccountsRepository } from '@/repositories'
 
 // Refresh a little before the token actually expires so an in-flight request
 // never races the boundary.
@@ -204,9 +201,6 @@ class YoutubeService {
     }
   }
 
-  async getChatMessagesSince(channelId: string, since: Date) {
-    return chatMessagesRepository.getSince(channelId, since)
-  }
 }
 
 export const youtubeService = new YoutubeService()

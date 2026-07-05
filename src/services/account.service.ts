@@ -1,5 +1,4 @@
 import {
-  chatMessagesRepository,
   cheerEventsRepository,
   eventSubSubscriptionsRepository,
   followEventsRepository,
@@ -72,7 +71,6 @@ class AccountService {
       await streamSessionRepository.deleteByBroadcasterId(broadcasterId)
       await subGoalsRepository.deleteByBroadcasterId(broadcasterId)
       await eventSubSubscriptionsRepository.deleteByBroadcasterId(broadcasterId)
-      await chatMessagesRepository.deleteByChannelId(broadcasterId)
       if (twitch.login) {
         await waitlistRepository.deleteByTwitchLogin(twitch.login)
       }
@@ -84,7 +82,6 @@ class AccountService {
       await ytSuperChatEventsRepository.deleteByChannelId(channelId)
       await ytMemberEventsRepository.deleteByChannelId(channelId)
       await ytStreamSessionsRepository.deleteByChannelId(channelId)
-      await chatMessagesRepository.deleteByChannelId(channelId)
     }
 
     // 5. Delete the user row — FK cascades remove the remaining user-keyed rows.
