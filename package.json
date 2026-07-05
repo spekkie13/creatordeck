@@ -12,7 +12,6 @@
     "db:push:all": "npm run db:push && npm run db:push:prod"
   },
   "dependencies": {
-    "@lemonsqueezy/lemonsqueezy.js": "4.0.0",
     "@neondatabase/serverless": "1.0.2",
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",

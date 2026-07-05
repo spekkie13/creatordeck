@@ -19,7 +19,6 @@ export function AnalyticsClient({
   initialRange,
   hasYouTube,
   displayName,
-  tier,
   canSeeExtendedHistory,
 }: AnalyticsClientProps) {
   const [range, setRange] = useState<Range>(initialRange)
@@ -28,8 +27,6 @@ export function AnalyticsClient({
   const [loading, setLoading] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<Set<EventTypeKey>>(new Set())
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false)
-
-  void tier // available for future per-tier UI differences
 
   function toggleType(key: EventTypeKey) {
     setSelectedTypes(prev => {
@@ -64,7 +61,6 @@ export function AnalyticsClient({
 
       {upgradeModalOpen && (
         <UpgradeModal
-          requiredTier="tier1"
           featureName="extended analytics history"
           onClose={() => setUpgradeModalOpen(false)}
         />
@@ -81,7 +77,7 @@ export function AnalyticsClient({
                   key={r}
                   onClick={() => fetchRange(r)}
                   disabled={loading}
-                  title={locked ? "Upgrade to Tier 1 to unlock" : undefined}
+                  title={locked ? "Upgrade to Pro to unlock" : undefined}
                   className={`flex items-center gap-1 text-xs px-3 py-1.5 rounded-md font-medium transition-colors ${
                     range === r
                       ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm"

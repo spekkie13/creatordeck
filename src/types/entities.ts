@@ -1,5 +1,7 @@
 import type {
   users,
+  entitlements,
+  webhookEvents,
   linkedAccounts,
   subEvents,
   followEvents,
@@ -19,6 +21,12 @@ import type {
 
 export type User = typeof users.$inferSelect
 export type InsertUser = typeof users.$inferInsert
+
+export type Entitlement = typeof entitlements.$inferSelect
+export type InsertEntitlement = typeof entitlements.$inferInsert
+
+export type WebhookEvent = typeof webhookEvents.$inferSelect
+export type InsertWebhookEvent = typeof webhookEvents.$inferInsert
 
 export type LinkedAccount = typeof linkedAccounts.$inferSelect
 export type InsertLinkedAccount = typeof linkedAccounts.$inferInsert

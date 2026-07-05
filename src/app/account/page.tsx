@@ -2,15 +2,17 @@ import { getServerSession, Session } from "next-auth"
 import { redirect } from "next/navigation"
 
 import { authOptions } from "@/lib/auth"
+import { hasPro } from "@/lib/require-pro"
 
 import { AppHeader } from "@/app/dashboard/app-header"
 import { ApiKeyToggle } from "./api-key-toggle"
 import { DeleteAccountButton } from "./delete-account-button"
-import {Tier} from "@/types/tier";
 
 export default async function AccountPage() {
   const session: Session | null = await getServerSession(authOptions)
   if (!session) redirect("/")
+
+  const isPro: boolean = await hasPro(session.userId)
 
   return (
     <div className="min-h-screen">
@@ -28,7 +30,7 @@ export default async function AccountPage() {
           </div>
           <div className="px-6 py-4 flex items-center justify-between">
             <span className="text-sm text-zinc-500 dark:text-zinc-400">Plan</span>
-            <span className="text-sm text-zinc-900 dark:text-white">{Tier.ALL.find((t: Tier) => t.id === session.tier)?.label}</span>
+            <span className="text-sm text-zinc-900 dark:text-white">{isPro ? "Pro" : "Free"}</span>
           </div>
           <div className="px-6 py-4 flex items-center justify-between">
             <span className="text-sm text-zinc-500 dark:text-zinc-400">Twitch ID</span>

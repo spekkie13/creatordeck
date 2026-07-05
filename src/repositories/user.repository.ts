@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm"
 
 import type { User } from "@/types/entities"
-import type { BillingInfo } from "@/types/billing-info"
 
 import { db } from "@/lib/db"
 import { users } from "@/lib/schema"
@@ -49,56 +48,9 @@ class UserRepository {
       .where(eq(users.id, userId))
   }
 
-  async getTier(userId: string): Promise<string> {
-    const rows = await db.select({ tier: users.tier }).from(users).where(eq(users.id, userId)).limit(1)
-    return rows[0]?.tier ?? "free"
-  }
-
-  async setTier(userId: string, tier: string): Promise<void> {
-    await db
-        .update(users)
-        .set({ tier: tier as "free" | "tier1" | "tier2" | "tier3" })
-        .where(eq(users.id, userId))
-  }
-
-  async setCustomer(userId: string, customerId: string, subscriptionId: string): Promise<void> {
-    await db
-        .update(users)
-        .set({ LsCustomerId: customerId, LsSubscriptionId: subscriptionId })
-        .where(eq(users.id, userId))
-  }
-
-  async clearSubscription(userId: string): Promise<void> {
-    await db
-        .update(users)
-        .set({ LsSubscriptionId: null })
-        .where(eq(users.id, userId))
-  }
-
-  async findByCustomerId(customerId: string): Promise<{ id: string; tier: string } | null> {
-    const rows =
-        await db
-            .select({ id: users.id, tier: users.tier })
-            .from(users)
-            .where(
-                eq(users.LsCustomerId, customerId)
-            )
-            .limit(1)
-
-    return rows[0] ?? null
-  }
-
-  async getCustomerInfo(userId: string): Promise<BillingInfo> {
-    const rows: BillingInfo[] = await db.select({
-      customerId: users.LsCustomerId,
-      subscriptionId: users.LsSubscriptionId,
-      tier: users.tier,
-    }).from(users).where(eq(users.id, userId)).limit(1)
-    return rows[0] ?? { customerId: null, subscriptionId: null, tier: "free" }
-  }
-
-  // Deletes the user row. FK cascades remove linked_accounts, feedback, goals,
-  // event_replays, and feature_flag_overrides (see schema onDelete: "cascade").
+  // Deletes the user row. FK cascades remove linked_accounts, entitlements,
+  // feedback, goals, event_replays, and feature_flag_overrides (see schema
+  // onDelete: "cascade").
   async deleteById(id: string): Promise<void> {
     await db.delete(users).where(eq(users.id, id))
   }

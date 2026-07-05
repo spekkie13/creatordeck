@@ -106,9 +106,9 @@ class LinkedAccountsRepository {
       .where(and(eq(linkedAccounts.provider, provider), eq(linkedAccounts.providerAccountId, providerAccountId)))
   }
 
-  async upsertWithUser(data: WriteData): Promise<{ userId: string; apiKey: string; tier: string }> {
+  async upsertWithUser(data: WriteData): Promise<{ userId: string; apiKey: string }> {
     const existing = await db
-      .select({ userId: linkedAccounts.userId, apiKey: users.apiKey, tier: users.tier })
+      .select({ userId: linkedAccounts.userId, apiKey: users.apiKey })
       .from(linkedAccounts)
       .innerJoin(users, eq(users.id, linkedAccounts.userId))
       .where(and(
@@ -142,6 +142,7 @@ class LinkedAccountsRepository {
     const apiKey = randomBytes(32).toString("hex")
     const [newUser] = await db.insert(users).values({ apiKey }).returning()
     await db.insert(linkedAccounts).values({
+      // NB: entitlement row (with 14-day trial) is created in Phase 1.
       userId: newUser.id,
       provider: data.provider,
       providerAccountId: data.providerAccountId,
@@ -153,7 +154,7 @@ class LinkedAccountsRepository {
       scopes: data.scopes ?? null,
       avatarUrl: data.avatarUrl ?? null,
     })
-    return { userId: newUser.id, apiKey, tier: newUser.tier }
+    return { userId: newUser.id, apiKey }
   }
 
   // Links a new account to an existing user (account linking flow).

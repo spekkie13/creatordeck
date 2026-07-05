@@ -1,33 +1,24 @@
-﻿import {SubscriptionTier} from "@/types/tier";
+import type { Plan } from "@/types/plan"
 
-export type BillingCycle = "monthly" | "annual"
+export type { BillingCycle } from "@/types/plan"
 
-export const TIER_FEATURES: Record<SubscriptionTier, string[]> = {
-    free: [
-        "Unified live dashboard (Twitch + YouTube)",
-        "Real-time event feed",
-        "Basic OBS overlays",
-        "Goals tracking",
-        "7-day event history",
-    ],
-    tier1: [
-        "Everything in Free",
-        "Full analytics history (30d / 90d)",
-        "Per-session breakdowns",
-        "Platform comparison charts",
-    ],
-    tier2: [
-        "Everything in Tier 1",
-        "Custom alert overlays for OBS",
-        "Stream info management (title, game)",
-        "Cross-platform goals",
-        "Simultaneous go-live on Twitch + YouTube",
-    ],
-    tier3: [
-        "Everything in Tier 2",
-        "AI stream analysis",
-        "VOD transcription insights",
-        "Weekly improvement reports",
-        "Retention coaching",
-    ],
+// Free vs Pro feature matrix (spec §2). Keep in sync with the pricing page.
+export const PLAN_FEATURES: Record<Plan, string[]> = {
+  free: [
+    "Twitch chat, follows, subs, bits & raids",
+    "Live event feed + follower/sub counts",
+    "Spotify song requests via chat",
+    "Goals tracking",
+    "Single config profile",
+    "30-day event history",
+    "Read-only OBS/desktop app",
+  ],
+  pro: [
+    "Everything in Free",
+    "YouTube connection — unified chat, Super Chats & Stickers",
+    "Advanced automation: conditional logic + multi-action macros",
+    "OBS control: scene switching, source toggles & volume",
+    "Unlimited event history",
+    "Multiple profiles/presets",
+  ],
 }

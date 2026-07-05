@@ -1,7 +1,3 @@
-import { cancelSubscription } from "@lemonsqueezy/lemonsqueezy.js"
-
-import { configureLemonSqueezy } from "@/lib/lemon-squeezy"
-
 import {
   chatMessagesRepository,
   cheerEventsRepository,
@@ -53,16 +49,10 @@ class AccountService {
       await twitchService.revokeAccess(userId)
     }
 
-    // 2. Cancel any active paid subscription so the user is not billed after deletion.
-    const billing = await userRepository.getCustomerInfo(userId)
-    if (billing.subscriptionId) {
-      try {
-        configureLemonSqueezy()
-        await cancelSubscription(billing.subscriptionId)
-      } catch (err) {
-        console.error("Failed to cancel subscription during account deletion:", err)
-      }
-    }
+    // 2. Cancel any active paid subscription so the user is not billed after
+    //    deletion. TODO(Phase 1): re-point to Polar — load the entitlement's
+    //    polarSubscriptionId and call the Polar SDK `subscriptions.cancel`.
+    //    Until Polar billing lands there is no active subscription to cancel.
 
     // 3. Delete Twitch channel-scoped data (keyed by broadcasterId === providerAccountId).
     if (twitch) {

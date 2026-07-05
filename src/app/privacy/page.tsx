@@ -75,8 +75,9 @@ export default function PrivacyPolicyPage() {
             </li>
             <li>
               <strong className="text-zinc-800 dark:text-zinc-200">Billing information.</strong> If you subscribe
-              to a paid plan, our payment processor (Lemon Squeezy) handles your payment details. We do not store
-              your full card details; we retain records such as your subscription status and plan.
+              to a paid plan, our payment provider Polar (Polar Software Inc.) acts as the merchant of record and
+              handles your payment details. We do not store your full card details; we retain records such as your
+              subscription status and plan.
             </li>
             <li>
               <strong className="text-zinc-800 dark:text-zinc-200">Preferences &amp; goals.</strong> Settings such
@@ -174,8 +175,8 @@ export default function PrivacyPolicyPage() {
               <strong className="text-zinc-800 dark:text-zinc-200">Neon</strong> — managed database hosting.
             </li>
             <li>
-              <strong className="text-zinc-800 dark:text-zinc-200">Lemon Squeezy</strong> — payment processing for
-              paid plans.
+              <strong className="text-zinc-800 dark:text-zinc-200">Polar</strong> — payment processing and merchant
+              of record for paid plans.
             </li>
             <li>
               <strong className="text-zinc-800 dark:text-zinc-200">Our hosting provider</strong> — application

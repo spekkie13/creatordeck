@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-import { hasAccess } from "@/lib/gates"
+import { hasPro } from "@/lib/require-pro"
 import { requireSession } from "@/lib/session-auth"
 import { apiError } from "@/lib/api-response"
 import { AnalyticsRangeSchema } from "@/lib/schemas/analytics.schema"
@@ -23,8 +23,9 @@ export async function GET(req: NextRequest) {
 
   let range = rangeResult.data
 
-  // Enforce free-tier cap server-side regardless of what the client sends
-  if ((range === "30d" || range === "90d") && !hasAccess(session.tier, "tier1")) range = "7d"
+  // Enforce the Free history cap server-side regardless of what the client sends.
+  // Extended analytics history is a Pro feature (spec §2 — analytics inherits Pro).
+  if ((range === "30d" || range === "90d") && !(await hasPro(session.userId))) range = "7d"
 
   const since = new Date(Date.now() - RANGES[range] * ONE_DAY_MS)
 

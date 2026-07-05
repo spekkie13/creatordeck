@@ -1,21 +1,17 @@
 import {getServerSession, Session} from "next-auth"
 import {redirect} from "next/navigation"
 
-import {env} from "@/lib/env"
 import {authOptions} from "@/lib/auth"
-
-import {userRepository} from "@/repositories"
+import {hasPro} from "@/lib/require-pro"
 
 import {AppHeader} from "@/app/dashboard/app-header"
 import {PricingCards} from "./pricing-cards"
-import {Tier} from "@/types/tier";
-import {BillingInfo} from "@/types/billing-info";
 
 export default async function BillingPage() {
     const session: Session | null = await getServerSession(authOptions)
     if (!session) redirect("/")
 
-    const billingInfo: BillingInfo = await userRepository.getCustomerInfo(session.userId)
+    const isPro: boolean = await hasPro(session.userId)
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -27,19 +23,18 @@ export default async function BillingPage() {
                     <h1 className="text-xl font-semibold tracking-tight">Billing & Plans</h1>
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         You are currently on the <span
-                        className="font-medium text-zinc-700 dark:text-zinc-300">{Tier.ALL.find((t: Tier) => t.id === session.tier)?.label}</span> plan.
+                        className="font-medium text-zinc-700 dark:text-zinc-300">{isPro ? "Pro" : "Free"}</span> plan.
                     </p>
                 </div>
 
                 <PricingCards
-                    currentTier={session.tier}
-                    hasSubscription={!!billingInfo.subscriptionId}
+                    isPro={isPro}
+                    hasSubscription={false}
                     waitlistMode={true}
-                    variants={env.lemonSqueezyVariants}
                 />
 
                 <p className="text-xs text-center text-zinc-400 dark:text-zinc-600">
-                    Prices in USD. Billed via Lemon Squeezy. Cancel anytime.
+                    Prices in EUR. Billed via Polar (merchant of record). Cancel anytime.
                 </p>
 
             </main>

@@ -17,12 +17,5 @@ export const env = {
     spotifyClientId: requireEnv("SPOTIFY_CLIENT_ID"),
     spotifyClientSecret: requireEnv("SPOTIFY_CLIENT_SECRET"),
     cronSecret: requireEnv("CRON_SECRET"),
-    lemonSqueezyApiKey: requireEnv("LEMONSQUEEZY_API_KEY"),
-    lemonSqueezyWebhookSecret: requireEnv("LEMONSQUEEZY_WEBHOOK_SECRET"),
-    lemonSqueezyStoreId: requireEnv("LEMONSQUEEZY_STORE_ID"),
-    lemonSqueezyVariants: {
-        tier1: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER1_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER1_ANNUAL") },
-        tier2: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER2_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER2_ANNUAL") },
-        tier3: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER3_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER3_ANNUAL") },
-    },
+    // Polar billing env is added in Phase 1 (checkout/portal/webhook adapters).
 }

@@ -2,36 +2,16 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
-import {SubscriptionTier, Tier} from "@/types/tier";
 
-const TIER_PERKS: Record<SubscriptionTier, string[]> = {
-  free: [],
-  tier1: [
-    "Full analytics history (30d / 90d)",
-    "Session breakdowns",
-    "Platform comparison charts",
-  ],
-  tier2: [
-    "Everything in Tier 1",
-    "Custom alert overlays for OBS",
-    "Stream info management (title, game)",
-    "Cross-platform goals",
-  ],
-  tier3: [
-    "Everything in Tier 2",
-    "AI stream analysis",
-    "VOD transcription insights",
-    "Weekly improvement reports",
-  ],
-}
+import { PLAN_FEATURES } from "@/constants/billing"
+import { PRO_PRICING } from "@/types/plan"
 
 type Props = {
-  requiredTier: SubscriptionTier
   featureName: string
   onClose: () => void
 }
 
-export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
+export function UpgradeModal({ featureName, onClose }: Props) {
   // Close on Escape
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -41,7 +21,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey)
   }, [onClose])
 
-  const perks = TIER_PERKS[requiredTier]
+  const perks = PLAN_FEATURES.pro.filter(p => p !== "Everything in Free")
 
   return (
     <div
@@ -54,7 +34,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-teal-500">
-              {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.label} · {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.monthlyPrice}
+              Pro · {PRO_PRICING.monthly.amount}{PRO_PRICING.monthly.period}
             </span>
             <button
               onClick={onClose}
@@ -66,7 +46,7 @@ export function UpgradeModal({ requiredTier, featureName, onClose }: Props) {
           </div>
           <h2 className="text-lg font-semibold">Upgrade to unlock {featureName}</h2>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            This feature requires {Tier.ALL.find((t: Tier) => t.id === requiredTier)?.label}.
+            This feature requires CreatorDeck Pro.
           </p>
         </div>
 

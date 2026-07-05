@@ -8,7 +8,6 @@ import { linkedAccountsRepository, userRepository } from "@/repositories"
 import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 import {JWT} from "next-auth/jwt";
 import {LinkedAccount} from "@/types/entities";
-import {SubscriptionTier} from "@/types/tier";
 
 async function fetchYouTubeChannelId(accessToken: string): Promise<string | null> {
   const res = await fetch("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true", {
@@ -55,7 +54,6 @@ export const authOptions: NextAuthOptions = {
         ])
         token.youtubeChannelId = ytAccount?.providerAccountId ?? null
         token.twitchId = twitchAccount?.providerAccountId ?? null
-        token.tier = (user?.tier ?? "free") as SubscriptionTier
         token.isAdmin = user?.isAdmin ?? false
         delete token.linkingError
         return token
@@ -82,7 +80,7 @@ export const authOptions: NextAuthOptions = {
               token.linkingError = "account_conflict"
             }
           } else {
-            const { userId, apiKey, tier } = await linkedAccountsRepository.upsertWithUser({
+            const { userId, apiKey } = await linkedAccountsRepository.upsertWithUser({
               provider: PLATFORM_TWITCH,
               providerAccountId: p.sub,
               login: p.preferred_username,
@@ -99,7 +97,6 @@ export const authOptions: NextAuthOptions = {
             token.youtubeChannelId = ytAccount?.providerAccountId ?? null
             token.displayName = p.preferred_username
             token.apiKey = apiKey
-            token.tier = tier as SubscriptionTier
             token.isAdmin = user?.isAdmin ?? false
           }
 
@@ -126,7 +123,7 @@ export const authOptions: NextAuthOptions = {
               token.linkingError = "account_conflict"
             }
           } else {
-            const { userId, apiKey, tier } = await linkedAccountsRepository.upsertWithUser({
+            const { userId, apiKey } = await linkedAccountsRepository.upsertWithUser({
               provider: PLATFORM_YOUTUBE,
               providerAccountId: channelId,
               login: channelId,
@@ -143,7 +140,6 @@ export const authOptions: NextAuthOptions = {
             token.youtubeChannelId = channelId
             token.displayName = twitchAccount?.displayName ?? p.name ?? channelId
             token.apiKey = apiKey
-            token.tier = tier as SubscriptionTier
             token.isAdmin = user?.isAdmin ?? false
           }
         }
@@ -156,7 +152,6 @@ export const authOptions: NextAuthOptions = {
       session.youtubeChannelId = token.youtubeChannelId as string | null
       session.displayName = token.displayName as string
       session.apiKey = token.apiKey as string
-      session.tier = (token.tier ?? "free") as SubscriptionTier
       session.isAdmin = (token.isAdmin as boolean) ?? false
       if (token.linkingError) session.linkingError = token.linkingError
       return session
