@@ -34,7 +34,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.googleClientSecret,
       authorization: {
         params: {
-          scope: "openid email profile https://www.googleapis.com/auth/youtube.force-ssl",
+          scope: "openid email profile https://www.googleapis.com/auth/youtube.readonly",
           access_type: "offline",
           prompt: "consent",
         },

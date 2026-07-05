@@ -17,6 +17,10 @@ class EventSubSubscriptionsRepository {
       .limit(1)
     return rows.length > 0
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(eventsubSubscriptions).where(eq(eventsubSubscriptions.broadcasterId, broadcasterId))
+  }
 }
 
 export const eventSubSubscriptionsRepository = new EventSubSubscriptionsRepository()

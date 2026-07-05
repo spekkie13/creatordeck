@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth"
 
 import { AppHeader } from "@/app/dashboard/app-header"
 import { ApiKeyToggle } from "./api-key-toggle"
+import { DeleteAccountButton } from "./delete-account-button"
 import {Tier} from "@/types/tier";
 
 export default async function AccountPage() {
@@ -53,13 +54,11 @@ export default async function AccountPage() {
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 space-y-3">
           <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Danger Zone</h2>
-          <p className="text-sm text-zinc-500">Deleting your account will permanently remove all your data.</p>
-          <button
-            disabled
-            className="text-sm text-red-500 border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-lg opacity-40 cursor-not-allowed"
-          >
-            Delete account
-          </button>
+          <p className="text-sm text-zinc-500">
+            Deleting your account permanently removes your connected platforms, tokens, stream and chat history, and
+            all associated data. Any active subscription is cancelled. This cannot be undone.
+          </p>
+          <DeleteAccountButton />
         </div>
       </main>
     </div>

@@ -53,6 +53,17 @@ class ConnectionsService {
 
     const channelId: string = channel.id
     const displayName: string = channel.snippet?.title ?? channelId
+    const thumbnails = channel.snippet?.thumbnails
+    const avatarUrl: string | null =
+      thumbnails?.default?.url ?? thumbnails?.medium?.url ?? thumbnails?.high?.url ?? null
+
+    // Google returns expires_in (seconds) and the granted scope string; persist
+    // both so the token-refresh path knows when to refresh and what we hold.
+    const tokenExpiresAt: Date | null =
+      typeof tokenData.expires_in === 'number'
+        ? new Date(Date.now() + tokenData.expires_in * 1000)
+        : null
+    const scopes: string | null = tokenData.scope ?? null
 
     try {
       await linkedAccountsRepository.upsertForUser(userId, {
@@ -62,6 +73,9 @@ class ConnectionsService {
         displayName,
         accessToken: tokenData.access_token,
         refreshToken: tokenData.refresh_token ?? '',
+        tokenExpiresAt,
+        scopes,
+        avatarUrl,
       })
     } catch {
       throw new AccountConflictException(`YouTube channel ${channelId} is already linked to another account`)

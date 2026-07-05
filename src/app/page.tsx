@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { authOptions } from "@/lib/auth"
@@ -108,8 +109,14 @@ export default async function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 px-6 py-5 text-center">
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 px-6 py-5 flex flex-col sm:flex-row items-center justify-center gap-x-4 gap-y-1 text-center">
         <p className="text-xs text-zinc-400 dark:text-zinc-600">© {new Date().getFullYear()} CreatorDeck</p>
+        <Link href="/privacy" className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-teal-500 dark:hover:text-teal-500">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="text-xs text-zinc-400 dark:text-zinc-600 hover:text-teal-500 dark:hover:text-teal-500">
+          Terms of Service
+        </Link>
       </footer>
 
     </div>

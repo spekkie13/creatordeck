@@ -7,6 +7,8 @@ import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/pla
 import { authOptions } from "@/lib/auth"
 
 import { eventSubSubscriptionsRepository, linkedAccountsRepository, ytStreamSessionsRepository } from "@/repositories"
+import { youtubeService } from "@/services"
+import { hasYouTubeAccess } from "@/lib/youtube-gate"
 
 import { fromSearchError } from "@/services/connections.service"
 
@@ -38,7 +40,16 @@ export default async function ConnectionsPage({ searchParams }: {
     ? await ytStreamSessionsRepository.isActive(session.youtubeChannelId)
     : false
 
+  // Interim Pro gate — YouTube is owner-only until billing ships requirePro.
+  const youtubeLocked: boolean = !hasYouTubeAccess(session)
   const youtubeAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
+  // A null valid-token while the channel is still linked means the refresh token
+  // was revoked/expired — surface a reconnect prompt (refreshes only when the
+  // stored token is near expiry, so this is usually a no-op). Skipped when
+  // locked so non-Pro users trigger no Google calls.
+  const youtubeNeedsReconnect: boolean = youtubeAccount && !youtubeLocked
+    ? (await youtubeService.getValidAccessToken(session.userId)) === null
+    : false
   const twitchAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_TWITCH)
   const spotifyAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_SPOTIFY)
   const canDisconnect: boolean = linkedAccounts.length > 1
@@ -83,17 +94,19 @@ export default async function ConnectionsPage({ searchParams }: {
           <ConnectionRow
             name="YouTube"
             description="Track Super Chats, memberships, and live chat activity."
-            connected={!!youtubeAccount && !hasYouTubeError}
+            connected={!youtubeLocked && !!youtubeAccount && !hasYouTubeError}
             logo={<YouTubeLogo className="w-5 h-5 text-[#FF0000]" />}
-            detail={youtubeAccount && !hasYouTubeError ? `Connected as ${youtubeAccount.displayName ?? youtubeAccount.login ?? youtubeAccount.providerAccountId}` : undefined}
-            connectButton={<YouTubeConnectButton retry={hasYouTubeError} />}
-            disconnectButton={canDisconnect && !hasYouTubeError ? <DisconnectButton provider="youtube" /> : undefined}
+            detail={!youtubeLocked && youtubeAccount && !hasYouTubeError ? `Connected as ${youtubeAccount.displayName ?? youtubeAccount.login ?? youtubeAccount.providerAccountId}` : undefined}
+            connectButton={<YouTubeConnectButton retry={hasYouTubeError} locked={youtubeLocked} />}
+            disconnectButton={!youtubeLocked && canDisconnect && !hasYouTubeError ? <DisconnectButton provider="youtube" /> : undefined}
           >
-            {youtubeAccount && !hasYouTubeError && (
+            {!youtubeLocked && youtubeAccount && !hasYouTubeError && (
               <YouTubeManage
                 channelId={youtubeAccount.providerAccountId}
                 displayName={youtubeAccount.displayName ?? youtubeAccount.providerAccountId}
+                avatarUrl={youtubeAccount.avatarUrl}
                 isPollerActive={youtubePollerActive}
+                needsReconnect={youtubeNeedsReconnect}
               />
             )}
           </ConnectionRow>

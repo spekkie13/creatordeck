@@ -4,6 +4,7 @@ import { randomBytes, createHash } from "crypto"
 
 import { env } from "@/lib/env"
 import { authOptions } from "@/lib/auth"
+import { hasYouTubeAccess } from "@/lib/youtube-gate"
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!.replace(/\/$/, "")
 
@@ -11,6 +12,11 @@ export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.userId) {
     return NextResponse.redirect(new URL("/", APP_URL))
+  }
+  // Interim Pro gate — YouTube is owner-only until billing ships requirePro.
+  // Defense-in-depth: the connect button is locked for non-admins in the UI.
+  if (!hasYouTubeAccess(session)) {
+    return NextResponse.redirect(new URL("/connections", APP_URL))
   }
 
   const state = randomBytes(16).toString("base64url")

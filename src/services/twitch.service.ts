@@ -57,6 +57,24 @@ class TwitchService {
         } catch { return null }
     }
 
+    // Revokes the user's Twitch grant. Revoking the access token invalidates the
+    // whole authorization. Best-effort: revocation failures must not block the
+    // caller (e.g. account deletion). Never log the token.
+    async revokeAccess(userId: string): Promise<void> {
+        const tokens = await linkedAccountsRepository.getDecryptedTokens(userId, PLATFORM_TWITCH)
+        const token = tokens?.accessToken ?? tokens?.refreshToken
+        if (!token) return
+        try {
+            await fetch("https://id.twitch.tv/oauth2/revoke", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ client_id: env.twitchClientId, token }),
+            })
+        } catch {
+            // Best-effort; the caller proceeds regardless.
+        }
+    }
+
     async refreshTwitchToken(refreshToken: string): Promise<string | null> {
         try {
             const res: Response = await fetch("https://id.twitch.tv/oauth2/token", {
