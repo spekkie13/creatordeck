@@ -77,6 +77,10 @@ class YtStreamSessionsRepository {
       })
       .where(eq(ytStreamSessions.id, id))
   }
+
+  async deleteByChannelId(channelId: string): Promise<void> {
+    await db.delete(ytStreamSessions).where(eq(ytStreamSessions.channelId, channelId))
+  }
 }
 
 export const ytStreamSessionsRepository = new YtStreamSessionsRepository()

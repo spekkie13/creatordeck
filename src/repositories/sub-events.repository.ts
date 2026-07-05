@@ -43,6 +43,10 @@ class SubEventsRepository {
       .where(eq(subEvents.broadcasterId, broadcasterId))
     return Number(result[0].count)
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(subEvents).where(eq(subEvents.broadcasterId, broadcasterId))
+  }
 }
 
 export const subEventsRepository = new SubEventsRepository()

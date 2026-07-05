@@ -25,6 +25,12 @@ class ChatMessagesRepository {
       .limit(limit)
   }
 
+  // channelId holds the Twitch broadcasterId or the YouTube channelId, so this
+  // erases a user's chat under either platform identity.
+  async deleteByChannelId(channelId: string): Promise<void> {
+    await db.delete(chatMessages).where(eq(chatMessages.channelId, channelId))
+  }
+
 }
 
 export const chatMessagesRepository = new ChatMessagesRepository()

@@ -96,6 +96,12 @@ class UserRepository {
     }).from(users).where(eq(users.id, userId)).limit(1)
     return rows[0] ?? { customerId: null, subscriptionId: null, tier: "free" }
   }
+
+  // Deletes the user row. FK cascades remove linked_accounts, feedback, goals,
+  // event_replays, and feature_flag_overrides (see schema onDelete: "cascade").
+  async deleteById(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id))
+  }
 }
 
 export const userRepository = new UserRepository()

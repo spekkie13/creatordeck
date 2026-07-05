@@ -16,6 +16,10 @@ class SubGoalsRepository {
       .values({ broadcasterId, goal, initialCount, endsAt: endsAt ?? null })
       .onConflictDoUpdate({ target: subGoals.broadcasterId, set: { goal, initialCount, endsAt: endsAt ?? null, updatedAt: new Date() } })
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(subGoals).where(eq(subGoals.broadcasterId, broadcasterId))
+  }
 }
 
 export const subGoalsRepository = new SubGoalsRepository()

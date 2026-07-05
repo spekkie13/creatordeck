@@ -28,6 +28,10 @@ class YtMemberEventsRepository {
       .where(eq(ytMemberEvents.channelId, channelId))
     return Number(result[0].count)
   }
+
+  async deleteByChannelId(channelId: string): Promise<void> {
+    await db.delete(ytMemberEvents).where(eq(ytMemberEvents.channelId, channelId))
+  }
 }
 
 export const ytMemberEventsRepository = new YtMemberEventsRepository()

@@ -21,6 +21,10 @@ class CheerEventsRepository {
       .where(and(eq(cheerEvents.broadcasterId, broadcasterId), gte(cheerEvents.occurredAt, from), lte(cheerEvents.occurredAt, to)))
       .orderBy(desc(cheerEvents.occurredAt))
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(cheerEvents).where(eq(cheerEvents.broadcasterId, broadcasterId))
+  }
 }
 
 export const cheerEventsRepository = new CheerEventsRepository()

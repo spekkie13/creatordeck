@@ -21,6 +21,10 @@ class RaidEventsRepository {
       .where(and(eq(raidEvents.broadcasterId, broadcasterId), gte(raidEvents.occurredAt, from), lte(raidEvents.occurredAt, to)))
       .orderBy(desc(raidEvents.occurredAt))
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(raidEvents).where(eq(raidEvents.broadcasterId, broadcasterId))
+  }
 }
 
 export const raidEventsRepository = new RaidEventsRepository()

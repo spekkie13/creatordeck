@@ -21,6 +21,10 @@ class YtSuperChatEventsRepository {
       .where(and(eq(ytSuperChatEvents.channelId, channelId), gte(ytSuperChatEvents.occurredAt, from), lte(ytSuperChatEvents.occurredAt, to)))
       .orderBy(desc(ytSuperChatEvents.occurredAt))
   }
+
+  async deleteByChannelId(channelId: string): Promise<void> {
+    await db.delete(ytSuperChatEvents).where(eq(ytSuperChatEvents.channelId, channelId))
+  }
 }
 
 export const ytSuperChatEventsRepository = new YtSuperChatEventsRepository()

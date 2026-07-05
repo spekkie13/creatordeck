@@ -22,6 +22,10 @@ class StreamSessionRepository {
       .set({ endedAt })
       .where(and(eq(streamSessions.broadcasterId, broadcasterId), isNull(streamSessions.endedAt)))
   }
+
+  async deleteByBroadcasterId(broadcasterId: string): Promise<void> {
+    await db.delete(streamSessions).where(eq(streamSessions.broadcasterId, broadcasterId))
+  }
 }
 
 export const streamSessionRepository = new StreamSessionRepository()
