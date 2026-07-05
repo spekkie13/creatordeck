@@ -9,11 +9,13 @@ import {
   subEventsRepository,
   subGoalsRepository,
   userRepository,
+  entitlementRepository,
   waitlistRepository,
   ytMemberEventsRepository,
   ytStreamSessionsRepository,
   ytSuperChatEventsRepository,
 } from "@/repositories"
+import { polar } from "@/lib/polar"
 import { youtubeService } from "@/services/youtube.service"
 import { twitchService } from "@/services/twitch.service"
 import { PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
@@ -49,10 +51,16 @@ class AccountService {
       await twitchService.revokeAccess(userId)
     }
 
-    // 2. Cancel any active paid subscription so the user is not billed after
-    //    deletion. TODO(Phase 1): re-point to Polar — load the entitlement's
-    //    polarSubscriptionId and call the Polar SDK `subscriptions.cancel`.
-    //    Until Polar billing lands there is no active subscription to cancel.
+    // 2. Cancel any active Polar subscription so the user is not billed after
+    //    deletion (best-effort — a failure must not block erasure).
+    const entitlement = await entitlementRepository.getByUserId(userId)
+    if (entitlement?.polarSubscriptionId) {
+      try {
+        await polar().subscriptions.revoke({ id: entitlement.polarSubscriptionId })
+      } catch (err) {
+        console.error("Failed to cancel Polar subscription during account deletion:", err)
+      }
+    }
 
     // 3. Delete Twitch channel-scoped data (keyed by broadcasterId === providerAccountId).
     if (twitch) {

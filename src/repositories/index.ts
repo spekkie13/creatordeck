@@ -1,4 +1,6 @@
 export { userRepository } from "./user.repository"
+export { entitlementRepository } from "./entitlement.repository"
+export { webhookEventsRepository } from "./webhook-events.repository"
 export { linkedAccountsRepository } from "./linked-accounts.repository"
 export { ytSuperChatEventsRepository } from "./yt-superchat-events.repository"
 export { ytMemberEventsRepository } from "./yt-member-events.repository"

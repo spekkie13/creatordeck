@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
-import { userRepository } from "@/repositories"
+import { userRepository, entitlementRepository } from "@/repositories"
+import { hasProFromEntitlement } from "@/lib/entitlement"
 
 /**
  * The single Pro entitlement predicate (spec §3.2). Every paid gate in the
@@ -13,14 +14,16 @@ import { userRepository } from "@/repositories"
  * login and only refresh on `session.update()` (src/lib/auth.ts), so the session
  * is a stale cache. Paid enforcement must consult the source of truth.
  *
- * PHASE 0 STUB: Pro access == owner (`users.isAdmin`). Phase 1 replaces the body
- * with the DB-backed entitlement check (`hasProFromEntitlement`: trial / active /
- * canceled_active / past_due-grace) while keeping this exact signature, so no
- * call site changes.
+ * Pro == owner (`users.isAdmin`, also covers comped accounts) OR an entitlement
+ * that grants Pro (trial / active / canceled_active / past_due-grace).
  */
 export async function hasPro(userId: string): Promise<boolean> {
-  const user = await userRepository.findById(userId)
-  return !!user?.isAdmin
+  const [user, ent] = await Promise.all([
+    userRepository.findById(userId),
+    entitlementRepository.getByUserId(userId),
+  ])
+  if (user?.isAdmin) return true
+  return hasProFromEntitlement(ent)
 }
 
 /** Route guard: returns a 403 NextResponse if the user is not Pro, else null. */

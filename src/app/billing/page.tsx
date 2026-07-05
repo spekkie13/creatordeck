@@ -4,6 +4,8 @@ import {redirect} from "next/navigation"
 import {authOptions} from "@/lib/auth"
 import {hasPro} from "@/lib/require-pro"
 
+import {entitlementRepository} from "@/repositories"
+
 import {AppHeader} from "@/app/dashboard/app-header"
 import {PricingCards} from "./pricing-cards"
 
@@ -11,7 +13,11 @@ export default async function BillingPage() {
     const session: Session | null = await getServerSession(authOptions)
     if (!session) redirect("/")
 
-    const isPro: boolean = await hasPro(session.userId)
+    const [isPro, entitlement] = await Promise.all([
+        hasPro(session.userId),
+        entitlementRepository.getByUserId(session.userId),
+    ])
+    const hasSubscription = !!entitlement?.polarSubscriptionId
 
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
@@ -29,8 +35,8 @@ export default async function BillingPage() {
 
                 <PricingCards
                     isPro={isPro}
-                    hasSubscription={false}
-                    waitlistMode={true}
+                    hasSubscription={hasSubscription}
+                    waitlistMode={false}
                 />
 
                 <p className="text-xs text-center text-zinc-400 dark:text-zinc-600">

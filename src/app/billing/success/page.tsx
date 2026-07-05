@@ -5,24 +5,48 @@ import {useSession} from "next-auth/react"
 import {useRouter} from "next/navigation"
 import type {AppRouterInstance} from "next/dist/shared/lib/app-router-context.shared-runtime"
 
+// After checkout, the entitlement flips via webhook — which may land a beat after
+// the redirect. Poll our own entitlement endpoint (~10s) rather than assuming
+// failure (spec §3.3 success-page race).
+const POLL_INTERVAL_MS = 1500
+const MAX_ATTEMPTS = 8
+
 export default function BillingSuccessPage() {
     const {update} = useSession()
     const router: AppRouterInstance = useRouter()
     const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying")
 
     useEffect(() => {
-        async function finish() {
-            try {
-                await update()
-                setStatus("success")
-                setTimeout(() => router.replace("/billing"), 2500)
-            } catch {
+        let cancelled = false
+
+        async function poll() {
+            for (let attempt = 0; attempt < MAX_ATTEMPTS && !cancelled; attempt++) {
+                try {
+                    const res = await fetch("/api/me/entitlement", { cache: "no-store" })
+                    if (res.ok) {
+                        const { isPro } = await res.json()
+                        if (isPro) {
+                            await update() // refresh the JWT so client UI reflects Pro
+                            if (cancelled) return
+                            setStatus("success")
+                            setTimeout(() => router.replace("/billing"), 2000)
+                            return
+                        }
+                    }
+                } catch {
+                    // transient — keep polling
+                }
+                await new Promise(r => setTimeout(r, POLL_INTERVAL_MS))
+            }
+            if (!cancelled) {
+                // Webhook hasn't landed yet; send them to billing where state resolves.
                 setStatus("error")
                 setTimeout(() => router.replace("/billing"), 3000)
             }
         }
 
-        finish()
+        poll()
+        return () => { cancelled = true }
     }, [update, router])
 
     return (
@@ -40,15 +64,15 @@ export default function BillingSuccessPage() {
                         <p className="text-2xl">🎉</p>
                         <p className="text-lg font-semibold">You&apos;re all set!</p>
                         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Plan activated
+                            Pro activated
                         </p>
                     </>
                 )}
                 {status === "error" && (
                     <>
                         <p className="text-2xl">⚠️</p>
-                        <p className="text-lg font-semibold">Something went wrong</p>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Redirecting to billing page...</p>
+                        <p className="text-lg font-semibold">Still activating…</p>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">Taking you to the billing page…</p>
                     </>
                 )}
             </div>
