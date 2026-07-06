@@ -1,9 +1,6 @@
 import type { InsertYtSuperChatEvent } from "@/types/entities"
 import type { ChatMessage } from "@/types/chat"
-import { chatMessages } from "@/lib/schema"
 import { PLATFORM_YOUTUBE } from "@/types/platform"
-
-type InsertChatMessage = typeof chatMessages.$inferInsert
 
 /**
  * Shape of a `liveChatMessages.list` item (part=snippet,authorDetails). Unlike
@@ -45,21 +42,6 @@ function amountToMicros(raw: string | number | undefined): number {
   if (raw === undefined) return 0
   const n = typeof raw === "number" ? raw : parseInt(raw, 10)
   return Number.isFinite(n) ? n : 0
-}
-
-/** Plain chat (`textMessageEvent`) → unified `chat_messages` row. */
-export function toChatInsert(item: YouTubeLiveChatItem, channelId: string): InsertChatMessage | null {
-  if (item.snippet.type !== "textMessageEvent") return null
-  const message = item.snippet.textMessageDetails?.messageText ?? item.snippet.displayMessage ?? ""
-  return {
-    platform: PLATFORM_YOUTUBE,
-    channelId,
-    eventId: item.id, // API message id — a real, stable dedup key
-    userId: item.authorDetails.channelId ?? null,
-    userDisplayName: item.authorDetails.displayName ?? "Unknown",
-    message,
-    occurredAt: new Date(item.snippet.publishedAt),
-  }
 }
 
 /** Client-facing chat payload for a `textMessageEvent`. */

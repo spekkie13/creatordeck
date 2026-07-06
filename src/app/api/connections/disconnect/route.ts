@@ -3,7 +3,12 @@ import { NextResponse } from "next/server"
 import { requireSession } from "@/lib/session-auth"
 import { apiError } from "@/lib/api-response"
 
-import { linkedAccountsRepository } from "@/repositories"
+import {
+  linkedAccountsRepository,
+  ytSuperChatEventsRepository,
+  ytMemberEventsRepository,
+  ytStreamSessionsRepository,
+} from "@/repositories"
 import { youtubeService } from "@/services"
 import { PLATFORM_SPOTIFY, PLATFORM_TWITCH, PLATFORM_YOUTUBE } from "@/types/platform"
 import { LinkedAccount } from "@/types/entities"
@@ -26,9 +31,19 @@ export async function POST(req: Request) {
   }
 
   // Revoke the Google grant before deleting the row (spec §3.4). Best-effort:
-  // revocation failures must not block the disconnect.
+  // revocation failures must not block the disconnect. We also erase the YouTube
+  // data we have stored for this channel, as promised in the Privacy Policy
+  // (keyed by channelId === providerAccountId, as in account deletion).
   if (provider === PLATFORM_YOUTUBE) {
     await youtubeService.revokeAccess(session.userId)
+
+    const youtube = allAccounts.find((a) => a.provider === PLATFORM_YOUTUBE)
+    if (youtube) {
+      const channelId = youtube.providerAccountId
+      await ytSuperChatEventsRepository.deleteByChannelId(channelId)
+      await ytMemberEventsRepository.deleteByChannelId(channelId)
+      await ytStreamSessionsRepository.deleteByChannelId(channelId)
+    }
   }
 
   await linkedAccountsRepository.deleteByUserIdAndProvider(session.userId, provider)

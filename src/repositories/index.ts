@@ -14,5 +14,4 @@ export { eventSubSubscriptionsRepository } from "./eventsub-subscriptions.reposi
 export { goalsRepository } from "./goals.repository"
 export { feedbackRepository } from "./feedback.repository"
 export { eventReplaysRepository } from "./event-replays.repository"
-export { chatMessagesRepository } from "./chat-messages.repository"
 export { featureFlagsRepository } from "./feature-flags.repository"

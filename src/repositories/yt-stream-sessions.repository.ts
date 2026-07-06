@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm"
+import { and, eq, isNull, lt, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { ytStreamSessions } from "@/lib/schema"
 import type { YtStreamSession } from "@/types/entities"
@@ -53,10 +53,42 @@ class YtStreamSessionsRepository {
     return row
   }
 
-  /** Marks all open sessions for a channel as ended. Idempotent. */
+  /**
+   * Ends ingestion for a channel by deleting its open session row. The session
+   * carries only live-ingestion state (liveChatId, resume chatPageToken) that no
+   * feature reads once the stream is over, so we drop it rather than retain it —
+   * this keeps YouTube broadcast data out of storage the moment you go offline.
+   * Before deleting, emits a one-line session summary (duration, chat polls,
+   * estimated quota units) — the quota-instrumentation record used to size the
+   * Google quota-increase request (spec §3.6). Idempotent. `deleteOlderThan`
+   * remains a safety net for sessions orphaned by a crash that never reached
+   * close().
+   */
   async close(channelId: string): Promise<void> {
+    const session = await this.findActive(channelId)
+    if (!session) return
+    const durationSec = Math.round((Date.now() - session.startedAt.getTime()) / 1000)
+    console.log("[yt-session] closed", {
+      channelId,
+      durationSec,
+      chatPolls: session.pollCount,
+      estQuotaUnits: session.quotaUnits,
+      lastPolledAt: session.lastPolledAt,
+    })
+    await db.delete(ytStreamSessions).where(eq(ytStreamSessions.id, session.id))
+  }
+
+  /**
+   * Adds the estimated quota cost of one broadcast-detection `liveBroadcasts.list`
+   * call to the open session, so per-session `quotaUnits` reflects detection as
+   * well as chat polling (spec §3.6 — detection is the realistic quota trap).
+   * No-op when no session is open: detection calls made while idle (no live
+   * broadcast) have no session to attribute to and are a separate, low, constant
+   * background cost (~1 unit per slow check).
+   */
+  async recordDetection(channelId: string, units: number): Promise<void> {
     await db.update(ytStreamSessions)
-      .set({ endedAt: new Date() })
+      .set({ quotaUnits: sql`${ytStreamSessions.quotaUnits} + ${units}` })
       .where(and(eq(ytStreamSessions.channelId, channelId), isNull(ytStreamSessions.endedAt)))
   }
 
@@ -80,6 +112,14 @@ class YtStreamSessionsRepository {
 
   async deleteByChannelId(channelId: string): Promise<void> {
     await db.delete(ytStreamSessions).where(eq(ytStreamSessions.channelId, channelId))
+  }
+
+  /** Retention purge: erase broadcast sessions started before the cutoff. Returns rows deleted. */
+  async deleteOlderThan(cutoff: Date): Promise<number> {
+    const deleted = await db.delete(ytStreamSessions)
+      .where(lt(ytStreamSessions.startedAt, cutoff))
+      .returning({ id: ytStreamSessions.id })
+    return deleted.length
   }
 }
 

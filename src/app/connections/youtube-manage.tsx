@@ -4,9 +4,13 @@ type Props = {
   avatarUrl?: string | null
   isPollerActive: boolean
   needsReconnect?: boolean
+  /** Chat polls made in the current live session (quota instrumentation). */
+  sessionPolls?: number
+  /** Estimated YouTube API quota units spent this session (chat + detection). */
+  sessionUnits?: number
 }
 
-export function YouTubeManage({ channelId, displayName, avatarUrl, isPollerActive, needsReconnect }: Props) {
+export function YouTubeManage({ channelId, displayName, avatarUrl, isPollerActive, needsReconnect, sessionPolls, sessionUnits }: Props) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-800 px-4 sm:px-6 py-4 space-y-3">
       <div className="flex items-center gap-3">
@@ -51,6 +55,15 @@ export function YouTubeManage({ channelId, displayName, avatarUrl, isPollerActiv
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
         YouTube chat is live while CreatorDeck is open.
       </p>
+
+      {isPollerActive && sessionUnits != null && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">This session</span>
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
+            {sessionPolls ?? 0} chat polls · ~{sessionUnits} units (est.)
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs text-zinc-500 dark:text-zinc-400">Channel</span>

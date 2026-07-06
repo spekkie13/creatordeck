@@ -36,9 +36,12 @@ export default async function ConnectionsPage({ searchParams }: {
     session.userId ? linkedAccountsRepository.findByUserId(session.userId) : [],
   ])
 
-  const youtubePollerActive: boolean = session.youtubeChannelId
-    ? await ytStreamSessionsRepository.isActive(session.youtubeChannelId)
-    : false
+  // The open session (if any) carries live-ingestion state plus quota
+  // instrumentation (chat polls + estimated units) surfaced in the manage panel.
+  const youtubeSession = session.youtubeChannelId
+    ? await ytStreamSessionsRepository.findActive(session.youtubeChannelId)
+    : null
+  const youtubePollerActive: boolean = !!youtubeSession
 
   // Interim Pro gate — YouTube is owner-only until billing ships requirePro.
   const youtubeLocked: boolean = !hasYouTubeAccess(session)
@@ -107,6 +110,8 @@ export default async function ConnectionsPage({ searchParams }: {
                 avatarUrl={youtubeAccount.avatarUrl}
                 isPollerActive={youtubePollerActive}
                 needsReconnect={youtubeNeedsReconnect}
+                sessionPolls={youtubeSession?.pollCount}
+                sessionUnits={youtubeSession?.quotaUnits}
               />
             )}
           </ConnectionRow>
