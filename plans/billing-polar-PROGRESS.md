@@ -3,13 +3,14 @@
 **Branch:** `billing-polar-migration`
 **Full plan:** `~/.claude/plans/kick-off-the-billing-planner-shimmering-valley.md`
 **Spec:** `specs/Billing-Entitlements.md`
-**Last updated:** 2026-07-05
+**Last updated:** 2026-07-06
 
-## Status: Phase 0 ✅ committed · Phase 1 ✅ committed (code) · Gate 1 ⏳ not verified
+## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · Gate 1 ⏳ not verified
 
 - `666ca07` Phase 0 — tear down Lemon Squeezy, retier to Free/Pro, add entitlements + webhook_events tables.
 - `fbfb5b9` Phase 1 — Polar checkout/portal/webhook routes, entitlement engine, DB-backed `hasPro`.
-- App builds green (62 routes). Nothing applied to any DB yet.
+- Card-required trial switch — removed local signup trial; trial end now flows from Polar webhooks. ✅ 2026-07-06.
+- App builds green. Nothing applied to any DB yet.
 
 ## Owner decisions (locked)
 - Pricing: **Pro €7.99/mo · €59/yr** (EUR).
@@ -17,15 +18,15 @@
 - Execution: phase-gated, review between phases.
 - Operator: Tom Spek (individual, NL, no KVK). Governing law NL.
 
-## ⚠️ DO FIRST next session — switch trial model to card-required (Polar-native)
-Phase 1 code currently grants a **local, no-card 14-day trial at signup**. The new decision is a **card-required trial at checkout**. Make these edits, then `npx next build`:
+## ✅ DONE (2026-07-06) — trial model switched to card-required (Polar-native)
+Phase 1 previously granted a **local, no-card 14-day trial at signup**. Now a **card-required trial at checkout**, driven entirely by Polar webhooks. Build green after the switch.
 
-1. **`src/lib/auth.ts`** — remove both `await entitlementService.startTrialIfNew(userId)` calls (Twitch + Google new-user branches) and the `entitlementService` import. New users are Free until they check out.
-2. **`src/services/entitlement.service.ts`** — delete `startTrialIfNew` + `TRIAL_DAYS`. In `applyFromWebhook`, when `sub.status === "trialing"`, also pass a `trialEndsAt` (the subscription's trial end) so the trial flows through the existing `trialEndsAt` gate. **Verify the exact trial-end field on a real `subscription.created`/`subscription.updated` trialing payload at Gate 1** — likely `sub.currentPeriodEnd` during trial (confirm; Polar may expose an explicit trial end).
-3. **`src/repositories/entitlement.repository.ts`** — add optional `trialEndsAt` to `WebhookState`; set it in the insert + `onConflictDoUpdate` set **only when provided** (still don't clobber it to null on non-trial events).
-4. **`src/repositories/entitlement.repository.ts`** — `ensureWithTrial` is now unused; delete it (or repurpose to `ensureRow` with status `none`).
-5. `hasProFromEntitlement` already grants Pro when `trialEndsAt` is in the future — no change. `"trialing"` is intentionally NOT in `PRO_STATUSES` (avoids never-expiring trial); the mapped `trialEndsAt` is the gate.
-6. Backfill SQL already updated to no-trial (`drizzle/backfill-entitlements.sql`).
+1. ✅ **`src/lib/auth.ts`** — removed both `startTrialIfNew(userId)` calls (Twitch + Google new-user branches) and the `entitlementService` import. New users are Free until they check out.
+2. ✅ **`src/services/entitlement.service.ts`** — deleted `startTrialIfNew` + `TRIAL_DAYS`. In `applyFromWebhook`, on `sub.status === "trialing"` it passes `trialEndsAt: sub.trialEnd` so the trial flows through the existing `trialEndsAt` gate. **RESOLVED:** the Polar `Subscription` type has an explicit `trialEnd: Date | null` field (SDK 0.48.1, `dist/*/models/components/subscription.d.ts:63`) — no Gate 1 guesswork needed; `currentPeriodEnd` was not required.
+3. ✅ **`src/repositories/entitlement.repository.ts`** — added optional `trialEndsAt` to `WebhookState`; `upsertFromWebhook` writes it in the insert + `onConflictDoUpdate` set **only when provided** (spread-conditional), so non-trial events never clobber a set trial end.
+4. ✅ **`src/repositories/entitlement.repository.ts`** — deleted the now-unused `ensureWithTrial`.
+5. ✅ `hasProFromEntitlement` unchanged — already grants Pro when `trialEndsAt` is in the future. `"trialing"` intentionally NOT in `PRO_STATUSES` (avoids never-expiring trial); the mapped `trialEndsAt` is the gate.
+6. ✅ Backfill SQL already no-trial (`drizzle/backfill-entitlements.sql`).
 
 ## Polar dashboard — you've created the sandbox org, NO product yet
 Create in the **sandbox** org:

@@ -8,7 +8,6 @@ import { linkedAccountsRepository, userRepository } from "@/repositories"
 import {PLATFORM_TWITCH, PLATFORM_YOUTUBE} from "@/types/platform";
 import {JWT} from "next-auth/jwt";
 import {LinkedAccount} from "@/types/entities";
-import {entitlementService} from "@/services/entitlement.service";
 
 async function fetchYouTubeChannelId(accessToken: string): Promise<string | null> {
   const res = await fetch("https://www.googleapis.com/youtube/v3/channels?part=id&mine=true", {
@@ -93,7 +92,6 @@ export const authOptions: NextAuthOptions = {
               linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_YOUTUBE),
               userRepository.findById(userId),
             ])
-            await entitlementService.startTrialIfNew(userId)
             token.userId = userId
             token.twitchId = p.sub
             token.youtubeChannelId = ytAccount?.providerAccountId ?? null
@@ -137,7 +135,6 @@ export const authOptions: NextAuthOptions = {
               linkedAccountsRepository.findByUserIdAndProvider(userId, PLATFORM_TWITCH),
               userRepository.findById(userId),
             ])
-            await entitlementService.startTrialIfNew(userId)
             token.userId = userId
             token.twitchId = twitchAccount?.providerAccountId ?? null
             token.youtubeChannelId = channelId

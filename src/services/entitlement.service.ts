@@ -5,15 +5,7 @@ import { entitlementRepository } from "@/repositories"
 
 type PolarEvent = ReturnType<typeof validateEvent>
 
-const TRIAL_DAYS = 14
-
 class EntitlementService {
-  /** Sets a fresh 14-day trial for a user if they have no entitlement row yet. */
-  async startTrialIfNew(userId: string, now: Date = new Date()): Promise<void> {
-    const trialEndsAt = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
-    await entitlementRepository.ensureWithTrial(userId, trialEndsAt)
-  }
-
   /**
    * Applies a verified Polar webhook to the local entitlement cache (spec §3.3).
    * Only subscription.* events mutate state; each carries the full subscription,
@@ -34,6 +26,10 @@ class EntitlementService {
       polarCustomerId: sub.customerId ?? null,
       polarSubscriptionId: sub.id ?? null,
       currentPeriodEnd: sub.currentPeriodEnd ?? null,
+      // Card-required trial (Polar-native): flow the subscription's trial end
+      // through the local `trialEndsAt` gate. Only on trialing events, so
+      // non-trial deliveries never clobber a previously-set trial end.
+      ...(sub.status === "trialing" ? { trialEndsAt: sub.trialEnd } : {}),
     })
   }
 

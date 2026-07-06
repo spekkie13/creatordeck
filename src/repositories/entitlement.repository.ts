@@ -12,6 +12,8 @@ type WebhookState = {
   polarCustomerId: string | null
   polarSubscriptionId: string | null
   currentPeriodEnd: Date | null
+  /** Only supplied on trialing events; omit to leave any existing value untouched. */
+  trialEndsAt?: Date | null
 }
 
 class EntitlementRepository {
@@ -26,44 +28,25 @@ class EntitlementRepository {
   }
 
   /**
-   * Creates the user's entitlement row with a 14-day trial if one does not yet
-   * exist. `onConflictDoNothing` on the unique userId enforces one-trial-ever:
-   * an existing row (and its `trialEndsAt`) is never reset.
-   */
-  async ensureWithTrial(userId: string, trialEndsAt: Date): Promise<void> {
-    await db.insert(entitlements)
-      .values({ userId, plan: "free", status: "trialing", trialEndsAt })
-      .onConflictDoNothing({ target: entitlements.userId })
-  }
-
-  /**
    * Applies absolute subscription state from a verified webhook (spec §3.3):
    * upsert by userId, overwriting status/period/plan wholesale — never relative
-   * — so duplicate and out-of-order deliveries converge. `trialEndsAt` is left
-   * untouched (owned by the local trial logic).
+   * — so duplicate and out-of-order deliveries converge. `trialEndsAt` is only
+   * written when the caller supplies it (trialing events); it is otherwise left
+   * untouched so non-trial deliveries never clobber a set trial end.
    */
   async upsertFromWebhook(s: WebhookState): Promise<void> {
+    const state = {
+      plan: s.plan,
+      status: s.status,
+      polarCustomerId: s.polarCustomerId,
+      polarSubscriptionId: s.polarSubscriptionId,
+      currentPeriodEnd: s.currentPeriodEnd,
+      updatedAt: new Date(),
+      ...(s.trialEndsAt !== undefined ? { trialEndsAt: s.trialEndsAt } : {}),
+    }
     await db.insert(entitlements)
-      .values({
-        userId: s.userId,
-        plan: s.plan,
-        status: s.status,
-        polarCustomerId: s.polarCustomerId,
-        polarSubscriptionId: s.polarSubscriptionId,
-        currentPeriodEnd: s.currentPeriodEnd,
-        updatedAt: new Date(),
-      })
-      .onConflictDoUpdate({
-        target: entitlements.userId,
-        set: {
-          plan: s.plan,
-          status: s.status,
-          polarCustomerId: s.polarCustomerId,
-          polarSubscriptionId: s.polarSubscriptionId,
-          currentPeriodEnd: s.currentPeriodEnd,
-          updatedAt: new Date(),
-        },
-      })
+      .values({ userId: s.userId, ...state })
+      .onConflictDoUpdate({ target: entitlements.userId, set: state })
   }
 }
 
