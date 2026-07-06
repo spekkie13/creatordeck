@@ -2,10 +2,7 @@ import { env } from '@/lib/env'
 import { PLATFORM_YOUTUBE } from '@/types/platform'
 import type { YouTubeLiveChatItem } from '@/lib/youtube-api-mapper'
 
-import {
-  linkedAccountsRepository,
-  chatMessagesRepository,
-} from '@/repositories'
+import { linkedAccountsRepository } from '@/repositories'
 
 // Refresh a little before the token actually expires so an in-flight request
 // never races the boundary.
@@ -19,6 +16,14 @@ const REFRESH_SKEW_MS = 60_000
  * best available estimate until then.
  */
 export const YT_LIST_UNITS_ESTIMATE = 5
+
+/**
+ * Estimated quota cost of one broadcast-detection `liveBroadcasts.list mine=true`
+ * call. This is a documented 1-unit-class method (spec §3.6), so unlike the
+ * `list` cost this estimate is firm. Detection is the realistic quota trap once
+ * chat is cheap, so it is counted toward the session's quotaUnits.
+ */
+export const YT_BROADCAST_UNITS_ESTIMATE = 1
 
 export type ActiveBroadcast = {
   id: string
@@ -204,9 +209,6 @@ class YoutubeService {
     }
   }
 
-  async getChatMessagesSince(channelId: string, since: Date) {
-    return chatMessagesRepository.getSince(channelId, since)
-  }
 }
 
 export const youtubeService = new YoutubeService()

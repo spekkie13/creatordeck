@@ -7,11 +7,9 @@ import { hasYouTubeAccess } from "@/lib/youtube-gate"
 import { youtubeService, YT_LIST_UNITS_ESTIMATE } from "@/services"
 import {
   ytStreamSessionsRepository,
-  chatMessagesRepository,
   ytSuperChatEventsRepository,
 } from "@/repositories"
 import {
-  toChatInsert,
   toChatPayload,
   toSuperChatInsert,
 } from "@/lib/youtube-api-mapper"
@@ -63,15 +61,15 @@ export async function GET() {
     return apiError(502, "YouTube chat fetch failed")
   }
 
-  // Persist + collect client payloads. Inserts are onConflictDoNothing, so any
-  // overlap between ticks is harmless. Super Chats/Stickers flow to the event
-  // feed via yt_superchat_events; the chat list carries text messages.
+  // Collect client payloads (and persist Super Chats). Text chat is delivered
+  // live to the client only — it is deliberately NOT stored, since the live view
+  // is client-held and nothing reads chat back from the DB. Super Chats/Stickers
+  // are persisted to yt_superchat_events because the event feed is DB-driven.
+  // The superchat insert is onConflictDoNothing, so tick overlap is harmless.
   const messages: ChatMessage[] = []
   for (const item of fetched.items) {
     const type = item.snippet.type
     if (type === "textMessageEvent") {
-      const insert = toChatInsert(item, channelId)
-      if (insert) await chatMessagesRepository.insert(insert)
       const payload = toChatPayload(item)
       if (payload) messages.push(payload)
     } else if (type === "superChatEvent" || type === "superStickerEvent") {

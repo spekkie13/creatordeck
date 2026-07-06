@@ -34,10 +34,22 @@ export function LiveClient({
   const chatMessages: ChatMessage[] = [...twitchMessages, ...youtubeMessages]
     .sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime())
 
-  const youtubeChip: { label: string; className: string } = {
+  // `href` makes the reconnect chip actionable (one-click re-auth, same entry as
+  // the Connections "Reconnect" button); `title` explains the transient states on
+  // hover. Tokens never reach the browser — the chip only reflects loop status.
+  const youtubeChip: { label: string; className: string; title?: string; href?: string } = {
     live: { label: "YouTube: live", className: "bg-green-500/15 text-green-400" },
-    quota: { label: "YouTube: quota-limited", className: "bg-amber-500/15 text-amber-400" },
-    reconnect_required: { label: "YouTube: reconnect", className: "bg-amber-500/15 text-amber-400" },
+    quota: {
+      label: "YouTube: quota-limited",
+      className: "bg-amber-500/15 text-amber-400",
+      title: "YouTube API quota reached — chat resumes automatically after a short backoff.",
+    },
+    reconnect_required: {
+      label: "YouTube: reconnect",
+      className: "bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 transition-colors cursor-pointer",
+      title: "YouTube authorization expired — click to reconnect.",
+      href: "/api/connections/link/google/start",
+    },
     ended: { label: "YouTube: not live", className: "bg-red-500/15 text-red-400" },
     not_live: { label: "YouTube: not live", className: "bg-red-500/15 text-red-400" },
     idle: { label: "YouTube", className: "bg-red-500/15 text-red-400" },
@@ -82,9 +94,22 @@ export function LiveClient({
             <div className="flex items-center gap-1.5 ml-1">
               <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-400 font-medium">Twitch</span>
               {hasYouTube && (
-                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${youtubeChip.className}`}>
-                  {youtubeChip.label}
-                </span>
+                youtubeChip.href ? (
+                  <a
+                    href={youtubeChip.href}
+                    title={youtubeChip.title}
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${youtubeChip.className}`}
+                  >
+                    {youtubeChip.label}
+                  </a>
+                ) : (
+                  <span
+                    title={youtubeChip.title}
+                    className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${youtubeChip.className}`}
+                  >
+                    {youtubeChip.label}
+                  </span>
+                )
               )}
             </div>
           </div>

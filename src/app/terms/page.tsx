@@ -76,6 +76,41 @@ export default function TermsOfServicePage() {
             revoke CreatorDeck&rsquo;s access from a platform&rsquo;s account settings, or disconnect it from your
             CreatorDeck connections settings, at any time.
           </p>
+          <p>
+            CreatorDeck uses YouTube API Services. By connecting your YouTube account, you agree to be bound by the{" "}
+            <a
+              href="https://www.youtube.com/t/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              YouTube Terms of Service
+            </a>
+            , and you acknowledge that Google&rsquo;s use of your data is governed by the{" "}
+            <a
+              href="https://www.google.com/policies/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google Privacy Policy
+            </a>
+            . You can revoke CreatorDeck&rsquo;s access to your Google/YouTube account at any time from your{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google security settings
+            </a>
+            , or by disconnecting YouTube in your CreatorDeck connections settings. How we handle YouTube data is
+            described in our{" "}
+            <Link href="/privacy" className="text-teal-500 hover:text-teal-400 underline underline-offset-2">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </Section>
 
         <Section title="Acceptable use">

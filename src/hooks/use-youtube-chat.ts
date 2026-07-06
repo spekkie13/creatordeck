@@ -14,6 +14,9 @@ const HIDDEN_RECHECK_MS = 10_000
 const MIN_POLL_MS = 1_000
 const DEFAULT_POLL_MS = 5_000
 const DEFAULT_QUOTA_BACKOFF_MS = 60_000
+// Quota exhaustion is usually daily (won't clear mid-stream), so escalate the
+// backoff on consecutive quota hits instead of re-hitting the error every 60 s.
+const MAX_QUOTA_BACKOFF_MS = 10 * 60_000
 
 export type YouTubeChatStatus =
   | "idle"
@@ -52,6 +55,7 @@ export function useYouTubeChat(enabled: boolean): { messages: ChatMessage[]; sta
 
     let cancelled = false
     let timer: ReturnType<typeof setTimeout> | null = null
+    let quotaAttempts = 0 // consecutive quota hits, for exponential backoff
     const controller = new AbortController()
 
     const schedule = (fn: () => void, delay: number) => {
@@ -102,13 +106,20 @@ export function useYouTubeChat(enabled: boolean): { messages: ChatMessage[]; sta
 
         switch (data.status) {
           case "live":
+            quotaAttempts = 0 // healthy tick — reset backoff
             setStatus("live")
             schedule(poll, Math.max(data.pollingIntervalMillis ?? DEFAULT_POLL_MS, MIN_POLL_MS))
             break
-          case "quota":
+          case "quota": {
             setStatus("quota")
-            schedule(poll, data.retryAfterMillis ?? DEFAULT_QUOTA_BACKOFF_MS)
+            // Escalate: honor the server's retryAfterMillis as the floor, double it
+            // per consecutive hit, cap at MAX_QUOTA_BACKOFF_MS. Reset on a live tick.
+            const base = data.retryAfterMillis ?? DEFAULT_QUOTA_BACKOFF_MS
+            const backoff = Math.min(base * 2 ** quotaAttempts, MAX_QUOTA_BACKOFF_MS)
+            quotaAttempts++
+            schedule(poll, backoff)
             break
+          }
           case "ended":
             setStatus("ended")
             schedule(detect, SLOW_DETECT_MS)

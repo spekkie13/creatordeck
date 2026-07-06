@@ -17,12 +17,15 @@ export const env = {
     spotifyClientId: requireEnv("SPOTIFY_CLIENT_ID"),
     spotifyClientSecret: requireEnv("SPOTIFY_CLIENT_SECRET"),
     cronSecret: requireEnv("CRON_SECRET"),
-    lemonSqueezyApiKey: requireEnv("LEMONSQUEEZY_API_KEY"),
-    lemonSqueezyWebhookSecret: requireEnv("LEMONSQUEEZY_WEBHOOK_SECRET"),
-    lemonSqueezyStoreId: requireEnv("LEMONSQUEEZY_STORE_ID"),
+    // Lemon Squeezy is being retired in favor of Polar (see billing-polar-migration
+    // branch). Read optionally so preview/prod builds stay green now that the LS env
+    // vars have been deleted; the legacy /api/billing/* routes fail at runtime if hit.
+    lemonSqueezyApiKey: process.env.LEMONSQUEEZY_API_KEY ?? "",
+    lemonSqueezyWebhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET ?? "",
+    lemonSqueezyStoreId: process.env.LEMONSQUEEZY_STORE_ID ?? "",
     lemonSqueezyVariants: {
-        tier1: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER1_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER1_ANNUAL") },
-        tier2: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER2_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER2_ANNUAL") },
-        tier3: { monthly: requireEnv("LEMONSQUEEZY_VARIANT_TIER3_MONTHLY"), annual: requireEnv("LEMONSQUEEZY_VARIANT_TIER3_ANNUAL") },
+        tier1: { monthly: process.env.LEMONSQUEEZY_VARIANT_TIER1_MONTHLY ?? "", annual: process.env.LEMONSQUEEZY_VARIANT_TIER1_ANNUAL ?? "" },
+        tier2: { monthly: process.env.LEMONSQUEEZY_VARIANT_TIER2_MONTHLY ?? "", annual: process.env.LEMONSQUEEZY_VARIANT_TIER2_ANNUAL ?? "" },
+        tier3: { monthly: process.env.LEMONSQUEEZY_VARIANT_TIER3_MONTHLY ?? "", annual: process.env.LEMONSQUEEZY_VARIANT_TIER3_ANNUAL ?? "" },
     },
 }

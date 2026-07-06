@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/session-auth"
 import { apiError, apiSuccess } from "@/lib/api-response"
 import { hasYouTubeAccess } from "@/lib/youtube-gate"
 
-import { youtubeService } from "@/services"
+import { youtubeService, YT_BROADCAST_UNITS_ESTIMATE } from "@/services"
 import { ytStreamSessionsRepository } from "@/repositories"
 
 export const runtime = "nodejs"
@@ -41,5 +41,7 @@ export async function GET() {
     title: broadcast.title,
     liveChatId: broadcast.liveChatId,
   })
+  // Count this liveBroadcasts.list call toward the session's quota (spec §3.6).
+  await ytStreamSessionsRepository.recordDetection(channelId, YT_BROADCAST_UNITS_ESTIMATE)
   return apiSuccess({ live: true })
 }
