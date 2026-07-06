@@ -149,7 +149,8 @@ export default function TermsOfServicePage() {
           <p>
             Some features are offered free of charge and others as paid subscription plans. If you choose a paid
             plan, the applicable pricing and billing cycle are shown to you before you subscribe. Payments are
-            processed by our payment provider, Lemon Squeezy, and are subject to their terms. Subscriptions renew
+            processed by Polar (Polar Software Inc.), which acts as the merchant of record for your purchase and
+            whose terms also apply. Subscriptions renew
             automatically unless cancelled before the renewal date; you can manage or cancel your subscription from
             your billing settings. Except where required by law, payments are non-refundable.
           </p>
