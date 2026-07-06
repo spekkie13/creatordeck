@@ -152,7 +152,16 @@ export default function PrivacyPolicyPage() {
             >
               Google Privacy Policy
             </a>
-            .
+            . You can revoke CreatorDeck&rsquo;s access to your Google/YouTube account at any time via your{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
+            >
+              Google security settings
+            </a>
+            , or by disconnecting YouTube in your CreatorDeck connections settings.
           </p>
           <p>
             <strong className="text-zinc-800 dark:text-zinc-200">What we access from YouTube.</strong> Using
@@ -164,20 +173,6 @@ export default function PrivacyPolicyPage() {
             details we use to follow your live chat are kept only while you are live and deleted when your stream
             ends (see &ldquo;Data retention&rdquo; below). OAuth tokens are encrypted at rest. We do not use your
             YouTube data for advertising and we do not share it except with the sub-processors listed below.
-          </p>
-          <p>
-            <strong className="text-zinc-800 dark:text-zinc-200">Revoking YouTube access.</strong> You can revoke
-            CreatorDeck&rsquo;s access to your Google/YouTube account at any time from your{" "}
-            <a
-              href="https://myaccount.google.com/permissions"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-teal-500 hover:text-teal-400 underline underline-offset-2"
-            >
-              Google security settings
-            </a>
-            , or by disconnecting YouTube from your CreatorDeck connections settings. Either action stops further
-            data collection and deletes the YouTube data we have stored for your account.
           </p>
           <p>
             CreatorDeck&rsquo;s use of information received from Google APIs adheres to the{" "}
