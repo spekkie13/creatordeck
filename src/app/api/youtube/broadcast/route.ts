@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { requireSession } from "@/lib/session-auth"
 import { apiError, apiSuccess } from "@/lib/api-response"
 import { hasYouTubeAccess } from "@/lib/youtube-gate"
+import { env } from "@/lib/env"
 
 import { youtubeService, YT_BROADCAST_UNITS_ESTIMATE } from "@/services"
 import { ytStreamSessionsRepository } from "@/repositories"
@@ -29,7 +30,11 @@ export async function GET() {
   const accessToken = await youtubeService.getValidAccessToken(session.userId)
   if (!accessToken) return apiSuccess({ live: false, status: "reconnect_required" })
 
-  const broadcast = await youtubeService.getActiveBroadcast(accessToken)
+  // TEST-ONLY: when YT_TEST_VIDEO_ID is set, drive the pipeline off that public
+  // video's live chat instead of your own `mine=true` broadcast. Remove before ship.
+  const broadcast = env.ytTestVideoId
+    ? await youtubeService.getBroadcastByVideoId(accessToken, env.ytTestVideoId)
+    : await youtubeService.getActiveBroadcast(accessToken)
   if (!broadcast) {
     await ytStreamSessionsRepository.close(channelId)
     return apiSuccess({ live: false })

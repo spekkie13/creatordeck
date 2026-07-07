@@ -28,4 +28,8 @@ export const env = {
         tier2: { monthly: process.env.LEMONSQUEEZY_VARIANT_TIER2_MONTHLY ?? "", annual: process.env.LEMONSQUEEZY_VARIANT_TIER2_ANNUAL ?? "" },
         tier3: { monthly: process.env.LEMONSQUEEZY_VARIANT_TIER3_MONTHLY ?? "", annual: process.env.LEMONSQUEEZY_VARIANT_TIER3_ANNUAL ?? "" },
     },
+    // TEST-ONLY: when set, /api/youtube/broadcast resolves this public video's
+    // live chat instead of your own `mine=true` broadcast, so you can exercise
+    // the /live chat pipeline against someone else's stream. Remove before ship.
+    ytTestVideoId: process.env.YT_TEST_VIDEO_ID ?? "",
 }
