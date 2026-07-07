@@ -31,28 +31,53 @@ export type ActiveBroadcast = {
   liveChatId: string | null
 }
 
+// Liveness endpoint — 1-unit class. `search.list` is forbidden here (100
+// units/call, 100/day hard cap; spec §3.6).
+//
+// NOTE: the historical query `broadcastStatus=active&broadcastType=all&mine=true`
+// is INVALID — YouTube rejects it 400 (`broadcastStatus` and `mine` are mutually
+// exclusive; `broadcastType` is only valid with `mine`). The silent catch in
+// getActiveBroadcast masked this, so detection always returned null in prod. The
+// correct query is being pinned empirically via probeBroadcastDetection (the
+// `?debug=1` endpoint) before the live path is switched over.
+const LIVE_BROADCASTS_BASE =
+  'https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet,status&maxResults=50&'
+
+// Lifecycle states in which a broadcast is on-air (or about to be) and has a
+// usable live chat — the states detection should treat as "live". `testing`/
+// `testStarting` are included because the chat id exists and OBS often sits in
+// testing before the auto-transition to `live`.
+const LIVE_LIFECYCLE_STATUSES = new Set([
+  'live',
+  'liveStarting',
+  'testing',
+  'testStarting',
+])
+
+/** One returned broadcast, flattened to just the fields detection cares about. */
+export type BroadcastProbeItem = {
+  id: string
+  lifeCycleStatus: string | null
+  privacyStatus: string | null
+  liveChatId: string | null
+  title: string | null
+}
+
 /**
- * Owner-only diagnostic view of the raw `liveBroadcasts.list` call. Unlike
- * getActiveBroadcast (which collapses every failure to null), this surfaces the
- * HTTP status, item count, and raw body so a live prod test can tell "genuinely
- * not live" apart from a 403/scope error, expired token, or quota exhaustion.
- * Never contains the access token — that only travels in the request header.
+ * Result of one candidate `liveBroadcasts.list` query. `liveItems` are the
+ * broadcasts in a live-ish lifecycle (the ones detection would act on); `sample`
+ * shows the first few of whatever came back so we can see non-live results too.
  */
-export type BroadcastDebug = {
+export type BroadcastProbe = {
+  label: string
   httpStatus: number
   ok: boolean
   itemCount: number
-  broadcast: ActiveBroadcast | null
-  rawBody: unknown
+  liveItems: BroadcastProbeItem[]
+  sample: BroadcastProbeItem[]
+  errorReason?: string
   fetchError?: string
 }
-
-// Liveness endpoint — 1-unit class, `mine=true`. `search.list` is forbidden here
-// (100 units/call, 100/day hard cap; spec §3.6). Shared by the live-path and the
-// diagnostic method so both hit exactly the same query.
-const LIVE_BROADCASTS_URL =
-  'https://www.googleapis.com/youtube/v3/liveBroadcasts' +
-  '?part=snippet,status&broadcastStatus=active&broadcastType=all&mine=true'
 
 export type LiveChatFetchResult =
   | {
@@ -158,24 +183,32 @@ class YoutubeService {
   }
 
   /**
-   * Detects the user's currently-active live broadcast. Uses ONLY
-   * `liveBroadcasts.list?mine=true` (1-unit class) — `search.list` is forbidden
-   * for liveness (100 units/call, 100/day hard cap; spec §3.6). Returns the
-   * active broadcast (with its live chat id) or null when not live.
+   * Detects the user's currently-active live broadcast (1-unit class;
+   * `search.list` is forbidden for liveness — 100 units/call, 100/day hard cap;
+   * spec §3.6). Queries `mine=true&broadcastType=all` (a valid parameter combo —
+   * unlike the old `broadcastStatus=active&mine=true`, which YouTube 400s) and
+   * filters to a live-ish lifecycle in code, so persistent stream-key broadcasts
+   * are caught too. Returns the active broadcast (with its live chat id) or null
+   * when not live.
    */
   async getActiveBroadcast(accessToken: string): Promise<ActiveBroadcast | null> {
     try {
-      const res = await fetch(LIVE_BROADCASTS_URL, {
+      const res = await fetch(LIVE_BROADCASTS_BASE + 'mine=true&broadcastType=all', {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
       if (!res.ok) return null
       const data = await res.json()
-      const item = data.items?.[0]
-      if (!item) return null
+      const items: unknown[] = Array.isArray(data.items) ? data.items : []
+      const live = items.find((it) =>
+        LIVE_LIFECYCLE_STATUSES.has(
+          (it as { status?: { lifeCycleStatus?: string } })?.status?.lifeCycleStatus ?? '',
+        ),
+      ) as { id?: string; snippet?: { title?: string; liveChatId?: string } } | undefined
+      if (!live) return null
       return {
-        id: item.id,
-        title: item.snippet?.title ?? null,
-        liveChatId: item.snippet?.liveChatId ?? null,
+        id: live.id ?? '',
+        title: live.snippet?.title ?? null,
+        liveChatId: live.snippet?.liveChatId ?? null,
       }
     } catch {
       return null
@@ -183,51 +216,76 @@ class YoutubeService {
   }
 
   /**
-   * Owner-only diagnostic wrapper around the same `liveBroadcasts.list` query as
-   * getActiveBroadcast — but returns the raw HTTP status, item count, and body
-   * instead of collapsing failures to null. Used by `/api/youtube/broadcast?debug=1`
-   * so a live prod test is conclusive. Purely observational: opens/closes no
-   * session and mutates no state.
+   * Owner-only diagnostic. Runs several candidate `liveBroadcasts.list` queries
+   * against the same token and reports each one's status + returned broadcasts,
+   * so a single live prod call (`/api/youtube/broadcast?debug=1`) pins down which
+   * parameter combination actually surfaces the caller's broadcast (esp. the
+   * persistent stream-key case). Purely observational: opens/closes no session,
+   * mutates no state, and never returns the access token.
    */
-  async getActiveBroadcastDebug(accessToken: string): Promise<BroadcastDebug> {
-    try {
-      const res = await fetch(LIVE_BROADCASTS_URL, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      const text = await res.text()
-      let rawBody: unknown = text
+  async probeBroadcastDetection(accessToken: string): Promise<BroadcastProbe[]> {
+    const candidates = [
+      'broadcastStatus=active',
+      'broadcastStatus=active&broadcastType=all',
+      'mine=true',
+      'mine=true&broadcastType=all',
+      'mine=true&broadcastType=persistent',
+    ]
+    const results: BroadcastProbe[] = []
+    for (const query of candidates) {
       try {
-        rawBody = JSON.parse(text)
-      } catch {
-        // Non-JSON body (rare) — keep the raw text so it's still visible.
-      }
-      const items = (rawBody as { items?: unknown[] })?.items ?? []
-      const item = items[0] as
-        | { id?: string; snippet?: { title?: string; liveChatId?: string } }
-        | undefined
-      return {
-        httpStatus: res.status,
-        ok: res.ok,
-        itemCount: items.length,
-        broadcast: item
-          ? {
-              id: item.id ?? '',
-              title: item.snippet?.title ?? null,
-              liveChatId: item.snippet?.liveChatId ?? null,
-            }
-          : null,
-        rawBody,
-      }
-    } catch (e) {
-      return {
-        httpStatus: 0,
-        ok: false,
-        itemCount: 0,
-        broadcast: null,
-        rawBody: null,
-        fetchError: e instanceof Error ? e.message : String(e),
+        const res = await fetch(LIVE_BROADCASTS_BASE + query, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+        const text = await res.text()
+        let body: unknown = text
+        try {
+          body = JSON.parse(text)
+        } catch {
+          // Non-JSON — leave body as raw text; errorReason stays undefined.
+        }
+        const items: unknown[] = Array.isArray((body as { items?: unknown[] })?.items)
+          ? (body as { items: unknown[] }).items
+          : []
+        const mapped = items.map((it): BroadcastProbeItem => {
+          const b = it as {
+            id?: string
+            status?: { lifeCycleStatus?: string; privacyStatus?: string }
+            snippet?: { liveChatId?: string; title?: string }
+          }
+          return {
+            id: b?.id ?? '',
+            lifeCycleStatus: b?.status?.lifeCycleStatus ?? null,
+            privacyStatus: b?.status?.privacyStatus ?? null,
+            liveChatId: b?.snippet?.liveChatId ?? null,
+            title: b?.snippet?.title ?? null,
+          }
+        })
+        results.push({
+          label: query,
+          httpStatus: res.status,
+          ok: res.ok,
+          itemCount: mapped.length,
+          liveItems: mapped.filter(
+            (m) => m.lifeCycleStatus && LIVE_LIFECYCLE_STATUSES.has(m.lifeCycleStatus),
+          ),
+          sample: mapped.slice(0, 3),
+          errorReason: (body as { error?: { errors?: { reason?: string }[] } })?.error?.errors?.[0]
+            ?.reason,
+        })
+      } catch (e) {
+        results.push({
+          label: query,
+          httpStatus: 0,
+          ok: false,
+          itemCount: 0,
+          liveItems: [],
+          sample: [],
+          fetchError: e instanceof Error ? e.message : String(e),
+        })
       }
     }
+    return results
   }
 
   /**

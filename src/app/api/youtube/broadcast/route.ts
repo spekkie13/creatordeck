@@ -12,8 +12,8 @@ export const runtime = "nodejs"
 /**
  * Broadcast detection (spec §3.6). Infrequent by design — called on live-view
  * mount, on a manual check, and on a slow background timer while a tab is open
- * and no broadcast is live. Uses ONLY `liveBroadcasts.list mine=true`; never
- * `search.list`. Opens/closes the ingestion session as liveness changes.
+ * and no broadcast is live. Uses `liveBroadcasts.list` (never `search.list`) and
+ * opens/closes the ingestion session as liveness changes.
  */
 export async function GET(request: Request) {
   const result = await requireSession()
@@ -29,13 +29,14 @@ export async function GET(request: Request) {
   const accessToken = await youtubeService.getValidAccessToken(session.userId)
   if (!accessToken) return apiSuccess({ live: false, status: "reconnect_required" })
 
-  // Owner-only diagnostic (`?debug=1`): return the raw liveBroadcasts.list
-  // status/body/count so a live prod test can tell "not live" apart from a
-  // 403/scope/quota/token failure. Purely observational — no session mutation.
+  // Owner-only diagnostic (`?debug=1`): probe several candidate liveBroadcasts.list
+  // queries and report which one surfaces the live broadcast + its liveChatId, so
+  // one live prod call pins the correct parameter combo. Observational — no
+  // session mutation.
   const debug = new URL(request.url).searchParams.get("debug") === "1"
   if (debug) {
-    const diag = await youtubeService.getActiveBroadcastDebug(accessToken)
-    return apiSuccess({ debug: true, channelId, ...diag })
+    const probes = await youtubeService.probeBroadcastDetection(accessToken)
+    return apiSuccess({ debug: true, channelId, probes })
   }
 
   const broadcast = await youtubeService.getActiveBroadcast(accessToken)
