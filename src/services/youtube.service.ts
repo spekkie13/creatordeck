@@ -31,6 +31,29 @@ export type ActiveBroadcast = {
   liveChatId: string | null
 }
 
+/**
+ * Owner-only diagnostic view of the raw `liveBroadcasts.list` call. Unlike
+ * getActiveBroadcast (which collapses every failure to null), this surfaces the
+ * HTTP status, item count, and raw body so a live prod test can tell "genuinely
+ * not live" apart from a 403/scope error, expired token, or quota exhaustion.
+ * Never contains the access token — that only travels in the request header.
+ */
+export type BroadcastDebug = {
+  httpStatus: number
+  ok: boolean
+  itemCount: number
+  broadcast: ActiveBroadcast | null
+  rawBody: unknown
+  fetchError?: string
+}
+
+// Liveness endpoint — 1-unit class, `mine=true`. `search.list` is forbidden here
+// (100 units/call, 100/day hard cap; spec §3.6). Shared by the live-path and the
+// diagnostic method so both hit exactly the same query.
+const LIVE_BROADCASTS_URL =
+  'https://www.googleapis.com/youtube/v3/liveBroadcasts' +
+  '?part=snippet,status&broadcastStatus=active&broadcastType=all&mine=true'
+
 export type LiveChatFetchResult =
   | {
       ok: true
@@ -142,11 +165,9 @@ class YoutubeService {
    */
   async getActiveBroadcast(accessToken: string): Promise<ActiveBroadcast | null> {
     try {
-      const res = await fetch(
-        'https://www.googleapis.com/youtube/v3/liveBroadcasts' +
-          '?part=snippet,status&broadcastStatus=active&broadcastType=all&mine=true',
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      )
+      const res = await fetch(LIVE_BROADCASTS_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
       if (!res.ok) return null
       const data = await res.json()
       const item = data.items?.[0]
@@ -158,6 +179,54 @@ class YoutubeService {
       }
     } catch {
       return null
+    }
+  }
+
+  /**
+   * Owner-only diagnostic wrapper around the same `liveBroadcasts.list` query as
+   * getActiveBroadcast — but returns the raw HTTP status, item count, and body
+   * instead of collapsing failures to null. Used by `/api/youtube/broadcast?debug=1`
+   * so a live prod test is conclusive. Purely observational: opens/closes no
+   * session and mutates no state.
+   */
+  async getActiveBroadcastDebug(accessToken: string): Promise<BroadcastDebug> {
+    try {
+      const res = await fetch(LIVE_BROADCASTS_URL, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      const text = await res.text()
+      let rawBody: unknown = text
+      try {
+        rawBody = JSON.parse(text)
+      } catch {
+        // Non-JSON body (rare) — keep the raw text so it's still visible.
+      }
+      const items = (rawBody as { items?: unknown[] })?.items ?? []
+      const item = items[0] as
+        | { id?: string; snippet?: { title?: string; liveChatId?: string } }
+        | undefined
+      return {
+        httpStatus: res.status,
+        ok: res.ok,
+        itemCount: items.length,
+        broadcast: item
+          ? {
+              id: item.id ?? '',
+              title: item.snippet?.title ?? null,
+              liveChatId: item.snippet?.liveChatId ?? null,
+            }
+          : null,
+        rawBody,
+      }
+    } catch (e) {
+      return {
+        httpStatus: 0,
+        ok: false,
+        itemCount: 0,
+        broadcast: null,
+        rawBody: null,
+        fetchError: e instanceof Error ? e.message : String(e),
+      }
     }
   }
 
