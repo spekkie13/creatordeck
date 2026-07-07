@@ -15,7 +15,7 @@ export const runtime = "nodejs"
  * and no broadcast is live. Uses `liveBroadcasts.list` (never `search.list`) and
  * opens/closes the ingestion session as liveness changes.
  */
-export async function GET(request: Request) {
+export async function GET() {
   const result = await requireSession()
   if (result instanceof NextResponse) return result
   const { session } = result
@@ -28,16 +28,6 @@ export async function GET(request: Request) {
 
   const accessToken = await youtubeService.getValidAccessToken(session.userId)
   if (!accessToken) return apiSuccess({ live: false, status: "reconnect_required" })
-
-  // Owner-only diagnostic (`?debug=1`): probe several candidate liveBroadcasts.list
-  // queries and report which one surfaces the live broadcast + its liveChatId, so
-  // one live prod call pins the correct parameter combo. Observational — no
-  // session mutation.
-  const debug = new URL(request.url).searchParams.get("debug") === "1"
-  if (debug) {
-    const probes = await youtubeService.probeBroadcastDetection(accessToken)
-    return apiSuccess({ debug: true, channelId, probes })
-  }
 
   const broadcast = await youtubeService.getActiveBroadcast(accessToken)
   if (!broadcast) {
