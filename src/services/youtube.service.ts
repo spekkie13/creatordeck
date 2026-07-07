@@ -162,38 +162,6 @@ class YoutubeService {
   }
 
   /**
-   * TEST-ONLY. Resolves a public video's active live chat via `videos.list`
-   * (part=snippet,liveStreamingDetails) so the /live pipeline can be driven
-   * against someone else's stream. Returns null if the id isn't a live video or
-   * has no active chat. Not used in normal operation — see env.ytTestVideoId.
-   */
-  async getBroadcastByVideoId(
-    accessToken: string,
-    videoId: string,
-  ): Promise<ActiveBroadcast | null> {
-    try {
-      const res = await fetch(
-        'https://www.googleapis.com/youtube/v3/videos' +
-          '?part=snippet,liveStreamingDetails&id=' +
-          encodeURIComponent(videoId),
-        { headers: { Authorization: `Bearer ${accessToken}` } },
-      )
-      if (!res.ok) return null
-      const data = await res.json()
-      const item = data.items?.[0]
-      const liveChatId = item?.liveStreamingDetails?.activeLiveChatId
-      if (!item || !liveChatId) return null
-      return {
-        id: item.id,
-        title: item.snippet?.title ?? null,
-        liveChatId,
-      }
-    } catch {
-      return null
-    }
-  }
-
-  /**
    * One `liveChatMessages.list` tick. Returns new messages plus the resume
    * `nextPageToken` and YouTube's demanded `pollingIntervalMillis` (the client
    * MUST honor it, never a hardcoded interval). Maps quota/ended conditions to a
