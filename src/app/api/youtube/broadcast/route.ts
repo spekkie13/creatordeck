@@ -15,7 +15,7 @@ export const runtime = "nodejs"
  * and no broadcast is live. Uses ONLY `liveBroadcasts.list mine=true`; never
  * `search.list`. Opens/closes the ingestion session as liveness changes.
  */
-export async function GET() {
+export async function GET(request: Request) {
   const result = await requireSession()
   if (result instanceof NextResponse) return result
   const { session } = result
@@ -28,6 +28,15 @@ export async function GET() {
 
   const accessToken = await youtubeService.getValidAccessToken(session.userId)
   if (!accessToken) return apiSuccess({ live: false, status: "reconnect_required" })
+
+  // Owner-only diagnostic (`?debug=1`): return the raw liveBroadcasts.list
+  // status/body/count so a live prod test can tell "not live" apart from a
+  // 403/scope/quota/token failure. Purely observational — no session mutation.
+  const debug = new URL(request.url).searchParams.get("debug") === "1"
+  if (debug) {
+    const diag = await youtubeService.getActiveBroadcastDebug(accessToken)
+    return apiSuccess({ debug: true, channelId, ...diag })
+  }
 
   const broadcast = await youtubeService.getActiveBroadcast(accessToken)
   if (!broadcast) {
