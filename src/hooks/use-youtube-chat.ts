@@ -13,6 +13,10 @@ const HIDDEN_RECHECK_MS = 10_000
 // Floors/fallbacks so a bad/absent server value can never produce a hot loop.
 const MIN_POLL_MS = 1_000
 const DEFAULT_POLL_MS = 5_000
+// YouTube's pollingIntervalMillis is a MINIMUM wait, not a target. Polling at
+// 2× halves quota spend; nothing is lost — each tick resumes from the session's
+// pageToken, chat just arrives in ~2× larger batches.
+const POLL_STRETCH_FACTOR = 2
 const DEFAULT_QUOTA_BACKOFF_MS = 60_000
 // Quota exhaustion is usually daily (won't clear mid-stream), so escalate the
 // backoff on consecutive quota hits instead of re-hitting the error every 60 s.
@@ -108,7 +112,7 @@ export function useYouTubeChat(enabled: boolean): { messages: ChatMessage[]; sta
           case "live":
             quotaAttempts = 0 // healthy tick — reset backoff
             setStatus("live")
-            schedule(poll, Math.max(data.pollingIntervalMillis ?? DEFAULT_POLL_MS, MIN_POLL_MS))
+            schedule(poll, Math.max((data.pollingIntervalMillis ?? DEFAULT_POLL_MS) * POLL_STRETCH_FACTOR, MIN_POLL_MS))
             break
           case "quota": {
             setStatus("quota")
