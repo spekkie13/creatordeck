@@ -14,12 +14,13 @@ import { AppHeader } from "@/app/dashboard/app-header"
 import { TotalsRow } from "@/app/analytics/[sessionId]/TotalsRow"
 import { SessionTimeline } from "./session-timeline"
 
-export default async function SessionDetailPage({ params }: { params: { sessionId: string } }) {
+export default async function SessionDetailPage({ params }: { params: Promise<{ sessionId: string }> }) {
+  const { sessionId } = await params
   const session: Session | null = await getServerSession(authOptions)
   if (!session) redirect("/")
   if (!session.twitchId) redirect("/analytics")
 
-  const detail: SessionDetail | null = await analyticsService.getSessionDetail(params.sessionId, session.twitchId)
+  const detail: SessionDetail | null = await analyticsService.getSessionDetail(sessionId, session.twitchId)
   if (!detail) notFound()
 
   const { session: s, totals, events } = detail

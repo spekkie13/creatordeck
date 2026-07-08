@@ -49,7 +49,11 @@ export const subEvents = pgTable("sub_events", {
   message: text("message"),
   occurredAt: timestamp("occurred_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-})
+}, (t) => ({
+  // See raid_events_natural_key: message-id dedupe misses duplicate
+  // subscriptions. nullsNotDistinct so anonymous events (user_id NULL) dedupe too.
+  naturalKey: unique("sub_events_natural_key").on(t.broadcasterId, t.userId, t.kind, t.occurredAt).nullsNotDistinct(),
+}))
 
 export const subGoals = pgTable("sub_goals", {
   broadcasterId: text("broadcaster_id").primaryKey(),
@@ -104,7 +108,12 @@ export const raidEvents = pgTable("raid_events", {
   viewerCount: integer("viewer_count").notNull(),
   occurredAt: timestamp("occurred_at").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-})
+}, (t) => ({
+  // event_id is the EventSub message id, which only dedupes Twitch retries.
+  // Duplicate subscriptions deliver the same raid under different message ids,
+  // so the natural key is the real idempotency guard.
+  naturalKey: unique("raid_events_natural_key").on(t.broadcasterId, t.fromBroadcasterId, t.occurredAt),
+}))
 
 export const streamSessions = pgTable("stream_sessions", {
   id: uuid("id").defaultRandom().primaryKey(),
