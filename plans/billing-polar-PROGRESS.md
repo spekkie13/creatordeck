@@ -5,7 +5,7 @@
 **Spec:** `specs/Billing-Entitlements.md`
 **Last updated:** 2026-07-13
 
-## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ✅ 3/4 (cancel-flow check pending)
+## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ✅ VERIFIED (2026-07-13)
 
 ## ⚠️ BLOCKER found 2026-07-13 — Polar creds are in the WRONG org
 Prod `/api/checkout` failed twice on 2026-07-13:
@@ -104,7 +104,12 @@ WHERE e.user_id IS NULL;
 1. ✅ (2026-07-13) `/billing` → Upgrade to Pro → Polar sandbox checkout (test card) → trial started.
 2. ✅ (2026-07-13) `/billing/success` flipped to Pro (owner-verified in prod).
 3. ✅ (2026-07-13) `entitlements` row verified in prod DB: `pro`/`trialing`, `polar_subscription_id` set, `trial_ends_at` = 2026-07-27 (14d).
-4. ⏳ `/api/portal` → cancel → row goes `canceled_active`, Pro until `currentPeriodEnd`. (Owner can re-subscribe after — it's sandbox.)
+4. ✅ (2026-07-13) `/api/portal` → cancel worked; webhooks (`subscription.updated` + `.canceled`) received
+   and processed. NOTE: cancelling **during trial** keeps Polar status `trialing` (+ `cancel_at_period_end`),
+   so the row stays `pro`/`trialing` — `canceled_active` only occurs when cancelling a *paid* sub. Correct &
+   deliberate: trial access self-expires via `trialEndsAt` (no webhook dependence); Polar sends
+   `subscription.revoked` at period end → `free`/`revoked`. Do NOT map trial-cancel to `canceled_active`
+   (that status grants Pro without a local expiry).
 5. Re-deliver the same webhook event id → second call returns `{duplicate:true}`, no state change (idempotency ledger).
 6. Owner bypass: a user with `isAdmin=true` is Pro with zero Polar rows (dev toolbar `/dev` toggles it).
 
