@@ -18,7 +18,11 @@ export default async function SetupPage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center p-6">
-      <SetupWizard displayName={session.displayName} />
+      <SetupWizard
+        displayName={session.displayName}
+        hasTwitch={Boolean(session.twitchId)}
+        hasYouTube={Boolean(session.youtubeChannelId)}
+      />
     </div>
   )
 }

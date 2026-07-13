@@ -8,16 +8,31 @@ import { CreatorDeckLogo } from "@/components/creator-deck-logo"
 
 type Props = {
   displayName: string
+  hasTwitch: boolean
+  hasYouTube: boolean
 }
 
 type Step = 1 | 2 | 3 | 4
 
-export function SetupWizard({ displayName }: Props) {
+export function SetupWizard({ displayName, hasTwitch, hasYouTube }: Props) {
+  // Twitch events only applies to Twitch accounts; the YouTube upsell only to
+  // users who haven't linked YouTube yet.
+  const steps: Step[] = [1, ...(hasTwitch ? ([2] as Step[]) : []), ...(hasYouTube ? [] : ([3] as Step[])), 4]
+  const connectSteps: Step[] = steps.filter(s => s === 2 || s === 3)
+
   const [step, setStep] = useState<Step>(1)
   const [registering, setRegistering] = useState(false)
   const [regStatus, setRegStatus] = useState<"idle" | "success" | "error">("idle")
   const [completing, setCompleting] = useState(false)
   const router: AppRouterInstance = useRouter()
+
+  function nextStep() {
+    setStep(steps[steps.indexOf(step) + 1])
+  }
+
+  function stepLabel(s: Step) {
+    return `Step ${connectSteps.indexOf(s) + 1} of ${connectSteps.length}`
+  }
 
   async function registerSubscriptions() {
     setRegistering(true)
@@ -25,7 +40,7 @@ export function SetupWizard({ displayName }: Props) {
     const res = await fetch("/api/register-subscriptions", { method: "POST" })
     if (res.ok) {
       setRegStatus("success")
-      setStep(3)
+      nextStep()
     } else {
       setRegStatus("error")
     }
@@ -47,7 +62,7 @@ export function SetupWizard({ displayName }: Props) {
 
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2">
-        {([1, 2, 3, 4] as Step[]).map(s => (
+        {steps.map(s => (
           <div
             key={s}
             className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -73,7 +88,7 @@ export function SetupWizard({ displayName }: Props) {
             </p>
           </div>
           <button
-            onClick={() => setStep(2)}
+            onClick={nextStep}
             className="w-full bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
           >
             Get started
@@ -85,19 +100,28 @@ export function SetupWizard({ displayName }: Props) {
       {step === 2 && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 space-y-6">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">Step 1 of 2</p>
+            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">{stepLabel(2)}</p>
             <h2 className="text-xl font-bold">Connect Twitch events</h2>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
               This registers your channel with Twitch so CreatorDeck receives follows, subs, bits, and raids in real time. It only needs to be done once.
             </p>
           </div>
-          <button
-            onClick={registerSubscriptions}
-            disabled={registering}
-            className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
-          >
-            {registering ? "Connecting..." : "Connect Twitch events"}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={registerSubscriptions}
+              disabled={registering}
+              className="w-full bg-teal-500 hover:bg-teal-600 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-xl transition-colors"
+            >
+              {registering ? "Connecting..." : "Connect Twitch events"}
+            </button>
+            <button
+              onClick={nextStep}
+              disabled={registering}
+              className="w-full text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors py-1"
+            >
+              Skip for now
+            </button>
+          </div>
           {regStatus === "error" && (
             <p className="text-xs text-red-400 text-center">
               Something went wrong. Check your Twitch app scopes and try again.
@@ -110,7 +134,7 @@ export function SetupWizard({ displayName }: Props) {
       {step === 3 && (
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 space-y-6">
           <div className="space-y-2">
-            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">Step 2 of 2</p>
+            <p className="text-xs font-medium text-teal-500 uppercase tracking-wider">{stepLabel(3)}</p>
             <h2 className="text-xl font-bold">Connect YouTube</h2>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Stream on YouTube too? Link your channel to unify Super Chats, memberships, and live events alongside Twitch — all in one dashboard.
