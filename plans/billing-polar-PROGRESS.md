@@ -3,9 +3,9 @@
 **Branch:** `billing-polar-migration`
 **Full plan:** `~/.claude/plans/kick-off-the-billing-planner-shimmering-valley.md`
 **Spec:** `specs/Billing-Entitlements.md`
-**Last updated:** 2026-07-06
+**Last updated:** 2026-07-13
 
-## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · Gate 1 ⏳ not verified
+## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ⏳ not verified
 
 - `666ca07` Phase 0 — tear down Lemon Squeezy, retier to Free/Pro, add entitlements + webhook_events tables.
 - `fbfb5b9` Phase 1 — Polar checkout/portal/webhook routes, entitlement engine, DB-backed `hasPro`.
@@ -45,7 +45,22 @@ POLAR_PRODUCT_PRO_YEARLY=<product id>
 ```
 (Env is read optionally in `src/lib/env.ts` so the build stays green without them.)
 
-## Apply DB changes (not yet done)
+## Apply DB changes — ✅ DONE on PRODUCTION (2026-07-13)
+Applied atomically to the **production** Neon DB (`ep-sweet-wave…` — owner confirmed identity
+and approved after the fact): entitlements + webhook_events tables, plan/entitlement_status
+enums, users.tier → nullable, dropped LS **and legacy Stripe** columns (all verified empty
+first; 1 user, 0 subscribers). Backfill inserted one Free/none row. Constraints renamed to
+drizzle conventions; `drizzle-kit push` reports "No changes detected".
+
+✅ Preview DB (`ep-noisy-queen…`) migrated too (2026-07-13): same statements minus the
+Stripe drops (that DB never had them); LS columns verified empty first; 1 Free/none
+backfill row; `drizzle-kit push` reports "No changes detected". **Both DBs are now
+migrated.** Env layout: `.env.local` DATABASE_URL = preview (fresh URL from owner;
+old credential was dead), DATABASE_URL_PROD = production (sweet-wave). Vercel Preview
+DATABASE_URL is a *sensitive* var (pulls as empty string — expected; deployments get it
+fine); owner re-set it 2026-07-13.
+
+### Original instructions (kept for the preview-DB run)
 NOTE: `drizzle/` is gitignored (schema-first repo — `db:push` diffs `src/lib/schema.ts`
 directly, so migration files are local-only). The backfill is DATA, so it's inlined
 here to survive — the `drizzle/backfill-entitlements.sql` copy is convenience-only.
