@@ -3,6 +3,7 @@ import {redirect} from "next/navigation"
 
 import {authOptions} from "@/lib/auth"
 import {hasPro} from "@/lib/require-pro"
+import {formatDateLong} from "@/lib/format"
 
 import {entitlementRepository} from "@/repositories"
 
@@ -40,8 +41,7 @@ export default async function BillingPage() {
                         className="font-medium text-zinc-700 dark:text-zinc-300">{isPro ? "Pro" : "Free"}</span> plan.
                         {trialEndsAt && (
                             <span className="ml-1">
-                                Your free trial ends{" "}
-                                {trialEndsAt.toLocaleDateString(undefined, {month: "long", day: "numeric"})}.
+                                Your free trial ends {formatDateLong(trialEndsAt)}.
                             </span>
                         )}
                     </p>

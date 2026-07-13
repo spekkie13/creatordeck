@@ -16,6 +16,7 @@ import { eventSubSubscriptionsRepository, userRepository, linkedAccountsReposito
 import { liveEventFeedService } from "@/services"
 import { twitchService } from "@/services/twitch.service"
 import { youtubeService } from "@/services/youtube.service"
+import { hasPro } from "@/lib/require-pro"
 
 import { DashboardClient } from "./dashboard-client"
 
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
   const youtubeChannelId: string | null = session.youtubeChannelId ?? null
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-  const [user, goalRows, totalRows, recentEvents, subscriptionsRegistered, linkedAccounts, followTotalRows, ytMemberTotalRows, extraGoals, twitchLiveSessions, ytLiveSessions] = await Promise.all([
+  const [user, goalRows, totalRows, recentEvents, subscriptionsRegistered, linkedAccounts, followTotalRows, ytMemberTotalRows, extraGoals, twitchLiveSessions, ytLiveSessions, isPro] = await Promise.all([
     userRepository.findById(session.userId),
     broadcasterId ? db.select().from(subGoals).where(eq(subGoals.broadcasterId, broadcasterId)).limit(1) : [],
     broadcasterId ? db.select({ total: count() }).from(subEvents).where(eq(subEvents.broadcasterId, broadcasterId)) : [{ total: 0 }],
@@ -39,6 +40,7 @@ export default async function DashboardPage() {
     goalsRepository.findByUserId(session.userId),
     broadcasterId ? db.select().from(streamSessions).where(and(eq(streamSessions.broadcasterId, broadcasterId), isNull(streamSessions.endedAt))).limit(1) : [],
     youtubeChannelId ? db.select().from(ytStreamSessions).where(and(eq(ytStreamSessions.channelId, youtubeChannelId), isNull(ytStreamSessions.endedAt))).limit(1) : [],
+    hasPro(session.userId),
   ])
 
   if (!user?.onboardingCompleted) redirect("/setup")
@@ -49,7 +51,7 @@ export default async function DashboardPage() {
   const [followerCount, subCount, ytSubCount, followerGrowthRows, subGrowthRows] = await Promise.all([
     twitchAccount?.accessToken ? twitchService.fetchTwitchFollowerCount(broadcasterId, twitchAccount.accessToken, twitchAccount.refreshToken) : null,
     twitchAccount?.accessToken ? twitchService.fetchTwitchSubCount(broadcasterId, twitchAccount.accessToken, twitchAccount.refreshToken) : null,
-    ytAccount ? youtubeService.fetchYouTubeSubCount(session.userId) : null,
+    ytAccount && isPro ? youtubeService.fetchYouTubeSubCount(session.userId) : null,
     broadcasterId
       ? db.select({ total: count() }).from(followEvents).where(and(eq(followEvents.broadcasterId, broadcasterId), gt(followEvents.occurredAt, thirtyDaysAgo)))
       : Promise.resolve([{ total: 0 }]),
@@ -78,7 +80,7 @@ export default async function DashboardPage() {
       followerCount={followerCount}
       subCount={subCount}
       ytSubCount={ytSubCount}
-      hasYouTube={!!ytAccount}
+      hasYouTube={!!ytAccount && isPro}
       followerGrowth={followerGrowthRows[0]?.total ?? 0}
       subGrowth={subGrowthRows[0]?.total ?? 0}
       followTotal={followTotalRows[0]?.total ?? 0}

@@ -31,18 +31,16 @@ export default async function ConnectionsPage({ searchParams }: {
   const session: Session | null = await getServerSession(authOptions)
   if (!session) redirect("/")
 
-  const [subscriptionsRegistered, linkedAccounts] = await Promise.all([
+  const [subscriptionsRegistered, linkedAccounts, youtubePollerActive, isPro] = await Promise.all([
     session.twitchId ? eventSubSubscriptionsRepository.existsByBroadcasterId(session.twitchId) : false,
     session.userId ? linkedAccountsRepository.findByUserId(session.userId) : [],
+    session.youtubeChannelId ? ytStreamSessionsRepository.isActive(session.youtubeChannelId) : false,
+    hasPro(session.userId),
   ])
-
-  const youtubePollerActive: boolean = session.youtubeChannelId
-    ? await ytStreamSessionsRepository.isActive(session.youtubeChannelId)
-    : false
 
   // YouTube is a Pro feature (spec §3.4). The row stays visible when locked —
   // a linked account is preserved, not deleted, and unlocks instantly on upgrade.
-  const youtubeLocked: boolean = !(await hasPro(session.userId))
+  const youtubeLocked: boolean = !isPro
   const youtubeAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
   // A null valid-token while the channel is still linked means the refresh token
   // was revoked/expired — surface a reconnect prompt (refreshes only when the

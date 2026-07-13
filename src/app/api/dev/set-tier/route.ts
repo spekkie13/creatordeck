@@ -4,23 +4,32 @@ import { eq } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { users, entitlements } from "@/lib/schema"
 import { requireSession } from "@/lib/session-auth"
+import { PAST_DUE_GRACE_MS } from "@/lib/entitlement"
 import {SessionResult} from "@/types/session";
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
+type PresetValues = Omit<typeof entitlements.$inferInsert, "id" | "userId">
+
 // Entitlement-state presets for walking Gate 2 without waiting on Polar
 // dunning/trial timers. Sandbox webhook flows remain the authoritative test
-// for state *transitions*; these only set absolute local state.
+// for state *transitions*; these only set absolute local state — including
+// nulling the Polar ids, so a preset applied over a real sandbox subscription
+// can't leave a stale polarSubscriptionId (billing's hasSubscription check).
+const BASE = { polarCustomerId: null, polarSubscriptionId: null, trialEndsAt: null, currentPeriodEnd: null }
+
 const ENTITLEMENT_PRESETS = {
-  free:            () => ({ plan: "free" as const, status: "none" as const, trialEndsAt: null, currentPeriodEnd: null, updatedAt: new Date() }),
-  trialing:        () => ({ plan: "pro" as const, status: "trialing" as const, trialEndsAt: new Date(Date.now() + 14 * DAY_MS), currentPeriodEnd: new Date(Date.now() + 14 * DAY_MS), updatedAt: new Date() }),
-  trial_lapsed:    () => ({ plan: "pro" as const, status: "trialing" as const, trialEndsAt: new Date(Date.now() - DAY_MS), currentPeriodEnd: new Date(Date.now() - DAY_MS), updatedAt: new Date() }),
-  active:          () => ({ plan: "pro" as const, status: "active" as const, trialEndsAt: null, currentPeriodEnd: new Date(Date.now() + 30 * DAY_MS), updatedAt: new Date() }),
-  canceled_active: () => ({ plan: "pro" as const, status: "canceled_active" as const, trialEndsAt: null, currentPeriodEnd: new Date(Date.now() + 20 * DAY_MS), updatedAt: new Date() }),
-  past_due:        () => ({ plan: "pro" as const, status: "past_due" as const, trialEndsAt: null, currentPeriodEnd: new Date(Date.now() - DAY_MS), updatedAt: new Date() }),
-  past_due_lapsed: () => ({ plan: "pro" as const, status: "past_due" as const, trialEndsAt: null, currentPeriodEnd: new Date(Date.now() - 5 * DAY_MS), updatedAt: new Date(Date.now() - 4 * DAY_MS) }),
-  revoked:         () => ({ plan: "free" as const, status: "revoked" as const, trialEndsAt: null, currentPeriodEnd: null, updatedAt: new Date() }),
-} satisfies Record<string, () => Record<string, unknown>>
+  free:            () => ({ ...BASE, plan: "free", status: "none", updatedAt: new Date() }),
+  trialing:        () => ({ ...BASE, plan: "pro", status: "trialing", trialEndsAt: new Date(Date.now() + 14 * DAY_MS), currentPeriodEnd: new Date(Date.now() + 14 * DAY_MS), updatedAt: new Date() }),
+  trial_lapsed:    () => ({ ...BASE, plan: "pro", status: "trialing", trialEndsAt: new Date(Date.now() - DAY_MS), currentPeriodEnd: new Date(Date.now() - DAY_MS), updatedAt: new Date() }),
+  active:          () => ({ ...BASE, plan: "pro", status: "active", currentPeriodEnd: new Date(Date.now() + 30 * DAY_MS), updatedAt: new Date() }),
+  canceled_active: () => ({ ...BASE, plan: "pro", status: "canceled_active", currentPeriodEnd: new Date(Date.now() + 20 * DAY_MS), updatedAt: new Date() }),
+  past_due:        () => ({ ...BASE, plan: "pro", status: "past_due", currentPeriodEnd: new Date(Date.now() - DAY_MS), updatedAt: new Date() }),
+  // "grace over" derives from the real constant so a grace-window change can't
+  // silently turn this preset back into an in-grace state.
+  past_due_lapsed: () => ({ ...BASE, plan: "pro", status: "past_due", currentPeriodEnd: new Date(Date.now() - PAST_DUE_GRACE_MS - 2 * DAY_MS), updatedAt: new Date(Date.now() - PAST_DUE_GRACE_MS - DAY_MS) }),
+  revoked:         () => ({ ...BASE, plan: "free", status: "revoked", updatedAt: new Date() }),
+} satisfies Record<string, () => PresetValues>
 
 export type EntitlementPreset = keyof typeof ENTITLEMENT_PRESETS
 
@@ -43,9 +52,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (entitlement !== undefined) {
-    const preset = ENTITLEMENT_PRESETS[entitlement as EntitlementPreset]
-    if (!preset) return NextResponse.json({ error: "Unknown preset" }, { status: 400 })
-    const values = preset()
+    // Object.hasOwn: a prototype key ("toString") must 400, not resolve.
+    if (typeof entitlement !== "string" || !Object.hasOwn(ENTITLEMENT_PRESETS, entitlement)) {
+      return NextResponse.json({ error: "Unknown preset" }, { status: 400 })
+    }
+    const values = ENTITLEMENT_PRESETS[entitlement as EntitlementPreset]()
     await db
       .insert(entitlements)
       .values({ userId: session.userId, ...values })

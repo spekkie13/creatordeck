@@ -122,9 +122,18 @@ Plan: `plans/billing-phase2-PLAN.md` (findings, teardown table, Gate 2 checklist
   Analytics stays **7d for Free** (owner decision 2026-07-13; spec §2 updated).
 - `/api/me/entitlement` + `graceEndsAt`; new `src/hooks/use-entitlement.ts` (SWR, 60s).
 - Scaffolds: `requireProForApiKey` (api-auth.ts), `requireProForWidgetToken` (widget-auth.ts).
-- UI: `src/components/pro-lock.tsx` (`ProLock`/`LockedPreview`), `dunning-banner.tsx`
+- UI: `src/components/pro-lock.tsx` (`ProLock`; `LockedPreview` was cut in review — zero call
+  sites, rebuild from ProLock when a preview surface ships), `dunning-banner.tsx`
   (past_due only — NOT trial-cancel) mounted in app-header; events UI date cap + notices;
   YT locked pill → `/billing` CTA; billing page trial-end copy (Q3 yes).
+- Code review (2026-07-13, 8-angle + verify): 10 findings fixed in the follow-up commit —
+  notably dashboard's ungated `hasYouTube` (lapsed users saw full YT data), Invalid-Date
+  clamp bypass in /api/events, post-grace dunning copy, non-2xx-swallowing SWR fetcher,
+  dev-toolbar Free-toggle leaving a Pro entitlement row, and dropping the 60s entitlement
+  polling. DEFERRED (known, deliberate): /live hides the YT pane for lapsed users instead
+  of visible-but-locked (plan chose Twitch-only layout); grace window anchors on
+  `updatedAt` so repeated past_due webhooks roll it forward (Phase 1 design — fix needs a
+  dedicated pastDueAt column, revisit in Phase 3).
 - Dev: `/api/dev/set-tier` + `/dev` toolbar extended with 8 entitlement presets.
 - Verified: tsc + `npm run build` green; grep checks pass (no `youtube-gate`/`hasYouTubeAccess`;
   gates only via `hasPro`/`requirePro`). Gate 2 checklist: see plan §4.

@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
-import { hasPro } from "@/lib/require-pro"
-import { PAST_DUE_GRACE_MS } from "@/lib/entitlement"
-import { entitlementRepository } from "@/repositories"
+import { hasProFromEntitlement, PAST_DUE_GRACE_MS } from "@/lib/entitlement"
+import { entitlementRepository, userRepository } from "@/repositories"
 
 // GET /api/me/entitlement — authoritative Pro state for the current user. Used
 // by the success-page activation poll and the client `useEntitlement` hook, so
@@ -13,10 +12,14 @@ export async function GET(): Promise<NextResponse> {
   if (result instanceof NextResponse) return result
   const { session } = result
 
-  const [isPro, ent] = await Promise.all([
-    hasPro(session.userId),
+  // Same predicate as hasPro (owner bypass OR entitlement), but sharing the
+  // entitlement row this route needs anyway — 2 reads instead of 3 on the
+  // most frequently polled route.
+  const [user, ent] = await Promise.all([
+    userRepository.findById(session.userId),
     entitlementRepository.getByUserId(session.userId),
   ])
+  const isPro = !!user?.isAdmin || hasProFromEntitlement(ent)
 
   return NextResponse.json({
     isPro,

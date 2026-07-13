@@ -26,6 +26,11 @@ export function formatDateShort(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" })
 }
 
+/** Long date: "January 1" — for billing/entitlement deadlines */
+export function formatDateLong(date: Date): string {
+  return date.toLocaleDateString(undefined, { month: "long", day: "numeric" })
+}
+
 /** Date + time: "Jan 1, 12:00 PM" — for event history rows */
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {

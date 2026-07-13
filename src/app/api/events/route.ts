@@ -5,9 +5,16 @@ import type { EventSortBy, SortOrder } from "@/types/event-filter"
 
 import { requireTwitchSession } from "@/lib/session-auth"
 import { hasPro } from "@/lib/require-pro"
-import { FREE_HISTORY_DAYS } from "@/lib/entitlement"
+import { FREE_HISTORY_MS } from "@/lib/entitlement"
 
 import { liveEventFeedService } from "@/services"
+
+/** Parse a date param; unparseable values become undefined (never Invalid Date). */
+function parseDate(value: string | null): Date | undefined {
+  if (!value) return undefined
+  const d = new Date(value)
+  return isNaN(d.getTime()) ? undefined : d
+}
 
 export async function GET(req: NextRequest) {
   const twitchSession = await requireTwitchSession()
@@ -17,18 +24,17 @@ export async function GET(req: NextRequest) {
   const params = req.nextUrl.searchParams
 
   const types = params.get("types")?.split(",").filter(Boolean) as LiveEventType[] | undefined
-  let from = params.get("from") ? new Date(params.get("from")!) : undefined
-  const to = params.get("to") ? new Date(params.get("to")!) : undefined
+  let from = parseDate(params.get("from"))
+  const to = parseDate(params.get("to"))
 
   // History older than FREE_HISTORY_DAYS is Pro (spec §3.4) — server-side clamp,
   // the UI date cap is UX only. A `to` older than the floor yields an empty window.
+  // hasPro is only consulted when the requested window actually crosses the floor.
   let clamped = false
-  if (!(await hasPro(session.userId))) {
-    const floor = new Date(Date.now() - FREE_HISTORY_DAYS * 24 * 60 * 60 * 1000)
-    if (!from || from < floor) {
-      clamped = true
-      from = floor
-    }
+  const floor = new Date(Date.now() - FREE_HISTORY_MS)
+  if ((!from || from < floor) && !(await hasPro(session.userId))) {
+    clamped = true
+    from = floor
   }
   const sortBy = (params.get("sortBy") ?? "occurredAt") as EventSortBy
   const sortOrder = (params.get("sortOrder") ?? "desc") as SortOrder

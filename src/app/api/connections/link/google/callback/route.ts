@@ -42,9 +42,12 @@ export async function GET(req: Request) {
   }
 
   // Defense-in-depth: the start route gates on Pro, but the callback carries the
-  // state cookie for 10 minutes — re-check before exchanging tokens.
+  // state cookie for 10 minutes — re-check before exchanging tokens. The state
+  // cookie is consumed so a later attempt starts clean.
   if (!(await hasPro(userId))) {
-    return NextResponse.redirect(`${BASE_URL}/billing`)
+    const response = NextResponse.redirect(`${BASE_URL}/billing`)
+    response.cookies.delete('yt_link_state')
+    return response
   }
 
   const redirectUri = `${BASE_URL}/api/connections/link/google/callback`

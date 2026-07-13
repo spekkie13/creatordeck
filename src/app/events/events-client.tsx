@@ -6,7 +6,7 @@ import type { LiveEvent, LiveEventType } from "@/types/events"
 import type { EventSortBy, SortOrder, PaginatedEvents } from "@/types/event-filter"
 
 import { EVENT_TYPES, TYPE_BADGE, TYPE_ICON, MODAL_TYPES } from "@/lib/event-types"
-import { FREE_HISTORY_DAYS } from "@/lib/entitlement"
+import { FREE_HISTORY_DAYS, FREE_HISTORY_MS } from "@/lib/entitlement"
 import { formatAmount, formatDateTime } from "@/lib/format"
 
 import { useEntitlement } from "@/hooks/use-entitlement"
@@ -20,7 +20,7 @@ import { EventDetailModal } from "@/app/events/event-detail-modal"
 
 /** datetime-local value for the oldest date Free can query. */
 function freeFloorValue(): string {
-  const floor = new Date(Date.now() - FREE_HISTORY_DAYS * 24 * 60 * 60 * 1000)
+  const floor = new Date(Date.now() - FREE_HISTORY_MS)
   floor.setMinutes(floor.getMinutes() - floor.getTimezoneOffset())
   return floor.toISOString().slice(0, 16)
 }
@@ -132,6 +132,7 @@ export function EventsClient({ displayName }: { displayName: string }) {
               <input
                 type="datetime-local"
                 value={to}
+                min={!entLoading && !isPro ? freeFloorValue() : undefined}
                 onChange={e => { setTo(e.target.value); setPage(1) }}
                 className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-teal-500"
               />
@@ -165,8 +166,10 @@ export function EventsClient({ displayName }: { displayName: string }) {
         </div>
 
         {/* Results — clamp notice only when an explicitly chosen range was narrowed
-            (the default no-range view is already covered by the Filters notice). */}
-        {data?.clamped && from && (
+            (the default no-range view is already covered by the Filters notice).
+            Hidden while a refetch is in flight so a stale clamped flag from the
+            previous response can't mislabel the new range. */}
+        {data?.clamped && (from || to) && !loading && (
           <ProLock
             title={`Showing the last ${FREE_HISTORY_DAYS} days`}
             description="Your date range was narrowed to the Free history window."

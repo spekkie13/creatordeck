@@ -11,6 +11,7 @@ export const PAST_DUE_GRACE_MS = 3 * 24 * 60 * 60 * 1000
 /** Free tier sees this many days of event history (spec §2); older is Pro.
  * Single source for the server clamp and UI copy. */
 export const FREE_HISTORY_DAYS = 30
+export const FREE_HISTORY_MS = FREE_HISTORY_DAYS * 24 * 60 * 60 * 1000
 
 export type EffectiveStatus =
   | "none"
