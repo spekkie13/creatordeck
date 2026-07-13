@@ -17,12 +17,19 @@ Prod `/api/checkout` failed twice on 2026-07-13:
    sends it to `sandbox-api.polar.sh`. Also: **no webhook endpoint exists in the production
    org**, so the stored `POLAR_WEBHOOK_SECRET` matches nothing.
 
-**Owner decision (2026-07-13): stay sandbox-first per plan.** TODO for Tom in
-https://sandbox.polar.sh (separate login/org from polar.sh):
-- Create sandbox org + the two products per "Polar dashboard" section below (14-day card trial on each).
-- Webhook endpoint → `https://creatordeck.itsspekkie.com/api/webhooks/polar`; copy the secret.
-- Create an org access token; hand token + 2 product IDs + webhook secret to Claude to update
-  `.env.local` + Vercel prod env (sensitive) + redeploy.
+**Owner decision (2026-07-13): stay sandbox-first per plan.**
+
+Update (2026-07-13, later): sandbox org created; token + product IDs live in `.env.local` +
+Vercel prod; prod redeployed and checkout-create verified against sandbox API. REMAINING:
+- **Token scopes too narrow** — has `checkouts:write` (checkout works) but lacks
+  `customer_sessions:write` (→ `/api/portal` will 401) and `webhooks:write`. Regenerate the
+  sandbox org token with all scopes, update `.env.local` + Vercel prod, redeploy.
+- **No webhook endpoint in sandbox org** — entitlements can't land; `/billing/success` will
+  poll forever. Create in dashboard (or via API once token has `webhooks:write`):
+  URL `https://creatordeck.itsspekkie.com/api/webhooks/polar`, format raw, all
+  `subscription.*` events; then put the generated secret in POLAR_WEBHOOK_SECRET (both envs).
+- **Pricing mismatch vs locked decision**: sandbox products are **€12.99/mo, €129.99/yr**;
+  the locked decision above says €7.99/€59. Align one or the other.
 - Later, on Phase 3 cutover: archive/recreate products in the production org deliberately and
   add its webhook endpoint (the accidental production-org products can stay for now).
 
