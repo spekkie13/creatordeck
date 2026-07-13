@@ -5,7 +5,26 @@
 **Spec:** `specs/Billing-Entitlements.md`
 **Last updated:** 2026-07-13
 
-## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ⏳ not verified
+## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ⏳ BLOCKED on sandbox creds
+
+## ⚠️ BLOCKER found 2026-07-13 — Polar creds are in the WRONG org
+Prod `/api/checkout` failed twice on 2026-07-13:
+1. `ERR_INVALID_URL` — the Checkout adapter needs an **absolute** `successUrl`; fixed in
+   `6e04f2a` (resolved against `req.nextUrl.origin`). Deployed to prod.
+2. Polar SDK 401 `invalid_token` — the access token + both product IDs
+   (`e855fcb1-…` monthly, `a68ed495-…` yearly) were created in the Polar **PRODUCTION org**
+   (verified: token 200s on `api.polar.sh`, products exist there), but `POLAR_SERVER=sandbox`
+   sends it to `sandbox-api.polar.sh`. Also: **no webhook endpoint exists in the production
+   org**, so the stored `POLAR_WEBHOOK_SECRET` matches nothing.
+
+**Owner decision (2026-07-13): stay sandbox-first per plan.** TODO for Tom in
+https://sandbox.polar.sh (separate login/org from polar.sh):
+- Create sandbox org + the two products per "Polar dashboard" section below (14-day card trial on each).
+- Webhook endpoint → `https://creatordeck.itsspekkie.com/api/webhooks/polar`; copy the secret.
+- Create an org access token; hand token + 2 product IDs + webhook secret to Claude to update
+  `.env.local` + Vercel prod env (sensitive) + redeploy.
+- Later, on Phase 3 cutover: archive/recreate products in the production org deliberately and
+  add its webhook endpoint (the accidental production-org products can stay for now).
 
 - `666ca07` Phase 0 — tear down Lemon Squeezy, retier to Free/Pro, add entitlements + webhook_events tables.
 - `fbfb5b9` Phase 1 — Polar checkout/portal/webhook routes, entitlement engine, DB-backed `hasPro`.
