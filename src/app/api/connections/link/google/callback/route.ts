@@ -8,6 +8,7 @@ import {
 } from '@/lib/exceptions'
 
 import { connectionsService } from '@/services'
+import { hasPro } from '@/lib/require-pro'
 
 const BASE_URL = (process.env.NEXT_PUBLIC_APP_URL ?? process.env.NEXTAUTH_URL)!
 
@@ -38,6 +39,12 @@ export async function GET(req: Request) {
   } catch (err) {
     console.error('[google/callback] Failed to parse state cookie:', err)
     return NextResponse.redirect(`${BASE_URL}/connections?error=invalid_state`)
+  }
+
+  // Defense-in-depth: the start route gates on Pro, but the callback carries the
+  // state cookie for 10 minutes — re-check before exchanging tokens.
+  if (!(await hasPro(userId))) {
+    return NextResponse.redirect(`${BASE_URL}/billing`)
   }
 
   const redirectUri = `${BASE_URL}/api/connections/link/google/callback`

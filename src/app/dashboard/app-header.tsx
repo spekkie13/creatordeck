@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 
-import { CreatorDeckLogo, ThemeToggle } from "@/components"
+import { CreatorDeckLogo, DunningBanner, ThemeToggle } from "@/components"
 
 import { FeedbackButton } from "@/app/dashboard/feedback-button"
 
@@ -53,6 +53,7 @@ export function AppHeader({ displayName }: Props) {
 
   return (
     <>
+    <DunningBanner />
     <header className="sticky top-0 z-40 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 px-6 py-4 flex items-center justify-between">
       <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
         <CreatorDeckLogo size="sm" />

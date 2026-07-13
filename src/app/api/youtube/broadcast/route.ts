@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
 import { apiError, apiSuccess } from "@/lib/api-response"
-import { hasYouTubeAccess } from "@/lib/youtube-gate"
+import { requirePro } from "@/lib/require-pro"
 
 import { youtubeService } from "@/services"
 import { ytStreamSessionsRepository } from "@/repositories"
@@ -20,8 +20,9 @@ export async function GET() {
   if (result instanceof NextResponse) return result
   const { session } = result
 
-  // Interim Pro gate — owner-only until billing ships requirePro.
-  if (!hasYouTubeAccess(session)) return apiError(403, "Forbidden")
+  // YouTube is a Pro feature (spec §3.4).
+  const gate = await requirePro(session.userId)
+  if (gate) return gate
 
   const channelId = session.youtubeChannelId
   if (!channelId) return apiError(400, "YouTube not connected")

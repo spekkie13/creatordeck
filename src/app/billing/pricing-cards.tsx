@@ -51,7 +51,7 @@ export function PricingCards({ isPro, hasSubscription, waitlistMode, twitchLogin
           >
             {c}
             {c === "yearly" && (
-              <span className="ml-1.5 text-xs text-green-500 font-semibold">Save ~38%</span>
+              <span className="ml-1.5 text-xs text-green-500 font-semibold">Save ~17%</span>
             )}
           </button>
         ))}

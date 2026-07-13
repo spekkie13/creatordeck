@@ -19,6 +19,14 @@ export default async function BillingPage() {
     ])
     const hasSubscription = !!entitlement?.polarSubscriptionId
 
+    // Trial status copy: local state has trialEndsAt but not Polar's
+    // cancel-at-period-end (trial-cancel keeps status "trialing" — Gate 1 note),
+    // so the copy states the end date without promising renewal or expiry.
+    const trialEndsAt =
+        entitlement?.status === "trialing" && entitlement.trialEndsAt && entitlement.trialEndsAt.getTime() > Date.now()
+            ? entitlement.trialEndsAt
+            : null
+
     return (
         <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
             <AppHeader displayName={session.displayName}/>
@@ -30,6 +38,12 @@ export default async function BillingPage() {
                     <p className="text-sm text-zinc-500 dark:text-zinc-400">
                         You are currently on the <span
                         className="font-medium text-zinc-700 dark:text-zinc-300">{isPro ? "Pro" : "Free"}</span> plan.
+                        {trialEndsAt && (
+                            <span className="ml-1">
+                                Your free trial ends{" "}
+                                {trialEndsAt.toLocaleDateString(undefined, {month: "long", day: "numeric"})}.
+                            </span>
+                        )}
                     </p>
                 </div>
 

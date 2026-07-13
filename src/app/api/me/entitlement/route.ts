@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { requireSession } from "@/lib/session-auth"
 import { hasPro } from "@/lib/require-pro"
+import { PAST_DUE_GRACE_MS } from "@/lib/entitlement"
 import { entitlementRepository } from "@/repositories"
 
 // GET /api/me/entitlement — authoritative Pro state for the current user. Used
@@ -23,5 +24,11 @@ export async function GET(): Promise<NextResponse> {
     status: ent?.status ?? "none",
     trialEndsAt: ent?.trialEndsAt ?? null,
     currentPeriodEnd: ent?.currentPeriodEnd ?? null,
+    // Dunning deadline: past_due keeps Pro for PAST_DUE_GRACE_MS after the last
+    // webhook write (src/lib/entitlement.ts effectiveStatus).
+    graceEndsAt:
+      ent?.status === "past_due"
+        ? new Date(ent.updatedAt.getTime() + PAST_DUE_GRACE_MS)
+        : null,
   })
 }

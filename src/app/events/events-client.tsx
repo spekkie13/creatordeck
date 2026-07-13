@@ -6,15 +6,27 @@ import type { LiveEvent, LiveEventType } from "@/types/events"
 import type { EventSortBy, SortOrder, PaginatedEvents } from "@/types/event-filter"
 
 import { EVENT_TYPES, TYPE_BADGE, TYPE_ICON, MODAL_TYPES } from "@/lib/event-types"
+import { FREE_HISTORY_DAYS } from "@/lib/entitlement"
 import { formatAmount, formatDateTime } from "@/lib/format"
 
+import { useEntitlement } from "@/hooks/use-entitlement"
+
 import { TwitchLogo, YouTubeLogo } from "@/components/platform-logos"
+import { ProLock } from "@/components/pro-lock"
 import { ReplayButton } from "@/components/replay-button"
 
 import { AppHeader } from "@/app/dashboard/app-header"
 import { EventDetailModal } from "@/app/events/event-detail-modal"
 
+/** datetime-local value for the oldest date Free can query. */
+function freeFloorValue(): string {
+  const floor = new Date(Date.now() - FREE_HISTORY_DAYS * 24 * 60 * 60 * 1000)
+  floor.setMinutes(floor.getMinutes() - floor.getTimezoneOffset())
+  return floor.toISOString().slice(0, 16)
+}
+
 export function EventsClient({ displayName }: { displayName: string }) {
+  const { isPro, isLoading: entLoading } = useEntitlement()
   const [activeTypes, setActiveTypes] = useState<Set<LiveEventType>>(new Set())
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
@@ -110,6 +122,7 @@ export function EventsClient({ displayName }: { displayName: string }) {
               <input
                 type="datetime-local"
                 value={from}
+                min={!entLoading && !isPro ? freeFloorValue() : undefined}
                 onChange={e => { setFrom(e.target.value); setPage(1) }}
                 className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-900 dark:text-zinc-300 focus:outline-none focus:border-teal-500"
               />
@@ -142,9 +155,23 @@ export function EventsClient({ displayName }: { displayName: string }) {
               {sortOrder === "desc" ? "↓ Newest first" : "↑ Oldest first"}
             </button>
           </div>
+
+          {!entLoading && !isPro && (
+            <ProLock
+              title={`History older than ${FREE_HISTORY_DAYS} days is a Pro feature`}
+              description="Your past events are kept — upgrade any time to see your full history."
+            />
+          )}
         </div>
 
-        {/* Results */}
+        {/* Results — clamp notice only when an explicitly chosen range was narrowed
+            (the default no-range view is already covered by the Filters notice). */}
+        {data?.clamped && from && (
+          <ProLock
+            title={`Showing the last ${FREE_HISTORY_DAYS} days`}
+            description="Your date range was narrowed to the Free history window."
+          />
+        )}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
           <div className="px-6 py-3 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
             <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">

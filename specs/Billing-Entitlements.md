@@ -19,7 +19,7 @@ Introduce a paid **Pro** subscription (monthly + yearly) via Polar.sh as merchan
 - Dashboard: live event feed, follower/sub counts, session duration
 - Chat commands + **simple** event triggers (single-action)
 - Config save/load — **single profile**
-- Event history: **30 days**
+- Event history: **30 days** (analytics dashboards: **7 days** — deliberately stricter than raw history; owner decision 2026-07-13)
 - Spotify: full feature set incl. song requests via chat
 - OBS/desktop app: **read-only** (current scene, now playing, connection status)
 

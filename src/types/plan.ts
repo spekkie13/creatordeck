@@ -7,8 +7,10 @@ export type Plan = "free" | "pro"
 
 export type BillingCycle = "monthly" | "yearly"
 
-/** Pro pricing (EUR; Polar is merchant of record and handles VAT). */
+/** Pro pricing (EUR; Polar is merchant of record and handles VAT). Must match
+ * the Polar products (POLAR_PRODUCT_PRO_MONTHLY/YEARLY) — checkout charges
+ * whatever Polar has; this is display-only. */
 export const PRO_PRICING: Record<BillingCycle, { amount: string; period: string }> = {
-  monthly: { amount: "€7.99", period: "/mo" },
-  yearly: { amount: "€59", period: "/yr" },
+  monthly: { amount: "€12.99", period: "/mo" },
+  yearly: { amount: "€129.99", period: "/yr" },
 }

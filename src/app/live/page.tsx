@@ -15,6 +15,7 @@ import type { GoalRow } from "@/repositories/goals.repository"
 
 import { liveEventFeedService } from "@/services"
 import { streamInfoService } from "@/services/stream-info.service"
+import { hasPro } from "@/lib/require-pro"
 
 import { LiveClient } from "./live-client"
 
@@ -25,10 +26,11 @@ export default async function LivePage() {
   const broadcasterId = session.twitchId ?? ""
   const youtubeChannelId = session.youtubeChannelId ?? null
 
-  const [twitchAccount, ytAccount, spotifyAccount] = await Promise.all([
+  const [twitchAccount, ytAccount, spotifyAccount, isPro] = await Promise.all([
     linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_TWITCH),
     linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_YOUTUBE),
     linkedAccountsRepository.findByUserIdAndProvider(session.userId, PLATFORM_SPOTIFY),
+    hasPro(session.userId),
   ])
 
   const [streamInfo, recentEvents, goalRows, extraGoals, followTotalRows, ytMemberTotalRows, subTotalRows] = await Promise.all([
@@ -59,7 +61,7 @@ export default async function LivePage() {
     <LiveClient
       displayName={session.displayName}
       twitchLogin={twitchAccount?.login ?? session.displayName ?? ""}
-      hasYouTube={!!ytAccount}
+      hasYouTube={!!ytAccount && isPro}
       hasSpotify={!!spotifyAccount}
       initialStreamInfo={streamInfo}
       initialEvents={recentEvents.events}

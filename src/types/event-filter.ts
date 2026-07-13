@@ -20,4 +20,6 @@ export type PaginatedEvents = {
   total: number
   page: number
   totalPages: number
+  /** True when the requested window was narrowed by the Free-tier history clamp. */
+  clamped?: boolean
 }

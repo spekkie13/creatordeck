@@ -8,7 +8,7 @@ import { authOptions } from "@/lib/auth"
 
 import { eventSubSubscriptionsRepository, linkedAccountsRepository, ytStreamSessionsRepository } from "@/repositories"
 import { youtubeService } from "@/services"
-import { hasYouTubeAccess } from "@/lib/youtube-gate"
+import { hasPro } from "@/lib/require-pro"
 
 import { fromSearchError } from "@/services/connections.service"
 
@@ -40,8 +40,9 @@ export default async function ConnectionsPage({ searchParams }: {
     ? await ytStreamSessionsRepository.isActive(session.youtubeChannelId)
     : false
 
-  // Interim Pro gate — YouTube is owner-only until billing ships requirePro.
-  const youtubeLocked: boolean = !hasYouTubeAccess(session)
+  // YouTube is a Pro feature (spec §3.4). The row stays visible when locked —
+  // a linked account is preserved, not deleted, and unlocks instantly on upgrade.
+  const youtubeLocked: boolean = !(await hasPro(session.userId))
   const youtubeAccount: LinkedAccount | undefined = linkedAccounts.find((a: LinkedAccount) => a.provider === PLATFORM_YOUTUBE)
   // A null valid-token while the channel is still linked means the refresh token
   // was revoked/expired — surface a reconnect prompt (refreshes only when the

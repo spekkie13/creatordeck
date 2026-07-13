@@ -8,6 +8,10 @@ import type { Entitlement } from "@/types/entities"
 /** Pro is granted during a 3-day grace window after a payment goes past_due. */
 export const PAST_DUE_GRACE_MS = 3 * 24 * 60 * 60 * 1000
 
+/** Free tier sees this many days of event history (spec §2); older is Pro.
+ * Single source for the server clamp and UI copy. */
+export const FREE_HISTORY_DAYS = 30
+
 export type EffectiveStatus =
   | "none"
   | "trialing"

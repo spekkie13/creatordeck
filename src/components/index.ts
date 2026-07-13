@@ -1,5 +1,7 @@
 ﻿export * from './creator-deck-logo'
+export * from './dunning-banner'
 export * from './platform-logos'
+export * from './pro-lock'
 export * from './replay-button'
 export * from './screenshot-carousel'
 export * from './theme-provider'

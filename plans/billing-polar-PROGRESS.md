@@ -113,12 +113,21 @@ WHERE e.user_id IS NULL;
 5. Re-deliver the same webhook event id → second call returns `{duplicate:true}`, no state change (idempotency ledger).
 6. Owner bypass: a user with `isAdmin=true` is Pro with zero Polar rows (dev toolbar `/dev` toggles it).
 
-## Then: Phase 2 (not started)
-Runtime gates via `requirePro`/`hasPro` + degrade UI (spec §3.4/§3.5):
-- YouTube: swap `src/lib/youtube-gate.ts` body to `hasPro(session.userId)`; YT routes call `requirePro`.
-- Event history >30d: server-side `from` clamp for Free in `src/app/api/events/route.ts`.
-- OBS-write/macros/profiles: NOT built — scaffold `requireProForApiKey` at `src/lib/api-auth.ts`/`widget-auth.ts`.
-- `<ProLock>`/`<LockedPreview>` component; `past_due` dunning banner; client `useEntitlement()` hook.
+## Phase 2 — ✅ IMPLEMENTED (2026-07-13), Gate 2 ⏳ pending owner walkthrough
+Plan: `plans/billing-phase2-PLAN.md` (findings, teardown table, Gate 2 checklist).
+- Teardown: `youtube-gate.ts` DELETED; YT broadcast/chat routes → `requirePro`; google
+  link start+callback → `hasPro` redirect to `/billing`; connections page + live page
+  (`hasYouTube` prop) → `hasPro`. Pricing display fixed (€12.99/€129.99, "Save ~17%").
+- Events history: `FREE_HISTORY_DAYS=30` clamp in `/api/events` + `clamped` response flag.
+  Analytics stays **7d for Free** (owner decision 2026-07-13; spec §2 updated).
+- `/api/me/entitlement` + `graceEndsAt`; new `src/hooks/use-entitlement.ts` (SWR, 60s).
+- Scaffolds: `requireProForApiKey` (api-auth.ts), `requireProForWidgetToken` (widget-auth.ts).
+- UI: `src/components/pro-lock.tsx` (`ProLock`/`LockedPreview`), `dunning-banner.tsx`
+  (past_due only — NOT trial-cancel) mounted in app-header; events UI date cap + notices;
+  YT locked pill → `/billing` CTA; billing page trial-end copy (Q3 yes).
+- Dev: `/api/dev/set-tier` + `/dev` toolbar extended with 8 entitlement presets.
+- Verified: tsc + `npm run build` green; grep checks pass (no `youtube-gate`/`hasYouTubeAccess`;
+  gates only via `hasPro`/`requirePro`). Gate 2 checklist: see plan §4.
 
 ## Key files (Phase 1)
 - Predicate: `src/lib/require-pro.ts` (`hasPro`/`requirePro`), pure logic `src/lib/entitlement.ts`.
