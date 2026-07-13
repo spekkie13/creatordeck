@@ -5,7 +5,7 @@
 **Spec:** `specs/Billing-Entitlements.md`
 **Last updated:** 2026-07-13
 
-## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ⏳ BLOCKED on sandbox creds
+## Status: Phase 0 ✅ · Phase 1 ✅ · card-trial switch ✅ · dev DB applied ✅ · Gate 1 ✅ 3/4 (cancel-flow check pending)
 
 ## ⚠️ BLOCKER found 2026-07-13 — Polar creds are in the WRONG org
 Prod `/api/checkout` failed twice on 2026-07-13:
@@ -101,10 +101,10 @@ WHERE e.user_id IS NULL;
 ```
 
 ## Gate 1 verification (sandbox) — the Phase 1 exit criteria
-1. `/billing` → Upgrade to Pro → Polar sandbox checkout (enter test card) → trial starts.
-2. Return to `/billing/success` → flips to Pro within seconds (it polls `/api/me/entitlement`).
-3. Confirm `entitlements` row: status `trialing` (or `active`), `polar_subscription_id` set, `trialEndsAt` populated, Pro granted.
-4. `/api/portal` → cancel → row goes `canceled_active`, Pro until `currentPeriodEnd`.
+1. ✅ (2026-07-13) `/billing` → Upgrade to Pro → Polar sandbox checkout (test card) → trial started.
+2. ✅ (2026-07-13) `/billing/success` flipped to Pro (owner-verified in prod).
+3. ✅ (2026-07-13) `entitlements` row verified in prod DB: `pro`/`trialing`, `polar_subscription_id` set, `trial_ends_at` = 2026-07-27 (14d).
+4. ⏳ `/api/portal` → cancel → row goes `canceled_active`, Pro until `currentPeriodEnd`. (Owner can re-subscribe after — it's sandbox.)
 5. Re-deliver the same webhook event id → second call returns `{duplicate:true}`, no state change (idempotency ledger).
 6. Owner bypass: a user with `isAdmin=true` is Pro with zero Polar rows (dev toolbar `/dev` toggles it).
 
