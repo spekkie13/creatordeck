@@ -19,17 +19,12 @@ Prod `/api/checkout` failed twice on 2026-07-13:
 
 **Owner decision (2026-07-13): stay sandbox-first per plan.**
 
-Update (2026-07-13, later): sandbox org created; token + product IDs live in `.env.local` +
-Vercel prod; prod redeployed and checkout-create verified against sandbox API. REMAINING:
-- **Token scopes too narrow** — has `checkouts:write` (checkout works) but lacks
-  `customer_sessions:write` (→ `/api/portal` will 401) and `webhooks:write`. Regenerate the
-  sandbox org token with all scopes, update `.env.local` + Vercel prod, redeploy.
-- **No webhook endpoint in sandbox org** — entitlements can't land; `/billing/success` will
-  poll forever. Create in dashboard (or via API once token has `webhooks:write`):
-  URL `https://creatordeck.itsspekkie.com/api/webhooks/polar`, format raw, all
-  `subscription.*` events; then put the generated secret in POLAR_WEBHOOK_SECRET (both envs).
-- **Pricing mismatch vs locked decision**: sandbox products are **€12.99/mo, €129.99/yr**;
-  the locked decision above says €7.99/€59. Align one or the other.
+✅ RESOLVED (2026-07-13, later): sandbox org + products (14-day card trial confirmed) +
+all-scopes token + webhook endpoint (`…/api/webhooks/polar`, raw, all `subscription.*`
+events, secret verified matching env) all in place. Token verified via API for checkout
+create + customer-session scope. `.env.local` and Vercel prod (sensitive) in sync; prod
+redeployed. Smoke: `/api/checkout` 401 unauth (guard), `/api/webhooks/polar` 403 unsigned
+(signature validation live). **Gate 1 manual verification below is now unblocked.**
 - Later, on Phase 3 cutover: archive/recreate products in the production org deliberately and
   add its webhook endpoint (the accidental production-org products can stay for now).
 
@@ -39,7 +34,7 @@ Vercel prod; prod redeployed and checkout-create verified against sandbox API. R
 - App builds green. Nothing applied to any DB yet.
 
 ## Owner decisions (locked)
-- Pricing: **Pro €7.99/mo · €59/yr** (EUR).
+- Pricing: **Pro €12.99/mo · €129.99/yr** (EUR). (Changed from €7.99/€59 — owner confirmed intentional 2026-07-13.)
 - **Trial: WITH card (Polar-native standard)** — 14-day trial configured on the Polar products; card collected at checkout; Polar auto-charges at trial end. ⚠️ This CHANGED from the earlier local-signup-trial approach — see "DO FIRST" below.
 - Execution: phase-gated, review between phases.
 - Operator: Tom Spek (individual, NL, no KVK). Governing law NL.
