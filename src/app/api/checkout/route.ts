@@ -9,12 +9,6 @@ import { requireSession } from "@/lib/session-auth"
 // via externalCustomerId, and redirects to Polar's hosted checkout. Success
 // returns to /billing/success (the page polls /api/me/entitlement while the
 // webhook lands).
-const handler = Checkout({
-  accessToken: env.polarAccessToken,
-  server: env.polarServer,
-  successUrl: "/billing/success",
-})
-
 export async function GET(req: NextRequest): Promise<Response> {
   const result = await requireSession()
   if (result instanceof NextResponse) return result
@@ -23,6 +17,14 @@ export async function GET(req: NextRequest): Promise<Response> {
   const cycle = req.nextUrl.searchParams.get("cycle") === "yearly" ? "yearly" : "monthly"
   const productId = cycle === "yearly" ? env.polarProductProYearly : env.polarProductProMonthly
   if (!productId) return NextResponse.json({ error: "Billing not configured" }, { status: 503 })
+
+  // Polar's adapter requires an absolute successUrl (it news a URL from it),
+  // so resolve it against the request origin per-request.
+  const handler = Checkout({
+    accessToken: env.polarAccessToken,
+    server: env.polarServer,
+    successUrl: new URL("/billing/success", req.nextUrl.origin).toString(),
+  })
 
   // Re-drive the Checkout adapter with the params it reads from the query string.
   const url = new URL(req.url)
